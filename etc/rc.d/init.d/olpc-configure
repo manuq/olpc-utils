@@ -65,8 +65,13 @@ configure_hw_1_5() {
 	initialize_ptmode
 }
 
+configure_hw_1_75() {
+	# FIXME - nothing to do yet
+	echo XO-1.75
+}
+
 # Dynamically determine the boot device and mount it
-mount_boot_1_5() {
+mount_boot() {
 	local bootpath=$(get_ofw_file /chosen/bootpath)
 	local bootdev
 	local tmp
@@ -74,6 +79,12 @@ mount_boot_1_5() {
 	case $bootpath in
 	/pci/sd@c/disk@?:*) # XO-1.5 SD
 		tmp=${bootpath#/pci/sd@c/disk@}
+		tmp=${tmp%%:*}
+		((tmp--))
+		bootdev="/dev/disk/mmc/mmc${tmp}p1"
+		;;
+	/sd@d4280000/disk@?:*) # XO-1.75
+		tmp=${bootpath#/sd@d4280000/disk@}
 		tmp=${tmp%%:*}
 		((tmp--))
 		bootdev="/dev/disk/mmc/mmc${tmp}p1"
@@ -99,7 +110,10 @@ configure_hw() {
 	echo "olpc-configure: configuring hardware..."
 	if [ "${XO_VERSION}" == "1.5" ] ; then
 		configure_hw_1_5
-		mount_boot_1_5
+		mount_boot
+        elif  [ "${XO_VERSION}" == "1.75" ] ; then
+		configure_hw_1_75
+		mount_boot
 	else
 		configure_hw_1_0
 		mount_boot_1_0
