@@ -115,10 +115,11 @@ main (int argc, char *argv[])
 	ret -= set_keycode(fd, 0x67, KEY_KP4);
 	ret -= set_keycode(fd, 0x68, KEY_KP6);
 
-	ret -= set_keycode(fd, 0x65 | 0x80, KEY_KP8);
-	ret -= set_keycode(fd, 0x66 | 0x80, KEY_KP2);
-	ret -= set_keycode(fd, 0x67 | 0x80, KEY_KP4);
-	ret -= set_keycode(fd, 0x68 | 0x80, KEY_KP6);
+	/* Set the other game keys to map to pgup/pgdn/home/end */
+	ret -= set_keycode(fd, 0x65 | 0x80, KEY_KP9);
+	ret -= set_keycode(fd, 0x66 | 0x80, KEY_KP3);
+	ret -= set_keycode(fd, 0x67 | 0x80, KEY_KP7);
+	ret -= set_keycode(fd, 0x68 | 0x80, KEY_KP1);
 
 	/* The brightness key to toggle the backlight on the screen. */
 	ret -= set_keycode(fd, 0x69, KEY_SWITCHVIDEOMODE);
