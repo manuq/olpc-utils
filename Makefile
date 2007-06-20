@@ -1,4 +1,4 @@
-VERSION=0.2
+VERSION=0.10
 
 all: setolpckeys olpc-bios-sig 
 
