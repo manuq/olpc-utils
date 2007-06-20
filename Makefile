@@ -1,4 +1,4 @@
-VERSION=0.10
+VERSION=0.11
 
 all: setolpckeys olpc-bios-sig 
 
@@ -11,7 +11,7 @@ olpc-bios-sig:
 install: all
 	/usr/bin/install -d $(DESTDIR)/usr/share/olpc/keycodes
 	/usr/bin/install -d $(DESTDIR)/usr/sbin
-	/usr/bin/install olpc-evdev $(DESTDIR)/usr/share/olpc/keycodes/olpc-evdev
+	/usr/bin/install --mode=0664 olpc-evdev $(DESTDIR)/usr/share/olpc/keycodes/olpc-evdev
 	/usr/bin/install setolpckeys $(DESTDIR)/usr/sbin
 	/usr/bin/install olpc-bios-sig $(DESTDIR)/usr/sbin
 
