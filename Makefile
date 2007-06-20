@@ -20,4 +20,4 @@ dist/olpc-utils-$(VERSION):
 	cp Makefile COPYING setolpckeys.c olpc-bios-sig.c olpc-evdev dist/olpc-utils-$(VERSION)/
 	(cd dist; tar cvfjp olpc-utils-$(VERSION).tar.bz2 olpc-utils-$(VERSION); md5sum olpc-utils-$(VERSION).tar.bz2 > olpc-utils-$(VERSION).tar.bz2.md5)
 
-dist: dist/olpc-util-$(VERSION)
+dist: dist/olpc-utils-$(VERSION)
