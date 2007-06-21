@@ -1,4 +1,11 @@
-VERSION=0.11
+VERSION=0.12
+
+prefix=/usr/local
+exec_prefix=${prefix}
+bindir=${exec_prefix}/bin
+sbindir=${exec_prefix}/sbin
+mandir=${prefix}/man
+datadir=${prefix}/share
 
 all: setolpckeys olpc-bios-sig 
 
@@ -9,11 +16,11 @@ olpc-bios-sig:
 	gcc -o olpc-bios-sig olpc-bios-sig.c
 
 install: all
-	/usr/bin/install -d $(DESTDIR)/usr/share/olpc/keycodes
-	/usr/bin/install -d $(DESTDIR)/usr/sbin
-	/usr/bin/install --mode=0664 olpc-evdev $(DESTDIR)/usr/share/olpc/keycodes/olpc-evdev
-	/usr/bin/install setolpckeys $(DESTDIR)/usr/sbin
-	/usr/bin/install olpc-bios-sig $(DESTDIR)/usr/sbin
+	/usr/bin/install -p -d $(DESTDIR)/$(datadir)/olpc/keycodes
+	/usr/bin/install -p -d $(DESTDIR)/$(sbindir)
+	/usr/bin/install -p --mode=0664 olpc-evdev $(DESTDIR)/$(datadir)/olpc/keycodes/olpc-evdev
+	/usr/bin/install -p setolpckeys $(DESTDIR)/$(sbindir)
+	/usr/bin/install -p olpc-bios-sig $(DESTDIR)/$(sbindir)
 
 dist/olpc-utils-$(VERSION):
 	mkdir -p dist/olpc-utils-$(VERSION)
