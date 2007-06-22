@@ -1,19 +1,22 @@
-VERSION=0.12
+VERSION=0.13
 
-prefix=/usr/local
-exec_prefix=${prefix}
-bindir=${exec_prefix}/bin
-sbindir=${exec_prefix}/sbin
-mandir=${prefix}/man
-datadir=${prefix}/share
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+mandir=@mandir@
+datadir=@datadir@
+sbindir=@sbindir@
+
+CC=@CC@
+CFLAGS=@CFLAGS@
 
 all: setolpckeys olpc-bios-sig 
 
 setolpckeys:
-	gcc -o setolpckeys setolpckeys.c
+	$(CC) -o setolpckeys setolpckeys.c
 
 olpc-bios-sig:
-	gcc -o olpc-bios-sig olpc-bios-sig.c
+	$(CC) -o olpc-bios-sig olpc-bios-sig.c
 
 install: all
 	/usr/bin/install -p -d $(DESTDIR)/$(datadir)/olpc/keycodes
