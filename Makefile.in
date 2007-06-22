@@ -13,10 +13,10 @@ CFLAGS=@CFLAGS@
 all: setolpckeys olpc-bios-sig 
 
 setolpckeys:
-	$(CC) -o setolpckeys setolpckeys.c
+	$(CC) -o setolpckeys setolpckeys.c $(CFLAGS)
 
 olpc-bios-sig:
-	$(CC) -o olpc-bios-sig olpc-bios-sig.c
+	$(CC) -o olpc-bios-sig olpc-bios-sig.c $(CFLAGS)
 
 install: all
 	/usr/bin/install -p -d $(DESTDIR)/$(datadir)/olpc/keycodes
