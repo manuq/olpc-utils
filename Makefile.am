@@ -16,13 +16,13 @@
 #
 
 AM_CFLAGS = -Wall -W
-sbin_PROGRAMS = olpc-bios-sig setolpckeys
+sbin_PROGRAMS = olpc-bios-sig setolpckeys olpc-dm
 
 olpc_bios_sig_SOURCES = olpc-bios-sig.c
 
 setolpckeys_SOURCES = setolpckeys.c
 
-#olpc_dm_SOURCES = olpc-dm.c
-#olpc_dm_LDFLAGS = -lpam_misc -lpam
+olpc_dm_SOURCES = olpc-dm.c
+olpc_dm_LDFLAGS = -lpam_misc -lpam
 
 EXTRA_DIST = autogen.sh
