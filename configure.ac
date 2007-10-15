@@ -1,13 +1,17 @@
-dnl Process this file with autoconf to produce a configure script.
+#
+# Use ./autogen.sh to generate the configure
+#
 
-AC_INIT()
-AC_PREREQ(2.52)
+AC_PREREQ(2.61)
+AC_INIT([olpc-utils],[0.20],[devel@lists.laptop.org])
+AM_INIT_AUTOMAKE([foreign dist-bzip2 -Wall])
+AC_CONFIG_SRCDIR([olpc-bios-sig.c])
 
 AC_MSG_NOTICE([Configuring olpc-utils])
 
-dnl Checks for programs.
+# Checks for programs.
 AC_PROG_CC
-AC_PROG_CPP
 
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

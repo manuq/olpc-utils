@@ -1,4 +1,4 @@
 #!/bin/sh
+autoreconf --install --force --verbose
+./configure "$@"
 
-autoconf
-./configure $@
