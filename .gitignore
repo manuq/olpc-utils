@@ -1,4 +1,5 @@
 Makefile
+Makefile.in
 aclocal.m4
 autom4te.cache
 config.h
@@ -11,6 +12,7 @@ install-sh
 missing
 olpc-bios-sig
 olpc-bios-sig.o
+olpc-dm
 olpc-dm.o
 setolpckeys
 setolpckeys.o
