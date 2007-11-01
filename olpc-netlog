@@ -1,0 +1,72 @@
+#!/bin/bash
+#
+# Copyright (c) 2007 OLPC
+# Author: galanis at laptop.org 
+#
+# this program is free software; you can redistribute it and/or modify
+# it under the terms of the gnu general public license as published by
+# the free software foundation; either version 2 of the license, or
+# (at your option) any later version.
+#
+# this program is distributed in the hope that it will be useful,
+# but without any warranty; without even the implied warranty of
+# merchantability or fitness for a particular purpose.  see the
+# gnu general public license for more details.
+#
+# you should have received a copy of the gnu general public license
+# along with this program; if not, write to the free software
+# foundation, inc., 51 franklin st, fifth floor, boston, ma  02110-1301  usa
+
+xin=$(cat /home/olpc/.xinitrc|grep .sugar.debug)
+deb=$(cat /home/olpc/.sugar.debug|grep SUGAR_LOGGER_LEVEL)
+
+if [ ${#xin} -eq 0 ] || [ ${xin:0:1} = "#" ] || [ ${#deb} -eq 0 ] || [ ${deb:0:1} = "#" ]
+then echo "Not all logs are turned on";fi
+
+timestamp=$(date +20%y%m%d.%H.%M.%S)
+target=./logtemp
+
+model=$(cat /ofw/model)
+build=$(cat /boot/olpc_build)
+fw=$(cat /ofw/openprom/model)
+libertas=$(ethtool -i msh0|grep firmware|awk '{print $2}')
+
+if [ ! -d $target ];then mkdir $target;fi
+echo $model > $target/info
+echo $build >> $target/info
+echo $fw >> $target/info
+echo $libertas >> $target/info
+
+logdir=/home/olpc/.sugar/default/logs
+
+cp /var/log/messages $target/messages
+cp /var/log/Xorg.0.log $target/Xorg.0.log
+cp /etc/resolv.conf $target/resolv.conf
+if [ -f /etc/NetworkManager/mesh-start ];then cp /etc/NetworkManager/mesh-start $target;fi
+
+if [ -f $logdir/telepathy-salut ];then cp $logdir/telepathy-salut.log $target;fi
+if [ -f $logdir/telepathy-gabble ];then cp $logdir/telepathy-gabble.log $target;fi
+if [ -f $logdir/presenceservice.log ];then cp $logdir/presenceservice.log $target;fi
+
+ifconfig &> $target/ifconfig.out
+iwconfig &> $target/iwconfig.out
+route -n &> $target/route.out
+ps auxf &> $target/ps.out
+netstat -apT &> $target/netstat.out
+
+loc=$(dirname $0)
+inwhich=$(which olpc-netstatus 2> /dev/null)
+
+if [ ${#inwhich} -ne 0 ]
+then
+	olpc-netstatus > $target/netstatus
+else
+	if [ -f $loc/olpc-netstatus ]
+	then 
+		bash $loc/olpc-netstatus > $target/netstatus
+	fi
+fi
+
+cd $target
+tar -czf ../netlog.$timestamp.tgz .
+cd - > /dev/null

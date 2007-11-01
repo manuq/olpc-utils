@@ -1,0 +1,150 @@
+#!/bin/bash
+#
+# Copyright (c) 2007 OLPC
+# Author: galanis at laptop.org 
+#
+# this program is free software; you can redistribute it and/or modify
+# it under the terms of the gnu general public license as published by
+# the free software foundation; either version 2 of the license, or
+# (at your option) any later version.
+#
+# this program is distributed in the hope that it will be useful,
+# but without any warranty; without even the implied warranty of
+# merchantability or fitness for a particular purpose.  see the
+# gnu general public license for more details.
+#
+# you should have received a copy of the gnu general public license
+# along with this program; if not, write to the free software
+# foundation, inc., 51 franklin st, fifth floor, boston, ma  02110-1301  usa
+
+
+#nick
+i=$(cat /home/olpc/.sugar/default/config|grep nick)
+nick=${i:11}
+echo ''
+echo 'Nick      : '$nick
+
+#mac
+mac=''
+mac=$(ifconfig|grep msh0|awk '{print $5}'|tr '[A-F]' '[a-f]')
+echo 'MAC       : '$mac
+echo ''
+
+#interfaces
+interfaces=''
+ips=''
+msh0=''
+interfaces=$(ifconfig|grep HWaddr|awk '{print $1}')
+
+for f in $(echo $interfaces)
+do
+	out=$(ifconfig $f|grep "inet addr")
+	if [ ${#out} -eq 0 ];then ipf='-'
+	else
+		i=$(echo $out|awk '{print $2}')
+		ipf=${i:5}
+		if [ $f = "msh0" ]; then ipmsh=$ipf;fi
+		if [ $f = "eth0" ]; then ipeth=$ipf;fi
+	fi
+	ips=$(echo $ips' '$ipf) 
+done
+
+t=0
+for  f in $(echo $interfaces)
+do
+	t=$((t+1))
+	ip=$(echo $ips|awk '{print $'$t'}')
+	if [ "$ip" = "-" ];then echo 'IP '$f'   : '
+	else echo 'IP '$f'   : '$ip
+	fi
+done
+
+#nameserver
+dns=''
+while read line
+do
+	i=$(echo $line | grep nameserver)
+	if [ ${#i} -ne 0 ]; then dns=${line:11};fi
+done < <(cat /etc/resolv.conf)
+echo 'DNS       : '$dns
+echo ''
+
+
+#telepathy
+i=0
+while read line
+do 
+	tele=$(basename $line|tr '-' ' '|awk '{print $2}')
+	if [ $i -eq 0 ]; then echo 'Telepathy : '$tele
+	else echo '            '$tele;fi
+	((i=i+1))
+done< <(ps U olpc|grep telepathy|awk '{print $5}')
+
+
+#jabber
+jabber=''
+for i in $(netstat -tpT|grep telepathy)
+do
+	j=$(echo $i|grep xmpp)
+	if [ ${#j} -ne 0 ]
+	then
+		jabber=${j:0:$((${#j}-12))}
+	fi
+done
+echo 'Jabber    : '$jabber
+echo ''
+
+#essid
+essid=''
+i=$(iwconfig eth0|grep ESSID)
+essid=${i:33:$((${#i}-59))}
+echo 'Essid     : '$essid
+
+
+#channel
+ch=''
+for i in $(iwconfig eth0)
+do
+	if [ ${i:0:5} = Frequ ];then j=${i:10};fi
+	if [ "$j" = 2.412 ];then ch=1;fi
+	if [ "$j" = 2.437 ];then ch=6;fi
+	if [ "$j" = 2.462 ];then ch=11;fi
+done
+echo 'Channel   : '$ch
+echo ''
+
+#ethernet
+ethernet=''
+for i in $(ifconfig|grep HWaddr|awk '{print $1}')
+do
+	j=$(iwconfig $i 2>&1|grep "no wireless")
+	if [ ${#j} -ne 0 ];then ethernet=$i;fi
+done
+
+#config
+config=''
+if [ ${#ipeth} -ne 0 ]
+then 
+	config='Access point'
+elif [ ${#dns} -eq 0 ]
+then
+	config='Link-local'
+elif [ "${ipmsh:0:3}" = "169" ]
+then
+	config='MPP'
+else config='School server'
+fi	
+if [ ${#ipmsh} -eq 0 ];then config='';fi
+
+
+#acting as MPP
+asmpp='' 
+if [ ${#ipmsh} -ne 0 ]
+then
+	out=$(cat /etc/dhcpd.conf|grep $ipmsh)
+	if [ ${#out} -gt 0 ]; then asmpp=' - Acting as MPP';fi
+fi
+
+echo 'Ethernet  : '$ethernet
+echo 'Config    : '$config$asmpp
+echo ''
