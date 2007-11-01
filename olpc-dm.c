@@ -95,33 +95,33 @@ olpc_login(void)
   signal(SIGINT, SIG_IGN);
 
   setpriority(PRIO_PROCESS, 0, 0);
-  
+
   gethostname(tbuf, sizeof(tbuf));
   xstrncpy(thishost, tbuf, sizeof(thishost));
   domain = index(tbuf, '.');
-  
+
   username = tty_name = hostname = NULL;
   fflag = hflag = pflag = 0;
 
   for (cnt = getdtablesize(); cnt > 2; cnt--)
     close(cnt);
- 
+
   /* TODO: This is not right, we should open the display :0 but we need
    *     to start X first.  Flow should go like this once we get rid of startx
    *     seteuid 0, setuid olpc -> start X -> start pam session -> fork ->
    *     seteuid olpc -> start clients
-   */ 
+   */
   tty_name = "tty2";
   tty_number = "2";
 
   /* set pgid to pid */
   setpgrp();
   /* this means that setsid() will fail */
-  
+
   openlog("olpc-login", LOG_ODELAY, LOG_AUTHPRIV);
 
   retcode = pam_start("olpc-login", OLPC_USER, &conv, &pamh);
-  if(retcode != PAM_SUCCESS) 
+  if(retcode != PAM_SUCCESS)
     {
       fprintf(stderr, "olpc-login: PAM Failure, aborting: %s\n",
               pam_strerror(pamh, retcode));
@@ -133,14 +133,14 @@ olpc_login(void)
   PAM_FAIL_CHECK;
 
   /*
-   * Authentication may be skipped (for example, during krlogin, rlogin, etc...), 
-   * but it doesn't mean that we can skip other account checks. The account 
+   * Authentication may be skipped (for example, during krlogin, rlogin, etc...),
+   * but it doesn't mean that we can skip other account checks. The account
    * could be disabled or password expired (althought kerberos ticket is valid).
    * -- kzak@redhat.com (22-Feb-2006)
    */
   retcode = pam_acct_mgmt(pamh, 0);
 
-  if(retcode == PAM_NEW_AUTHTOK_REQD) 
+  if(retcode == PAM_NEW_AUTHTOK_REQD)
     retcode = pam_chauthtok(pamh, PAM_CHANGE_EXPIRED_AUTHTOK);
 
   PAM_FAIL_CHECK;
@@ -152,7 +152,7 @@ olpc_login(void)
   retcode = pam_get_item(pamh, PAM_USER, (const void **) &username);
   PAM_FAIL_CHECK;
 
-  if (!username || !*username) 
+  if (!username || !*username)
     {
       fprintf(stderr, "\nSession setup problem, abort.\n");
       syslog(LOG_ERR, "NULL user name in %s:%d. Abort.",
@@ -161,7 +161,7 @@ olpc_login(void)
       exit(1);
     }
 
-  if (!(pwd = getpwnam(username))) 
+  if (!(pwd = getpwnam(username)))
     {
       fprintf(stderr, "\nSession setup problem, abort.\n");
       syslog(LOG_ERR, "Invalid user name \"%s\" in %s:%d. Abort.",
@@ -182,7 +182,7 @@ olpc_login(void)
   pwd->pw_dir  = strdup(pwd->pw_dir);
   pwd->pw_shell  = strdup(pwd->pw_shell);
   if (!pwd->pw_name || !pwd->pw_passwd || !pwd->pw_gecos ||
-	!pwd->pw_dir || !pwd->pw_shell) 
+	!pwd->pw_dir || !pwd->pw_shell)
     {
       fprintf(stderr, "olpc-login: Out of memory\n");
       syslog(LOG_ERR, "Out of memory");
@@ -196,7 +196,7 @@ olpc_login(void)
    * This should be done before pam_setcred because
    * the PAM modules might add groups during pam_setcred.
    */
-  if (initgroups(username, pwd->pw_gid) < 0) 
+  if (initgroups(username, pwd->pw_gid) < 0)
     {
       syslog(LOG_ERR, "initgroups: %m");
       fprintf(stderr, "\nSession setup problem, abort.\n");
@@ -214,17 +214,17 @@ olpc_login(void)
 
   /* committed to login -- turn off timeout */
   alarm((unsigned int)0);
-  
+
   endpwent();
-  
+
   /* This requires some explanation: As root we may not be able to
      read the directory of the user if it is on an NFS mounted
      filesystem. We temporarily set our effective uid to the user-uid
-     making sure that we keep root privs. in the real uid. 
-     
+     making sure that we keep root privs. in the real uid.
+
      A portable solution would require a fork(), but we rely on Linux
      having the BSD setreuid() */
-  
+
   {
     char tmpstr[MAXPATHLEN];
     uid_t ruid = getuid();
@@ -234,7 +234,7 @@ olpc_login(void)
        have a libc in which snprintf is the same as sprintf */
     if (strlen(pwd->pw_dir) + sizeof(_PATH_HUSHLOGIN) + 2 > MAXPATHLEN)
       quietlog = 0;
-    else 
+    else
       {
         sprintf(tmpstr, "%s/%s", pwd->pw_dir, _PATH_HUSHLOGIN);
                 setregid(-1, pwd->pw_gid);
@@ -245,7 +245,7 @@ olpc_login(void)
                 setregid(-1, egid);
       }
   }
-  
+
   /* for linux, write entries in utmp and wtmp */
   {
     struct utmp ut;
@@ -278,11 +278,11 @@ olpc_login(void)
         utp = getutline(&ut);
       }
 	
-    if (utp) 
+    if (utp)
       {
-        memcpy(&ut, utp, sizeof(ut)); 
-      } 
-    else 
+        memcpy(&ut, utp, sizeof(ut));
+      }
+    else
       {
         /* some gettys/telnetds don't initialize utmp... */
         memset(&ut, 0, sizeof(ut));
@@ -298,7 +298,7 @@ olpc_login(void)
     ut.ut_tv.tv_usec = tv.tv_usec;
     ut.ut_type = USER_PROCESS;
     ut.ut_pid = pid;
-    if (hostname) 
+    if (hostname)
       {
         xstrncpy(ut.ut_host, hostname, sizeof(ut.ut_host));
         if (hostaddress[0])
@@ -312,7 +312,7 @@ olpc_login(void)
   }
 
   setgid(pwd->pw_gid);
-  
+
   environ = (char**)malloc(sizeof(char*));
   memset(environ, 0, sizeof(char*));
 
@@ -329,7 +329,7 @@ olpc_login(void)
     int i;
     char ** env = pam_getenvlist(pamh);
 
-    if (env != NULL) 
+    if (env != NULL)
       {
         for (i=0; env[i]; i++)
           putenv(env[i]);
@@ -338,14 +338,14 @@ olpc_login(void)
 
   /* allow tracking of good logins.
      -steve philp (sphilp@mail.alliance.net) */
-  
-  if (hostname) 
-    syslog(LOG_INFO, "LOGIN ON %s BY %s FROM %s", tty_name, 
+
+  if (hostname)
+    syslog(LOG_INFO, "LOGIN ON %s BY %s FROM %s", tty_name,
            pwd->pw_name, hostname);
-  else 
+  else
     syslog(LOG_INFO, "LOGIN ON %s BY %s", tty_name,
-           pwd->pw_name); 
-  
+           pwd->pw_name);
+
   signal(SIGALRM, SIG_DFL);
   signal(SIGQUIT, SIG_DFL);
   signal(SIGTSTP, SIG_IGN);
@@ -372,7 +372,7 @@ olpc_login(void)
    */
   closelog();
   childPid = fork();
-  if (childPid < 0) 
+  if (childPid < 0)
     {
       int errsv = errno;
       /* error in fork() */
@@ -381,9 +381,9 @@ olpc_login(void)
       exit(1);
     }
 
-  if (childPid) 
+  if (childPid)
     {
-      close(0); close(1); close(2); 
+      close(0); close(1); close(2);
       sa.sa_handler = SIG_IGN;
       sigaction(SIGQUIT, &sa, NULL);
       sigaction(SIGINT, &sa, NULL);
@@ -417,23 +417,23 @@ olpc_login(void)
   /*
    * TIOCSCTTY: steal tty from other process group.
    */
-  if (ioctl(0, TIOCSCTTY, (char *)1)) 
+  if (ioctl(0, TIOCSCTTY, (char *)1))
     {
       syslog(LOG_ERR, "Couldn't set controlling terminal: %s", strerror(errno));
       exit(1);
     }
 
   signal(SIGINT, SIG_DFL);
-  
+
   /* discard permissions last so can't get killed and drop core */
-  if(setuid(pwd->pw_uid) < 0 && pwd->pw_uid) 
+  if(setuid(pwd->pw_uid) < 0 && pwd->pw_uid)
     {
       syslog(LOG_ALERT, "setuid() failed");
       exit(1);
     }
-  
+
   /* wait until here to change directory! */
-  if (chdir(pwd->pw_dir) < 0) 
+  if (chdir(pwd->pw_dir) < 0)
     {
       printf("No directory %s!\n", pwd->pw_dir);
       if (chdir("/"))
@@ -441,7 +441,7 @@ olpc_login(void)
       pwd->pw_dir = "/";
       printf("Logging in with home = \"/\".\n");
     }
-  
+
   /* exec startx. wait on child to cleanup */
   execl("/usr/bin/startx", "startx", "/usr/bin/olpc-session", "--", "-fp", "built-ins", "-wr", NULL);
   exit(0);
