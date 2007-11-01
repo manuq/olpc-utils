@@ -3,7 +3,7 @@
 #
 
 AC_PREREQ(2.61)
-AC_INIT([olpc-utils],[0.20],[devel@lists.laptop.org])
+AC_INIT([olpc-utils],[0.30],[devel@lists.laptop.org])
 AM_INIT_AUTOMAKE([foreign dist-bzip2 -Wall])
 AC_CONFIG_SRCDIR([olpc-bios-sig.c])
 

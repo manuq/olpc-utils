@@ -15,6 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+x11dir = ${sysconfdir}/X11
+initdir = ${sysconfdir}/rc.d/init.d
+
+dist_x11_DATA = xorg-dcon.conf xorg-emu.conf
+dist_init_DATA = olpc-configure
+
 dist_bin_SCRIPTS = olpc-session olpc-logbat olpc-netlog olpc-netstatus
 
 sbin_PROGRAMS = olpc-bios-sig setolpckeys olpc-dm
@@ -28,4 +34,4 @@ setolpckeys_SOURCES = setolpckeys.c
 olpc_dm_SOURCES = olpc-dm.c
 olpc_dm_LDFLAGS = -lpam_misc -lpam
 
-EXTRA_DIST = autogen.sh olpc-configure
+EXTRA_DIST = autogen.sh
