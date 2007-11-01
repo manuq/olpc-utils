@@ -418,7 +418,12 @@ olpc_login(void)
   sa.sa_handler = parent_sig_handler;
   sigaction(SIGHUP, &sa, NULL);
   sigaction(SIGTERM, &sa, &oldsa_term);
-  
+
+  /*
+   * FIXME: something bad happens here that causes olpc-dm to remain attached
+   * to the tty from which it was spawned, react to things like ^C and kill
+   * innocent sessions that happen to be running on that tty -- bernie
+   */
   closelog();
   childPid = fork();
   if (childPid < 0) 
@@ -427,7 +432,7 @@ olpc_login(void)
       /* error in fork() */
       fprintf(stderr, "olpc-login: failure forking: %s", strerror(errsv));
       PAM_END;
-      exit(0);
+      exit(1);
     }
 
   if (childPid) 
@@ -438,6 +443,10 @@ olpc_login(void)
       sigaction(SIGINT, &sa, NULL);
       while(wait(NULL) == -1 && errno == EINTR) /**/ ;
       openlog("olpc-login", LOG_ODELAY, LOG_AUTHPRIV);
+	  /*
+	   * FIXME: something bad happens here that causes innocent
+	   * sessions on same tty to die -- bernie
+	   */
       PAM_END;
       exit(0);
     }
@@ -487,8 +496,8 @@ olpc_login(void)
       printf("Logging in with home = \"/\".\n");
     }
   
-  /* fork and exec startx. wait on child to cleanup */ 
-  execl("/usr/bin/startx", "startx", "--", "-fp", "built-ins", "-wr", NULL);
+  /* exec startx. wait on child to cleanup */
+  execl("/usr/bin/startx", "startx", "/usr/bin/olpc-session", "--", "-fp", "built-ins", "-wr", NULL);
   exit(0);
 }
 

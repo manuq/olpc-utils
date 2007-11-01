@@ -15,8 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-AM_CFLAGS = -Wall -W
+dist_bin_SCRIPTS = olpc-session
+
 sbin_PROGRAMS = olpc-bios-sig setolpckeys olpc-dm
+
+AM_CFLAGS = -Wall -W
 
 olpc_bios_sig_SOURCES = olpc-bios-sig.c
 
