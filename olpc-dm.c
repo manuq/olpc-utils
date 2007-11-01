@@ -25,7 +25,7 @@
 #define OLPC_USER        "olpc"
 
 #define TTY_MODE         0620
-#define	TTYGRPNAME       "tty" 
+#define	TTYGRPNAME       "tty"
 #define _PATH_HUSHLOGIN  ".hushlogin"
 
 #  include <security/pam_appl.h>
@@ -74,73 +74,21 @@ parent_sig_handler(int signal)
     kill(-childPid, SIGHUP); /* because the shell often ignores SIGTERM */
 }
 
-/* Nice and simple code provided by Linus Torvalds 16-Feb-93 */
-/* Nonblocking stuff by Maciej W. Rozycki, macro@ds2.pg.gda.pl, 1999.
-   He writes: "Login performs open() on a tty in a blocking mode.
-   In some cases it may make login wait in open() for carrier infinitely,
-   for example if the line is a simplistic case of a three-wire serial
-   connection. I believe login should open the line in the non-blocking mode
-   leaving the decision to make a connection to getty (where it actually
-   belongs). */
-static void
-opentty(const char * tty) 
-{
-  int i, fd, flags;
 
-  fd = open(tty, O_RDWR | O_NONBLOCK);
-  if (fd == -1) 
-    {
-      syslog(LOG_ERR, "FATAL: can't reopen tty: %s",
-                     strerror(errno));
-      sleep(1);
-      exit(1);
-    }
-
-  flags = fcntl(fd, F_GETFL);
-  flags &= ~O_NONBLOCK;
-  fcntl(fd, F_SETFL, flags);
-    
-  for (i = 0; i < fd; i++)
-    close(i);
-  for (i = 0; i < 3; i++)
-    if (fd != i)
-      dup2(fd, i);
-  if (fd >= 3)
-    close(fd);
-}
-
-/* true if the filedescriptor fd is a console tty, very Linux specific */
-static int
-consoletty(int fd) 
-{
-  struct stat stb;
-
-  if ((fstat(fd, &stb) >= 0) 
-      && (major(stb.st_rdev) == TTY_MAJOR)
-      && (minor(stb.st_rdev) < 64))
-    {
-      return 1;
-    }
-
-  return 0;
-}
-
+/* Use PAM to login as user */
 void
 olpc_login(void)
 {
   extern int optind;
   extern char *optarg, **environ;
-  struct group *gr;
   int fflag, hflag, pflag, cnt;
   int quietlog;
-  char *domain, *ttyn;
+  char *domain;
   char tbuf[MAXPATHLEN + 2];
-  char *termenv;
   int retcode;
   pam_handle_t *pamh = NULL;
   struct pam_conv conv = { misc_conv, NULL };
   struct sigaction sa, oldsa_hup, oldsa_term;
-  char vcsn[20], vcsan[20];
   pid = getpid();
 
   signal(SIGQUIT, SIG_IGN);
@@ -370,10 +318,8 @@ olpc_login(void)
 
   setenv("HOME", pwd->pw_dir, 0);    /* legal to override */
   setenv("PATH", _PATH_DEFPATH, 1);
-  
   setenv("SHELL", pwd->pw_shell, 1);
-  /*setenv("TERM", termenv, 1);*/
-  
+
   /* LOGNAME is not documented in login(1) but
      HP-UX 6.5 does it. We'll not allow modifying it.
      */
@@ -502,11 +448,11 @@ olpc_login(void)
 }
 
 int
-main (int argc, 
-      char **argv)
+main (int argc, char *argv[])
 {
-  /* Use PAM to login as user*/
-  olpc_login (); 
+  (void)argc;
+  (void)argv;
 
+  olpc_login();
   return 0;
 }
