@@ -1,0 +1,104 @@
+#!/bin/bash
+#
+# olpc-configure       Perform one-time configuration
+#
+# chkconfig: 345 00
+# description: olpc-configure
+# processname: olpc-configure
+
+. /etc/init.d/functions
+
+echo bernie "LANG=$LANG"
+
+# load alsa configuration here since doing it at module load time wasn't working
+/usr/sbin/alsactl restore
+
+# in our rpms now, not yet upstream
+# cp /usr/share/olpc/keycodes/olpc-evdev /usr/share/X11/xkb/keycodes/evdev
+
+if [ -x /usr/sbin/olpc-bios-sig ] ; then
+    if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
+        # Libertas Marvell LED configuration
+        # map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
+        iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
+    fi
+fi 
+
+# exit if first boot configurations are already done
+if [ -e /.olpc-configured ] ; then
+    exit 0
+fi
+
+read_nvram() {
+    dd if=/dev/nvram bs=1 skip=$(($1)) count=$2 2>/dev/null
+}
+
+if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
+    # TODO: put this all in a hal callout or something similar
+    cp -f /etc/X11/geode-xorg.conf /etc/X11/xorg.conf
+
+    # on A test boards exit here
+    BUILD_HEADER=`read_nvram 0x42 1`
+    if [ "x$BUILD_HEADER" = "xA" -o "x$BUILD_HEADER" = "x" ] ; then
+        exit 0
+    fi 
+
+    if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
+
+        XKB_LAYOUT="us"
+        XKB_VARIANT="olpc"
+        SYS_LANG="en_US.UTF-8"
+        SYS_FONT="sun12x22"
+
+        KB_HEADER=`read_nvram 0x44 2`
+        if [ "x$KB_HEADER" = "xKB" ] ; then
+            KB_CODE=`read_nvram 0x46 10`
+            if [ "x$KB_CODE" = "xus_INTL" ] ; then
+                XKB_LAYOUT="us"
+                XKB_VARIANT="olpc"
+            elif [ "x$KB_CODE" = "xes" ] ; then
+                XKB_LAYOUT="es"
+                XKB_VARIANT="olpc"
+                SYS_LANG="es_AR.UTF-8"
+            elif [ "x$KB_CODE" = "xpt_BR" ] ; then
+                XKB_LAYOUT="br"
+                XKB_VARIANT="olpc"
+                SYS_LANG="pt_BR.UTF-8"
+            elif [ "x$KB_CODE" = "xara" ] ; then
+                XKB_LAYOUT="us,ara"
+                XKB_VARIANT="olpc2,olpc"
+                SYS_LANG="ar_LY.UTF-8"
+            elif [ "x$KB_CODE" = "xth" ] ; then
+                XKB_LAYOUT="us,th"
+                XKB_VARIANT="olpc2,olpc"
+                SYS_LANG="th_TH.UTF-8"
+            elif [ "x$KB_CODE" = "xng" ] ; then
+                XKB_LAYOUT="ng"
+                XKB_VARIANT="olpc"
+            elif [ "x$KB_CODE" = "xpk" ] ; then
+                XKB_LAYOUT="us,ur"
+                XKB_VARIANT="olpc2,olpc"
+                SYS_LANG="ur_PK.UTF-8"
+            fi
+        fi
+
+        read_nvram 0x37 1 | od -A none -t x1 | grep -q 01 
+        if [ $? -eq 1 ] ; then
+
+            sed "s/#XkbLayout Placeholder/Option      \"XkbLayout\"     \"$XKB_LAYOUT\"\n        Option      \"XkbVariant\"     \"$XKB_VARIANT\"/" /etc/X11/dcon-xorg.conf > /etc/X11/xorg.conf
+            
+            echo "LANG=\"$SYS_LANG\"" > /etc/sysconfig/i18n
+            echo "SYSFONT=\"$SYS_FONT\"" >> /etc/sysconfig/i18n
+      
+            touch /.olpc-configured
+        fi
+    fi
+
+    exit 0
+fi
+
+# configure X for qemu
+cp -f /etc/X11/qemu-xorg.conf /etc/X11/xorg.conf
+
+touch /.olpc-configured
+

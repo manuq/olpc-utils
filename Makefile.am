@@ -28,4 +28,4 @@ setolpckeys_SOURCES = setolpckeys.c
 olpc_dm_SOURCES = olpc-dm.c
 olpc_dm_LDFLAGS = -lpam_misc -lpam
 
-EXTRA_DIST = autogen.sh
+EXTRA_DIST = autogen.sh olpc-configure
