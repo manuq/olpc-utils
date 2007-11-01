@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-dist_bin_SCRIPTS = olpc-session
+dist_bin_SCRIPTS = olpc-session olpc-logbat
 
 sbin_PROGRAMS = olpc-bios-sig setolpckeys olpc-dm
 
