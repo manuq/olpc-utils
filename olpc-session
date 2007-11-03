@@ -18,6 +18,9 @@
 #
 
 [ -f "$HOME/.i18n" ] && . "$HOME/.i18n"
+[ -n "$XKB_LAYOUT" ] || LANG=en_US.UTF-8
+[ -n "$XKB_LAYOUT" ] || XKB_LAYOUT=us
+[ -n "$XKB_VARIANT" ] || XKB_VARIANT=basic
 export LANG
 
 # set mouse
@@ -44,7 +47,7 @@ xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 75 -r 79 -r
 
 # source .sugar.debug
 
-
-[ -f "$HOME/.xinitrc" ] && . "$HOME/.xinitrc"
+# Source user session, if it exists
+[ -f "$HOME/.olpcinit" ] && . "$HOME/.olpcinit"
 
 exec sugar
