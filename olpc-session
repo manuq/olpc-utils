@@ -17,17 +17,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# source custom user session, if any
+[ -f "$HOME/.xsession" ] && . "$HOME/.xsession"
+
+# do internationalization stuff
 [ -f "$HOME/.i18n" ] && . "$HOME/.i18n"
 [ -n "$XKB_LAYOUT" ] || LANG=en_US.UTF-8
 [ -n "$XKB_LAYOUT" ] || XKB_LAYOUT=us
 [ -n "$XKB_VARIANT" ] || XKB_VARIANT=basic
 export LANG
 
-# set mouse
+# set mouse & keyboard speed
 xset m 3 3 
-
-# set keyboard
 xset r rate 500 30
+
+# set keyboard layout
 setxkbmap -model olpc -layout "$XKB_LAYOUT" -variant "$XKB_VARIANT"
 
 # disable repeat on several keys
@@ -40,14 +44,5 @@ xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 75 -r 79 -r
 	225 -r 236 -r 217 -r 218 -r 219 -r 220 -r 221 -r 191 -r 192 -r 193 -r 222 -r \
 	223 -r 224 -r 225 -r 194 -r 195 -r 196 -r 226 -r 227 -r 228 -r 229 -r 197 -r \
 	198 -r 199 -r 156 -r 235
-
-# Sugar debugging
-# Uncomment the following line to turn on many sugar
-# debugging log files and features
-
-# source .sugar.debug
-
-# Source user session, if it exists
-[ -f "$HOME/.olpcinit" ] && . "$HOME/.olpcinit"
 
 exec sugar
