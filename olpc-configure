@@ -2,13 +2,11 @@
 #
 # olpc-configure       Perform one-time configuration
 #
-# chkconfig: 345 00
-# description: olpc-configure
+# chkconfig: 345 01 01
+# description: olpc-configure performs one-time configuration
 # processname: olpc-configure
 
 . /etc/init.d/functions
-
-echo bernie "LANG=$LANG"
 
 # load alsa configuration here since doing it at module load time wasn't working
 /usr/sbin/alsactl restore
@@ -35,7 +33,8 @@ read_nvram() {
 
 if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
     # TODO: put this all in a hal callout or something similar
-    cp -f /etc/X11/geode-xorg.conf /etc/X11/xorg.conf
+    cd /etc/X11
+    ln -sf xorg-dcon.conf xorg.conf
 
     # on A test boards exit here
     BUILD_HEADER=`read_nvram 0x42 1`
@@ -47,8 +46,7 @@ if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
 
         XKB_LAYOUT="us"
         XKB_VARIANT="olpc"
-        SYS_LANG="en_US.UTF-8"
-        SYS_FONT="sun12x22"
+	SYS_LANG="en_US.UTF-8"
 
         KB_HEADER=`read_nvram 0x44 2`
         if [ "x$KB_HEADER" = "xKB" ] ; then
@@ -79,26 +77,33 @@ if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
                 XKB_LAYOUT="us,ur"
                 XKB_VARIANT="olpc2,olpc"
                 SYS_LANG="ur_PK.UTF-8"
+            elif [ "x$KB_CODE" = "xet" ] ; then
+                XKB_LAYOUT="us,et"
+                XKB_VARIANT="olpc2,basic"
+                SYS_LANG="am_ET.UTF-8"
             fi
         fi
 
         read_nvram 0x37 1 | od -A none -t x1 | grep -q 01 
         if [ $? -eq 1 ] ; then
 
-            sed "s/#XkbLayout Placeholder/Option      \"XkbLayout\"     \"$XKB_LAYOUT\"\n        Option      \"XkbVariant\"     \"$XKB_VARIANT\"/" /etc/X11/dcon-xorg.conf > /etc/X11/xorg.conf
-            
-            echo "LANG=\"$SYS_LANG\"" > /etc/sysconfig/i18n
-            echo "SYSFONT=\"$SYS_FONT\"" >> /etc/sysconfig/i18n
-      
-            touch /.olpc-configured
+            cat >/home/olpc/.i18n <<__EOF__
+LANG="$SYS_LANG"
+XKB_LAYOUT="$XKB_LAYOUT"
+XKB_VARIANT="$XKB_VARIANT"
+__EOF__
         fi
     fi
-
-    exit 0
+else
+    # configure X for qemu or VMware
+    cd /etc/X11
+    ln -sf xorg-emu.conf xorg.conf
 fi
 
-# configure X for qemu
-cp -f /etc/X11/qemu-xorg.conf /etc/X11/xorg.conf
+# LANG=C speeds up boot considerably (measured 5sec) -- bernie
+cat >/etc/sysconfig/i18n <<__EOF__
+LANG=C
+SYS_FONT=sun12x22
+__EOF__
 
 touch /.olpc-configured
-
