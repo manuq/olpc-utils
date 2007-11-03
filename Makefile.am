@@ -19,7 +19,7 @@ x11dir = ${sysconfdir}/X11
 initdir = ${sysconfdir}/rc.d/init.d
 
 dist_x11_DATA = xorg-dcon.conf xorg-emu.conf
-dist_init_DATA = olpc-configure
+dist_init_SCRIPTS = olpc-configure
 
 dist_bin_SCRIPTS = olpc-session olpc-logbat olpc-netlog olpc-netstatus
 
