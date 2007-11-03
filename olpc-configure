@@ -34,6 +34,7 @@ read_nvram() {
 if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
     # TODO: put this all in a hal callout or something similar
     cd /etc/X11
+    rm -f xorg.conf
     ln -sf xorg-dcon.conf xorg.conf
 
     # on A test boards exit here
@@ -97,6 +98,7 @@ __EOF__
 else
     # configure X for qemu or VMware
     cd /etc/X11
+    rm -f xorg.conf
     ln -sf xorg-emu.conf xorg.conf
 fi
 
