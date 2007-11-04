@@ -6,7 +6,7 @@
 # description: olpc-configure performs one-time configuration
 # processname: olpc-configure
 
-. /etc/init.d/functions
+OLPC_HOME=/home/olpc
 
 # load alsa configuration here since doing it at module load time wasn't working
 /usr/sbin/alsactl restore
@@ -23,7 +23,7 @@ if [ -x /usr/sbin/olpc-bios-sig ] ; then
 fi 
 
 # exit if first boot configurations are already done
-if [ -e /.olpc-configured ] ; then
+if [ -e $OLPC_HOME/.olpc-configured ] ; then
     exit 0
 fi
 
@@ -31,11 +31,15 @@ read_nvram() {
     dd if=/dev/nvram bs=1 skip=$(($1)) count=$2 2>/dev/null
 }
 
+# Some defaults
+XORG_CONF=xorg-emu.conf
+XKB_LAYOUT="us"
+XKB_VARIANT="olpc"
+SYS_LANG="en_US.UTF-8"
+
 if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
     # TODO: put this all in a hal callout or something similar
-    cd /etc/X11
-    rm -f xorg.conf
-    ln -sf xorg-dcon.conf xorg.conf
+    XORG_CONF=xorg-dcon.conf
 
     # on A test boards exit here
     BUILD_HEADER=`read_nvram 0x42 1`
@@ -44,10 +48,6 @@ if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
     fi 
 
     if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
-
-        XKB_LAYOUT="us"
-        XKB_VARIANT="olpc"
-	SYS_LANG="en_US.UTF-8"
 
         KB_HEADER=`read_nvram 0x44 2`
         if [ "x$KB_HEADER" = "xKB" ] ; then
@@ -85,22 +85,23 @@ if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
             fi
         fi
 
-        read_nvram 0x37 1 | od -A none -t x1 | grep -q 01 
-        if [ $? -eq 1 ] ; then
+	#FIXME: what is that for?
+        #read_nvram 0x37 1 | od -A none -t x1 | grep -q 01 
+        #if [ $? -eq 1 ] ; then
+        #fi
+    fi
+fi
 
-            cat >/home/olpc/.i18n <<__EOF__
+cd /etc/X11
+rm -f xorg.conf
+ln -sf $XORG_CONF xorg.conf
+
+cat >$OLPC_HOME/.i18n <<__EOF__
 LANG="$SYS_LANG"
 XKB_LAYOUT="$XKB_LAYOUT"
 XKB_VARIANT="$XKB_VARIANT"
 __EOF__
-        fi
-    fi
-else
-    # configure X for qemu or VMware
-    cd /etc/X11
-    rm -f xorg.conf
-    ln -sf xorg-emu.conf xorg.conf
-fi
+chown olpc:olpc $OLPC_HOME/.i18n
 
 # LANG=C speeds up boot considerably (measured 5sec) -- bernie
 cat >/etc/sysconfig/i18n <<__EOF__
@@ -108,4 +109,4 @@ LANG=C
 SYS_FONT=sun12x22
 __EOF__
 
-touch /.olpc-configured
+touch $OLPC_HOME/.olpc-configured
