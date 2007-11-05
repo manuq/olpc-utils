@@ -79,11 +79,6 @@ if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
                 SYS_LANG="am_ET.UTF-8"
             fi
         fi
-
-	#FIXME: what is that for?
-        #read_nvram 0x37 1 | od -A none -t x1 | grep -q 01 
-        #if [ $? -eq 1 ] ; then
-        #fi
     fi
 fi
 
