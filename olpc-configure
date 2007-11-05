@@ -34,7 +34,6 @@ read_nvram() {
 # Some defaults
 XORG_CONF=xorg-emu.conf
 XKB_LAYOUT="us"
-XKB_VARIANT="olpc"
 SYS_LANG="en_US.UTF-8"
 
 if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
@@ -49,38 +48,34 @@ if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
 
     if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
 
+        #
+        # TODO: this ugly table has to go away when we'll get this info right
+        # from the manufacturing data (starting with C2, probably).  -- bernie
+	#
         KB_HEADER=`read_nvram 0x44 2`
         if [ "x$KB_HEADER" = "xKB" ] ; then
             KB_CODE=`read_nvram 0x46 10`
             if [ "x$KB_CODE" = "xus_INTL" ] ; then
-                XKB_LAYOUT="us"
-                XKB_VARIANT="olpc"
+                XKB_LAYOUT="us(olpc)"
             elif [ "x$KB_CODE" = "xes" ] ; then
-                XKB_LAYOUT="es"
-                XKB_VARIANT="olpc"
+                XKB_LAYOUT="es(olpc)"
                 SYS_LANG="es_AR.UTF-8"
             elif [ "x$KB_CODE" = "xpt_BR" ] ; then
-                XKB_LAYOUT="br"
-                XKB_VARIANT="olpc"
+                XKB_LAYOUT="br(olpc)"
                 SYS_LANG="pt_BR.UTF-8"
             elif [ "x$KB_CODE" = "xara" ] ; then
-                XKB_LAYOUT="us,ara"
-                XKB_VARIANT="olpc2,olpc"
+                XKB_LAYOUT="us(olpc2),ara(olpc)"
                 SYS_LANG="ar_LY.UTF-8"
             elif [ "x$KB_CODE" = "xth" ] ; then
-                XKB_LAYOUT="us,th"
-                XKB_VARIANT="olpc2,olpc"
+                XKB_LAYOUT="us(olpc2),th(olpc)"
                 SYS_LANG="th_TH.UTF-8"
             elif [ "x$KB_CODE" = "xng" ] ; then
-                XKB_LAYOUT="ng"
-                XKB_VARIANT="olpc"
+                XKB_LAYOUT="ng(olpc)"
             elif [ "x$KB_CODE" = "xpk" ] ; then
-                XKB_LAYOUT="us,ur"
-                XKB_VARIANT="olpc2,olpc"
+                XKB_LAYOUT="us(olpc2),ur(olpc)"
                 SYS_LANG="ur_PK.UTF-8"
             elif [ "x$KB_CODE" = "xet" ] ; then
-                XKB_LAYOUT="us,et"
-                XKB_VARIANT="olpc2,basic"
+                XKB_LAYOUT="us(olpc2),et"
                 SYS_LANG="am_ET.UTF-8"
             fi
         fi
@@ -99,7 +94,6 @@ ln -sf $XORG_CONF xorg.conf
 cat >$OLPC_HOME/.i18n <<__EOF__
 LANG="$SYS_LANG"
 XKB_LAYOUT="$XKB_LAYOUT"
-XKB_VARIANT="$XKB_VARIANT"
 __EOF__
 chown olpc:olpc $OLPC_HOME/.i18n
 
