@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # Copyright (C) 2007  OLPC
 # Author: Bernardo Innocenti <bernie@codewiz.org>
@@ -17,22 +18,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# provide some defaults
+LANG="en_US.UTF-8"
+XKB_LAYOUT="us"
+export LANG
+
 # source custom user session, if any
 [ -f "$HOME/.xsession" ] && . "$HOME/.xsession"
-
-# do internationalization stuff
-[ -f "$HOME/.i18n" ] && . "$HOME/.i18n"
-[ -n "$XKB_LAYOUT" ] || LANG=en_US.UTF-8
-[ -n "$XKB_LAYOUT" ] || XKB_LAYOUT=us
-[ -n "$XKB_VARIANT" ] || XKB_VARIANT=basic
-export LANG
 
 # set mouse & keyboard speed
 xset m 3 3 
 xset r rate 500 30
 
 # set keyboard layout
-setxkbmap -model olpc -layout "$XKB_LAYOUT" -variant "$XKB_VARIANT"
+[ -n "$XKB_VARIANT" ] && variant_string="-variant $XKB_VARIANT"
+setxkbmap -model olpc -layout "$XKB_LAYOUT" $variant_string
 
 # disable repeat on several keys
 xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 75 -r 79 -r \
