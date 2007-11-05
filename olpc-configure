@@ -35,6 +35,7 @@ read_nvram() {
 XORG_CONF=xorg-emu.conf
 XKB_LAYOUT="us"
 SYS_LANG="en_US.UTF-8"
+KERN_KEYTABLE="us"
 
 if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
     # TODO: put this all in a hal callout or something similar
@@ -42,16 +43,15 @@ if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
 
     # on A test boards exit here
     BUILD_HEADER=`read_nvram 0x42 1`
-    if [ "x$BUILD_HEADER" = "xA" -o "x$BUILD_HEADER" = "x" ] ; then
-        exit 0
-    fi 
+    [ "x$BUILD_HEADER" = "xA" -o "x$BUILD_HEADER" = "x" ] || exit 0
 
     if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
-
         #
         # TODO: this ugly table has to go away when we'll get this info right
         # from the manufacturing data (starting with C2, probably).  -- bernie
-	#
+        #
+        # TODO: maybe set the kernel keytable accordingly -- bernie again
+        #
         KB_HEADER=`read_nvram 0x44 2`
         if [ "x$KB_HEADER" = "xKB" ] ; then
             KB_CODE=`read_nvram 0x46 10`
@@ -96,6 +96,10 @@ chown olpc:olpc $OLPC_HOME/.i18n
 cat >/etc/sysconfig/i18n <<__EOF__
 LANG=C
 SYS_FONT=sun12x22
+__EOF__
+
+cat >/etc/sysconfig/keyboard <<__EOF__
+KEYTABLE="$KERN_KEYTABLE"
 __EOF__
 
 touch $OLPC_HOME/.olpc-configured
