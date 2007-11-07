@@ -17,11 +17,9 @@
 # along with this program; if not, write to the free software
 # foundation, inc., 51 franklin st, fifth floor, boston, ma  02110-1301  usa
 
-xin=$(cat /home/olpc/.xinitrc|grep .sugar.debug)
-deb=$(cat /home/olpc/.sugar.debug|grep SUGAR_LOGGER_LEVEL)
-
-if [ ${#xin} -eq 0 ] || [ ${xin:0:1} = "#" ] || [ ${#deb} -eq 0 ] || [ ${deb:0:1} = "#" ]
-then echo "Not all logs are turned on";fi
+if [ "x$PRESENCESERVICE_DEBUG" != "x1" ]; then
+	echo "Not all logs are turned on"
+fi
 
 timestamp=$(date +20%y%m%d.%H.%M.%S)
 target=./logtemp
