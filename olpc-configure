@@ -11,14 +11,11 @@ OLPC_HOME=/home/olpc
 # load alsa configuration here since doing it at module load time wasn't working
 /usr/sbin/alsactl restore
 
-# in our rpms now, not yet upstream
-# cp /usr/share/olpc/keycodes/olpc-evdev /usr/share/X11/xkb/keycodes/evdev
-
 if [ -x /usr/sbin/olpc-bios-sig ] ; then
     if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
         # Libertas Marvell LED configuration
         # map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
-        iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
+        /sbin/iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
     fi
 fi 
 
@@ -43,7 +40,7 @@ if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
 
     # on A test boards exit here
     BUILD_HEADER=`read_nvram 0x42 1`
-    [ "x$BUILD_HEADER" = "xA" -o "x$BUILD_HEADER" = "x" ] || exit 0
+    [ "x$BUILD_HEADER" = "xA" -o "x$BUILD_HEADER" = "x" ] && exit 0
 
     if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
         #
