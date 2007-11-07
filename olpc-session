@@ -21,6 +21,9 @@
 # provide some defaults
 LANG="en_US.UTF-8"
 XKB_LAYOUT="us"
+
+# enable internationalization
+[ -f "$HOME/.i18n" ] && . "$HOME/.i18n"
 export LANG
 
 # set mouse & keyboard speed
@@ -45,4 +48,11 @@ xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 75 -r 79 -r
 # source custom user session, if present
 [ -f "$HOME/.xsession" ] && . "$HOME/.xsession"
 
-exec sugar
+export SUGAR_PREFIX=/usr
+export SUGAR_PATH=$SUGAR_PREFIX/share/sugar
+export GTK2_RC_FILES=$SUGAR_PREFIX/share/sugar/data/sugar-xo.gtkrc
+if [ -f /etc/olpc-security ]; then
+	exec dbus-launch --exit-with-session --config-file=/etc/dbus-1/session-olpc.conf sugar-shell
+else
+	exec dbus-launch --exit-with-session sugar-shell
+fi
