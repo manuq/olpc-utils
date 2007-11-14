@@ -27,7 +27,7 @@ XKB_LAYOUT="us"
 export LANG
 
 # set mouse & keyboard speed
-xset m 3 3 
+xset m 7/4 0 
 xset r rate 500 30
 
 # set keyboard layout
