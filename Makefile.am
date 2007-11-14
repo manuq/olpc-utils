@@ -35,3 +35,14 @@ olpc_dm_SOURCES = olpc-dm.c
 olpc_dm_LDFLAGS = -lpam_misc -lpam
 
 EXTRA_DIST = autogen.sh
+
+
+bumprev:
+	oldver=`echo "@VERSION@" | sed -n -e 's/\([0-9]\+\)\.[0-9]\+/\1/p'`; \
+	oldrev=`echo "@VERSION@" | sed -n -e 's/[0-9]\+\.\([0-9]\+\)/\1/p'`; \
+	newver="$$oldver"; \
+	newrev="$$(($$oldrev + 1))"; \
+	echo "Bumping revision from $$oldver.$$oldrev to $$newver.$$newrev"; \
+	sed -i -e "/^AC_INIT/ s/$$oldver\.$$oldrev/$$newver.$$newrev/" "$(top_srcdir)/configure.ac"; \
+	#
+
