@@ -28,15 +28,20 @@ read_nvram() {
     dd if=/dev/nvram bs=1 skip=$(($1)) count=$2 2>/dev/null
 }
 
+XVER=
+if X -version 2>&1 | grep -q 'Version 1.3'; then
+	XVER='-1.3'
+fi
+
 # Some defaults
-XORG_CONF=xorg-emu.conf
+XORG_CONF=xorg-emu${XVER}.conf
 XKB_LAYOUT="us"
 SYS_LANG="en_US.UTF-8"
 KERN_KEYTABLE="us"
 
 if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
     # TODO: put this all in a hal callout or something similar
-    XORG_CONF=xorg-dcon.conf
+    XORG_CONF=xorg-dcon${XVER}.conf
 
     # on A test boards exit here
     BUILD_HEADER=`read_nvram 0x42 1`
