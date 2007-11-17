@@ -37,12 +37,29 @@ olpc_dm_LDFLAGS = -lpam_misc -lpam
 EXTRA_DIST = autogen.sh
 
 
+.PHONY: bumprev
 bumprev:
-	oldver=`echo "@VERSION@" | sed -n -e 's/\([0-9]\+\)\.[0-9]\+/\1/p'`; \
-	oldrev=`echo "@VERSION@" | sed -n -e 's/[0-9]\+\.\([0-9]\+\)/\1/p'`; \
-	newver="$$oldver"; \
-	newrev="$$(($$oldrev + 1))"; \
-	echo "Bumping revision from $$oldver.$$oldrev to $$newver.$$newrev"; \
-	sed -i -e "/^AC_INIT/ s/$$oldver\.$$oldrev/$$newver.$$newrev/" "$(top_srcdir)/configure.ac"; \
+	ver=`echo "@VERSION@" | sed -n -e 's/\([0-9]\+\)\.[0-9]\+/\1/p'`; \
+	rev=`echo "@VERSION@" | sed -n -e 's/[0-9]\+\.\([0-9]\+\)/\1/p'`; \
+	newver="$$ver"; \
+	newrev="$$(($$rev + 1))"; \
+	echo "Bumping revision from $$ver.$$rev to $$newver.$$newrev"; \
+	sed -i -e "/^AC_INIT/ s/$$ver\.$$rev/$$newver.$$newrev/" "$(top_srcdir)/configure.ac"; \
+	git-commit -e -a -m "Bump revision" || exit 1; \
+	git-tag v$$newver.$$newrev || exit 1; \
 	#
 
+.PHONY: changelog
+changelog:
+	ver=`echo "@VERSION@" | sed -n -e 's/\([0-9]\+\)\.[0-9]\+/\1/p'`; \
+	rev=`echo "@VERSION@" | sed -n -e 's/[0-9]\+\.\([0-9]\+\)/\1/p'`; \
+	oldver="$$ver"; \
+	oldrev="$$(($$rev - 1))"; \
+	git-log v$$oldver.$$oldrev..v$$ver.$$rev \
+		| git-shortlog \
+		| sed -e "s/^\(.*\) ([0-9]\+):\$$/* `date '+%a %b %d %Y'` \1 <bernie@codewiz.org> - $$ver.$$rev-1/" \
+		| sed -e 's/^[\t ]\{2,\}/- /' \
+       		> changelog.tmp \
+	#
+
+release: bumprev dist changelog
