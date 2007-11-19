@@ -18,4 +18,7 @@ setolpckeys
 setolpckeys.o
 stamp-h1
 config.h.in~
+changelog.tmp
 .deps
+*.tar.bz2
+*.rpm
