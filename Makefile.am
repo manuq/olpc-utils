@@ -18,6 +18,16 @@
 x11dir = ${sysconfdir}/X11
 initdir = ${sysconfdir}/rc.d/init.d
 
+SPECFILE := olpc-utils.spec
+RPMBUILD := rpmbuild \
+	--define "_sourcedir $(srcdir)" \
+	--define "_builddir $(builddir)" \
+	--define "_srcrpmdir $(builddir)" \
+	--define "_rpmdir $(builddir)" \
+	--define "dist olpc2" \
+	--define "olpc 1" \
+	#
+
 dist_x11_DATA = \
 	xorg-dcon.conf \
 	xorg-emu.conf \
@@ -40,7 +50,7 @@ setolpckeys_SOURCES = setolpckeys.c
 olpc_dm_SOURCES = olpc-dm.c
 olpc_dm_LDFLAGS = -lpam_misc -lpam
 
-EXTRA_DIST = autogen.sh
+EXTRA_DIST = autogen.sh $(SPECFILE)
 
 
 .PHONY: bumprev
@@ -68,4 +78,22 @@ changelog:
        		> changelog.tmp \
 	#
 
-release: bumprev dist changelog
+.PHONY: push
+push:
+	git-push
+	git-push --tags
+
+
+#TODO: generate specfile
+#$(SPECFILE): $(SPECFILE).in
+
+.PHONY: srpm
+srpm:	distcheck $(SPECFILE)
+	$(RPMBUILD) -bs $(SPECFILE)
+
+.PHONY: rpm
+rpm: distcheck $(SPECFILE)
+	$(RPMBUILD) -bb $(SPECFILE)
+
+
+release: distcheck changelog push
