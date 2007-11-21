@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.45
+Version:	0.46
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -74,9 +74,21 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Nov 21 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.46-1
+- Automate the release process a bit more.
+- Approximate XOs DPI on emulators.
+- ReTAB.
+- Automate specfile generation some more
+- Ignore a few more generated files.
+- Set i18n settings from the new manufacturing data tags
+- Go back to starting sugar with /usr/bin/sugar.
+- Bump revision
+
 * Sat Nov 17 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.45-1
-- Don't specify the (olpc) XKB variant esplicitly when not needed
-- Fix http://dev.laptop.org/ticket/470
+- Add bumprev rule
+- Merge branch 'master' of ssh://bernie@dev.laptop.org/git/projects/olpc-utils
+- Add rule to generate RPM changelog.
+- Add support for X 1.3
 - Bump revision
 
 * Wed Nov 14 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.44-1
