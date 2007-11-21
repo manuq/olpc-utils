@@ -26,13 +26,19 @@ XKB_LAYOUT="us"
 [ -f "$HOME/.i18n" ] && . "$HOME/.i18n"
 export LANG
 
+# load keyboard settings
+[ -f "/etc/sysconfig/keyboard" ] && . "/etc/sysconfig/keyboard"
+[ -f "$HOME/.kbd" ] && . "$HOME/.kbd"
+
 # set mouse & keyboard speed
 xset m 7/4 0 
 xset r rate 500 30
 
 # set keyboard layout
+[ -n "$XKB_MODEL" ]   &&   model_string="-model $XKB_MODEL"
+[ -n "$XKB_LAYOUT" ]  &&  layout_string="-layout $XKB_LAYOUT"
 [ -n "$XKB_VARIANT" ] && variant_string="-variant $XKB_VARIANT"
-setxkbmap -model olpc -layout "$XKB_LAYOUT" $variant_string
+setxkbmap $model_string $layout_string $variant_string
 
 # disable repeat on several keys
 xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 75 -r 79 -r \

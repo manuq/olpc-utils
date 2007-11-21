@@ -6,7 +6,12 @@
 # description: olpc-configure performs one-time configuration
 # processname: olpc-configure
 
+# Bump this version each time comatibility gets broken in ways that require
+# regenerating the configuration files
+OLPC_CONFIGURE_VERSION=1
+
 OLPC_HOME=/home/olpc
+MFG_DATA=/ofw/mfg-data
 
 # load alsa configuration here since doing it at module load time wasn't working
 /usr/sbin/alsactl restore
@@ -20,8 +25,10 @@ if [ -x /usr/sbin/olpc-bios-sig ] ; then
 fi 
 
 # exit if first boot configurations are already done
-if [ -e $OLPC_HOME/.olpc-configured ] ; then
-    exit 0
+if [ -e "$OLPC_HOME/.olpc-configured" ]; then
+	if [ "`cat $OLPC_HOME/.olpc-configured`" = "$OLPC_CONFIGURE_VERSION" ]; then
+		exit 0
+	fi
 fi
 
 read_nvram() {
@@ -35,24 +42,27 @@ fi
 
 # Some defaults
 XORG_CONF=xorg-emu${XVER}.conf
+XKB_MODEL="olpc"
 XKB_LAYOUT="us"
 SYS_LANG="en_US.UTF-8"
-KERN_KEYTABLE="us"
 
 if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
     # TODO: put this all in a hal callout or something similar
     XORG_CONF=xorg-dcon${XVER}.conf
 
-    # on A test boards exit here
+    # on A-test boards exit here
     BUILD_HEADER=`read_nvram 0x42 1`
     [ "x$BUILD_HEADER" = "xA" -o "x$BUILD_HEADER" = "x" ] && exit 0
 
-    if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
+    if [ -f $MFG_DATA/KL ]; then
+	XKB_MODEL="`cat $MFG_DATA/KM`"
+	XKB_LAYOUT="`cat $MFG_DATA/KL`"
+	XKB_VARIANT="`cat $MFG_DATA/KV`"
+	SYS_LANG="`cat $MFG_DATA/LO`"
+    elif [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
         #
         # TODO: this ugly table has to go away when we'll get this info right
         # from the manufacturing data (starting with C2, probably).  -- bernie
-        #
-        # TODO: maybe set the kernel keytable accordingly -- bernie again
         #
         KB_HEADER=`read_nvram 0x44 2`
         if [ "x$KB_HEADER" = "xKB" ] ; then
@@ -84,13 +94,15 @@ if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
     fi
 fi
 
+# First X layout used also as kernel keytable
+KERN_KEYTABLE=`echo "$XKB_LAYOUT" |  cut -d , -f 1`
+
 cd /etc/X11
 rm -f xorg.conf
 ln -sf $XORG_CONF xorg.conf
 
 cat >$OLPC_HOME/.i18n <<__EOF__
 LANG="$SYS_LANG"
-XKB_LAYOUT="$XKB_LAYOUT"
 __EOF__
 chown olpc:olpc $OLPC_HOME/.i18n
 
@@ -100,8 +112,13 @@ LANG=C
 SYS_FONT=sun12x22
 __EOF__
 
+# We keep keyboard settings here to avoid users from messing around
+# with them in their home and maybe shut themselves out
 cat >/etc/sysconfig/keyboard <<__EOF__
 KEYTABLE="$KERN_KEYTABLE"
+XKB_MODEL="$XKB_MODEL"
+XKB_LAYOUT="$XKB_LAYOUT"
+XKB_VARIANT="$XKB_VARIANT"
 __EOF__
 
-touch $OLPC_HOME/.olpc-configured
+echo $OLPC_CONFIGURE_VERSION >$OLPC_HOME/.olpc-configured
