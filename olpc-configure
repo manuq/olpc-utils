@@ -8,7 +8,7 @@
 
 # Bump this version each time comatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=1
+OLPC_CONFIGURE_VERSION=2
 
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
@@ -31,6 +31,35 @@ configure_home() {
 LANG="$SYS_LANG"
 __EOF__
     chown olpc:olpc $OLPC_HOME/.i18n
+
+    # can't live in $OLPC_HOME because activities can't read this dir.
+    SERNUM="`cat $MFG_DATA/SN`"
+    UUID="`cat $MFG_DATA/U#`"
+    sed -e "s/REPLACE_WITH_SERIALNUMBER/$SERNUM/" \
+	-e "s/REPLACE_WITH_UUID/$UUID/" > /home/.devkey.html <<__EOF__
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Developer key request</title>
+<style type="text/css" media="all">@import "https://activation.laptop.org/devkey/stylesheet/";</style>
+</head>
+<body>
+<iframe src="https://activation.laptop.org/devkey/content/"
+        width="100%" height="450" >
+<p>Use the button below to request a developer key for your
+        machine.</p>
+</iframe>
+<form action="https://activation.laptop.org/devkey/post/"
+        method="post" id="devkeyform" >
+<input type="hidden" name="serialnum" value="REPLACE_WITH_SERIALNUMBER" />
+<input type="hidden" name="uuid" value="REPLACE_WITH_UUID" />
+<input type="submit" />
+</form>
+</body>
+</html>
+__EOF__
+    chmod a+r,a-w /home/.devkey.html
 }
 
 # check whether /home configuration is necessary.
