@@ -18,15 +18,27 @@
 x11dir = ${sysconfdir}/X11
 initdir = ${sysconfdir}/rc.d/init.d
 
-SPECFILE = olpc-utils.spec
+RPMDIST  = olpc2
+PKGNAME  = olpc-utils
+PKGVER   = @VERSION@
+PKGREL   = 1.$(RPMDIST)
+NVR      = $(PKGNAME)-$(PKGVER)-$(PKGREL)
+SRPM     = $(NVR).src.rpm
+TARBALL  = $(PKGNAME)-$(PKGVER).tar.bz2
+SPECFILE = $(PKGNAME).spec
 RPMBUILD = rpmbuild \
 	--define "_sourcedir $(srcdir)" \
 	--define "_builddir $(builddir)" \
 	--define "_srcrpmdir $(builddir)" \
 	--define "_rpmdir $(builddir)" \
-	--define "dist olpc2" \
+	--define "dist $(RPMDIST)" \
 	--define "olpc 1" \
 	#
+
+CVS_TAG     = $(shell echo $(NVR) | sed s/\\\./_/g)
+CVS_BRANCH  = OLPC-2
+CVS_REPO    = rpms/$(PKGNAME)/$(CVS_BRANCH)
+CVS_URL     = cvs://cvs.fedoraproject.org/cvs/pkgs?$(CVS_REPO)\#$(CVS_TAG)
 
 dist_x11_DATA = \
 	xorg-dcon.conf \
@@ -52,6 +64,9 @@ olpc_dm_LDFLAGS = -lpam_misc -lpam
 
 EXTRA_DIST = autogen.sh $(SPECFILE)
 
+#
+# Here comes the crazy package build machinery automation -- bernie
+#
 
 .PHONY: bumprev
 bumprev:
@@ -88,12 +103,24 @@ push:
 #$(SPECFILE): $(SPECFILE).in
 
 .PHONY: srpm
-srpm:	distcheck $(SPECFILE)
+srpm $(SRPM): distcheck $(SPECFILE) $(TARBALL)
 	$(RPMBUILD) -bs $(SPECFILE)
 
 .PHONY: rpm
-rpm: distcheck $(SPECFILE)
+rpm: distcheck $(SPECFILE) $(TARBALL)
 	$(RPMBUILD) -bb $(SPECFILE)
 
+.PHONY: import
+import: $(SRPM)
+	./cvs-import.sh -b $(CVS_BRANCH) -m "Import $(PKGNAME)-$(PKGVER)" $(SRPM)
 
-release: distcheck changelog push
+.PHONY: build
+build:
+	koji build dist-$(RPMDIST) $(CVS_URL)
+
+.PHONY: scratchbuild
+scratchbuild:
+	koji build --scratch dist_$(RPMDIST) $(SRPM)
+
+.PHONY: release
+release: distcheck changelog push import build

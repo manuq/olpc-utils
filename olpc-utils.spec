@@ -69,6 +69,8 @@ rm -rf %{buildroot}
 %{_bindir}/olpc-session
 %{_sysconfdir}/X11/xorg-dcon.conf
 %{_sysconfdir}/X11/xorg-emu.conf
+%{_sysconfdir}/X11/xorg-dcon-1.3.conf
+%{_sysconfdir}/X11/xorg-emu-1.3.conf
 %{_sysconfdir}/rc.d/init.d/olpc-configure
 %{_sysconfdir}/skel/.xsession-example
 
