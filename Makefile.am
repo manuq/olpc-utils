@@ -18,8 +18,8 @@
 x11dir = ${sysconfdir}/X11
 initdir = ${sysconfdir}/rc.d/init.d
 
-SPECFILE := olpc-utils.spec
-RPMBUILD := rpmbuild \
+SPECFILE = olpc-utils.spec
+RPMBUILD = rpmbuild \
 	--define "_sourcedir $(srcdir)" \
 	--define "_builddir $(builddir)" \
 	--define "_srcrpmdir $(builddir)" \
