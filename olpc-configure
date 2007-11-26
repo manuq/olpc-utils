@@ -8,7 +8,7 @@
 
 # Bump this version each time comatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=1
+OLPC_CONFIGURE_VERSION=2
 
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
@@ -24,101 +24,153 @@ if [ -x /usr/sbin/olpc-bios-sig ] ; then
     fi
 fi 
 
-# exit if first boot configurations are already done
+# configurations which happen in /home
+# these don't need to be repeated when we upgrade.
+configure_home() {
+    cat >$OLPC_HOME/.i18n <<__EOF__
+LANG="$SYS_LANG"
+__EOF__
+    chown olpc:olpc $OLPC_HOME/.i18n
+
+    # can't live in $OLPC_HOME because activities can't read this dir.
+    SERNUM="`cat $MFG_DATA/SN`"
+    UUID="`cat $MFG_DATA/U#`"
+    sed -e "s/REPLACE_WITH_SERIALNUMBER/$SERNUM/" \
+	-e "s/REPLACE_WITH_UUID/$UUID/" > /home/.devkey.html <<__EOF__
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Developer key request</title>
+<style type="text/css" media="all">@import "https://activation.laptop.org/devkey/stylesheet/";</style>
+</head>
+<body>
+<iframe src="https://activation.laptop.org/devkey/content/"
+        width="100%" height="450" >
+<p>Use the button below to request a developer key for your
+        machine.</p>
+</iframe>
+<form action="https://activation.laptop.org/devkey/post/"
+        method="post" id="devkeyform" >
+<input type="hidden" name="serialnum" value="REPLACE_WITH_SERIALNUMBER" />
+<input type="hidden" name="uuid" value="REPLACE_WITH_UUID" />
+<input type="submit" />
+</form>
+</body>
+</html>
+__EOF__
+    chmod a+r,a-w /home/.devkey.html
+}
+
+# check whether /home configuration is necessary.
+configured=no
 if [ -e "$OLPC_HOME/.olpc-configured" ]; then
 	if [ "`cat $OLPC_HOME/.olpc-configured`" = "$OLPC_CONFIGURE_VERSION" ]; then
-		exit 0
+		configured=yes
 	fi
 fi
+if [ "$configured" = "no" ]; then
+    configure_home
+    echo "$OLPC_CONFIGURE_VERSION" >$OLPC_HOME/.olpc-configured
+fi
 
+# configurations which happen in the root fs 
+# these need to be repeated when we upgrade.
 read_nvram() {
     dd if=/dev/nvram bs=1 skip=$(($1)) count=$2 2>/dev/null
 }
 
-XVER=
-if X -version 2>&1 | grep -q 'Version 1.3'; then
+configure_root() {
+    XVER=
+    if X -version 2>&1 | grep -q 'Version 1.3'; then
 	XVER='-1.3'
-fi
+    fi
 
 # Some defaults
-XORG_CONF=xorg-emu${XVER}.conf
-XKB_MODEL="olpc"
-XKB_LAYOUT="us"
-SYS_LANG="en_US.UTF-8"
+    XORG_CONF=xorg-emu${XVER}.conf
+    XKB_MODEL="olpc"
+    XKB_LAYOUT="us"
+    SYS_LANG="en_US.UTF-8"
 
-if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
+    if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
     # TODO: put this all in a hal callout or something similar
-    XORG_CONF=xorg-dcon${XVER}.conf
+	XORG_CONF=xorg-dcon${XVER}.conf
 
     # on A-test boards exit here
-    BUILD_HEADER=`read_nvram 0x42 1`
-    [ "x$BUILD_HEADER" = "xA" -o "x$BUILD_HEADER" = "x" ] && exit 0
+	BUILD_HEADER=`read_nvram 0x42 1`
+	[ "x$BUILD_HEADER" = "xA" -o "x$BUILD_HEADER" = "x" ] && exit 0
 
-    if [ -f $MFG_DATA/KL ]; then
-	XKB_MODEL="`cat $MFG_DATA/KM`"
-	XKB_LAYOUT="`cat $MFG_DATA/KL`"
-	XKB_VARIANT="`cat $MFG_DATA/KV`"
-	SYS_LANG="`cat $MFG_DATA/LO`"
-    elif [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
+	if [ -f $MFG_DATA/KL ]; then
+	    XKB_MODEL="`cat $MFG_DATA/KM`"
+	    XKB_LAYOUT="`cat $MFG_DATA/KL`"
+	    XKB_VARIANT="`cat $MFG_DATA/KV`"
+	    SYS_LANG="`cat $MFG_DATA/LO`"
+	elif [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
         #
         # TODO: this ugly table has to go away when we'll get this info right
         # from the manufacturing data (starting with C2, probably).  -- bernie
         #
-        KB_HEADER=`read_nvram 0x44 2`
-        if [ "x$KB_HEADER" = "xKB" ] ; then
-            KB_CODE=`read_nvram 0x46 10`
-            if [ "x$KB_CODE" = "xus_INTL" ] ; then
-                XKB_LAYOUT="us"
-            elif [ "x$KB_CODE" = "xes" ] ; then
-                XKB_LAYOUT="es"
-                SYS_LANG="es_AR.UTF-8"
-            elif [ "x$KB_CODE" = "xpt_BR" ] ; then
-                XKB_LAYOUT="br"
-                SYS_LANG="pt_BR.UTF-8"
-            elif [ "x$KB_CODE" = "xara" ] ; then
-                XKB_LAYOUT="us(olpc2),ara(olpc)"
-                SYS_LANG="ar_LY.UTF-8"
-            elif [ "x$KB_CODE" = "xth" ] ; then
-                XKB_LAYOUT="us(olpc2),th(olpc)"
-                SYS_LANG="th_TH.UTF-8"
-            elif [ "x$KB_CODE" = "xng" ] ; then
-                XKB_LAYOUT="ng(olpc)"
-            elif [ "x$KB_CODE" = "xpk" ] ; then
-                XKB_LAYOUT="us(olpc2),ur(olpc)"
-                SYS_LANG="ur_PK.UTF-8"
-            elif [ "x$KB_CODE" = "xet" ] ; then
-                XKB_LAYOUT="us(olpc2),et"
-                SYS_LANG="am_ET.UTF-8"
+            KB_HEADER=`read_nvram 0x44 2`
+            if [ "x$KB_HEADER" = "xKB" ] ; then
+		KB_CODE=`read_nvram 0x46 10`
+		if [ "x$KB_CODE" = "xus_INTL" ] ; then
+                    XKB_LAYOUT="us"
+		elif [ "x$KB_CODE" = "xes" ] ; then
+                    XKB_LAYOUT="es"
+                    SYS_LANG="es_AR.UTF-8"
+		elif [ "x$KB_CODE" = "xpt_BR" ] ; then
+                    XKB_LAYOUT="br"
+                    SYS_LANG="pt_BR.UTF-8"
+		elif [ "x$KB_CODE" = "xara" ] ; then
+                    XKB_LAYOUT="us(olpc2),ara(olpc)"
+                    SYS_LANG="ar_LY.UTF-8"
+		elif [ "x$KB_CODE" = "xth" ] ; then
+                    XKB_LAYOUT="us(olpc2),th(olpc)"
+                    SYS_LANG="th_TH.UTF-8"
+		elif [ "x$KB_CODE" = "xng" ] ; then
+                    XKB_LAYOUT="ng(olpc)"
+		elif [ "x$KB_CODE" = "xpk" ] ; then
+                    XKB_LAYOUT="us(olpc2),ur(olpc)"
+                    SYS_LANG="ur_PK.UTF-8"
+		elif [ "x$KB_CODE" = "xet" ] ; then
+                    XKB_LAYOUT="us(olpc2),et"
+                    SYS_LANG="am_ET.UTF-8"
+		fi
             fi
-        fi
+	fi
     fi
-fi
 
 # First X layout used also as kernel keytable
-KERN_KEYTABLE=`echo "$XKB_LAYOUT" |  cut -d , -f 1`
+    KERN_KEYTABLE=`echo "$XKB_LAYOUT" |  cut -d , -f 1`
 
-cd /etc/X11
-rm -f xorg.conf
-ln -sf $XORG_CONF xorg.conf
-
-cat >$OLPC_HOME/.i18n <<__EOF__
-LANG="$SYS_LANG"
-__EOF__
-chown olpc:olpc $OLPC_HOME/.i18n
+    cd /etc/X11
+    rm -f xorg.conf
+    ln -sf $XORG_CONF xorg.conf
 
 # LANG=C speeds up boot considerably (measured 5sec) -- bernie
-cat >/etc/sysconfig/i18n <<__EOF__
+    cat >/etc/sysconfig/i18n <<__EOF__
 LANG=C
 SYS_FONT=sun12x22
 __EOF__
 
 # We keep keyboard settings here to avoid users from messing around
 # with them in their home and maybe shut themselves out
-cat >/etc/sysconfig/keyboard <<__EOF__
+    cat >/etc/sysconfig/keyboard <<__EOF__
 KEYTABLE="$KERN_KEYTABLE"
 XKB_MODEL="$XKB_MODEL"
 XKB_LAYOUT="$XKB_LAYOUT"
 XKB_VARIANT="$XKB_VARIANT"
 __EOF__
+}
 
-echo $OLPC_CONFIGURE_VERSION >$OLPC_HOME/.olpc-configured
+# check whether / configuration is necessary.
+configured=no
+if [ -e "/.olpc-configured" ]; then
+	if [ "`cat /.olpc-configured`" = "$OLPC_CONFIGURE_VERSION" ]; then
+		configured=yes
+	fi
+fi
+if [ "$configured" = "no" ]; then
+    configure_root
+    echo "$OLPC_CONFIGURE_VERSION" >/.olpc-configured
+fi
