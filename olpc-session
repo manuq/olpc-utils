@@ -41,7 +41,7 @@ xset r rate 500 30
 setxkbmap $model_string $layout_string $variant_string
 
 # disable repeat on several keys
-xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 75 -r 79 -r \
+xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 79 -r \
 	81 -r 87 -r 89 -r 95 -r 96 -r 224 -r 147 -r 49 -r 10 -r 11 -r 12 -r 13 -r 14 -r \
 	15 -r 16 -r 17 -r 18 -r 19 -r 20 -r 21 -r 23 -r 24 -r 25 -r 26 -r 27 -r 28 -r \
 	29 -r 30 -r 31 -r 32 -r 33 -r 35 -r 36 -r 37 -r 38 -r 39 -r 40 -r 41 -r 42 -r \
