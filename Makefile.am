@@ -62,7 +62,7 @@ setolpckeys_SOURCES = setolpckeys.c
 olpc_dm_SOURCES = olpc-dm.c
 olpc_dm_LDFLAGS = -lpam_misc -lpam
 
-EXTRA_DIST = autogen.sh $(SPECFILE)
+EXTRA_DIST = autogen.sh $(SPECFILE) cvs-import.sh
 
 #
 # Here comes the crazy package build machinery automation -- bernie
