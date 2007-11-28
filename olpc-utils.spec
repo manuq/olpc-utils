@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.48
+Version:	0.49
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -76,6 +76,12 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Nov 28 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.49-1
+- Reorganize variables
+- Fix http://dev.laptop.org/ticket/4928
+- Fix permissions on /home/olpc
+- Bump revision
+
 * Mon Nov 26 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.48-1
 - Pacify automake's portability warnings
 - Update spec file
