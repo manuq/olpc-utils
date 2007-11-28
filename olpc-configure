@@ -26,7 +26,7 @@ fi
 
 # Read a manufacturing data tag and strip the leading NUL
 mfgtag () {
-	tr -d '\000' <$MFG_DATA/$1 2>/dev/null
+	cat $MFG_DATA/$1 | tr -d '\000' 2>/dev/null
 }
 
 read_nvram() {
@@ -123,9 +123,8 @@ __EOF__
 }
 
 update_home_permissions() {
-	chmod 775 /home/olpc
 	find /home/olpc -type d -print0 | xargs -0 chmod 770
-	chmod 775 /home/olpc/Activities
+	chmod 775 /home/olpc /home/olpc/Activities
 }
 
 # configurations which happen in the root fs 
