@@ -18,21 +18,22 @@
 x11dir = ${sysconfdir}/X11
 initdir = ${sysconfdir}/rc.d/init.d
 
-RPMDIST  = olpc2
 PKGNAME  = olpc-utils
 PKGVER   = @VERSION@
 PKGREL   = 1.$(RPMDIST)
 NVR      = $(PKGNAME)-$(PKGVER)-$(PKGREL)
-SRPM     = $(NVR).src.rpm
 TARBALL  = $(PKGNAME)-$(PKGVER).tar.bz2
+SRPM     = $(NVR).src.rpm
+RPMDIST  = olpc2
+DISTVAR  = olpc
 SPECFILE = $(PKGNAME).spec
 RPMBUILD = rpmbuild \
 	--define "_sourcedir $(srcdir)" \
 	--define "_builddir $(builddir)" \
 	--define "_srcrpmdir $(builddir)" \
 	--define "_rpmdir $(builddir)" \
-	--define "dist $(RPMDIST)" \
-	--define "olpc 1" \
+	--define "dist .$(RPMDIST)" \
+	--define "$(DISTVAR) 1" \
 	#
 
 CVS_TAG     = $(shell echo $(NVR) | sed s/\\\./_/g)
