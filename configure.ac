@@ -12,6 +12,10 @@ AC_MSG_NOTICE([Configuring olpc-utils])
 # Checks for programs.
 AC_PROG_CC
 
+AC_CHECK_HEADERS([security/pam_appl.h security/pam_misc.h],
+	[], AC_MSG_ERROR([Missing PAM headers])
+)
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
