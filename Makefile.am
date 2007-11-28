@@ -79,8 +79,8 @@ bumprev:
 	sed -i -e "/^AC_INIT/ s/$$ver\.$$rev/$$newver.$$newrev/" "$(top_srcdir)/configure.ac"; \
 	git-commit -e -a -m "Bump revision" || exit 1; \
 	git-tag v$$newver.$$newrev || exit 1; \
-	git-push
-	git-push --tags
+	git-push || exit 1; \
+	git-push --tags || exit 1; \
 	#
 
 .PHONY: changelog
