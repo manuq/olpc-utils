@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.46
+Version:	0.48
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -76,6 +76,21 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Nov 26 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.48-1
+- Pacify automake's portability warnings
+- Update spec file
+- Even more aggressive packaging automation
+- Add script to import srpms in Fedora.
+- Merge commit 'cscott/master'
+- Explicitly strip NUL from mfg tags
+- Add cvs-import.sh to EXTRADIST
+- Fix https://dev.laptop.org/ticket/4762
+- Bump revision
+
+* Mon Nov 26 2007 C. Scott Ananian <bernie@codewiz.org> - 0.47-1
+- Separate out configuration done to /home and /.
+- Create /home/devkey.html, which can be used to request a developer key.
+
 * Wed Nov 21 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.46-1
 - Automate the release process a bit more.
 - Approximate XOs DPI on emulators.
