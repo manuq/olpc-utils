@@ -50,7 +50,13 @@ dist_x11_DATA = \
 
 dist_init_SCRIPTS = olpc-configure
 
-dist_bin_SCRIPTS = olpc-session olpc-logbat olpc-netlog olpc-netstatus
+dist_bin_SCRIPTS = \
+	olpc-session \
+	olpc-logbat \
+	olpc-netlog \
+	olpc-netstatus \
+	olpc-netcapture \
+	#
 
 sbin_PROGRAMS = olpc-bios-sig setolpckeys olpc-dm
 
