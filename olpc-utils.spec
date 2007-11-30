@@ -1,6 +1,6 @@
 Name:		olpc-utils
 Version:	0.51
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
 Group:		System Environment/Base
@@ -65,6 +65,7 @@ rm -rf %{buildroot}
 %{_sbindir}/olpc-dm
 %{_bindir}/olpc-logbat
 %{_bindir}/olpc-netlog
+%{_bindir}/olpc-netcapture
 %{_bindir}/olpc-netstatus
 %{_bindir}/olpc-session
 %{_sysconfdir}/X11/xorg-dcon.conf
@@ -76,6 +77,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Nov 30 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.51-2
+- Add olpc-netcapture to %files
+
 * Fri Nov 30 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.51-1
 - Fix olpc#5195: Console font too small when using pretty boot.
 - Bump revision
