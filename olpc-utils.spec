@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.49
+Version:	0.50
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -76,6 +76,14 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Nov 30 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.50-1
+- Add autoconf check for PAM
+- Update spec file
+- Merge branch 'master' of ssh://bernie@dev.laptop.org/git/projects/olpc-utils
+- Automatically push to origin on bumprev
+- Fix bumprev rule
+- Bump revision
+
 * Wed Nov 28 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.49-1
 - Reorganize variables
 - Fix http://dev.laptop.org/ticket/4928
