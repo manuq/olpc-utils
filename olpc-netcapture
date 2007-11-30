@@ -1,0 +1,17 @@
+#!/bin/sh
+
+SECS=30
+CAPTURE_FILE=`date +%y%m%d%H%M`.cap
+TRAFFIC_MASK=0x7
+
+echo "Capturing traffic for $SECS seconds..."
+killall NetworkManager
+sleep 1
+echo $TRAFFIC_MASK > /sys/class/net/msh0/device/libertas_rtap
+ifconfig rtap0 up
+tcpdump -s 128 -i rtap0 -w $CAPTURE_FILE &> /dev/null &
+PID=$!
+sleep $SECS
+kill $PID
+echo "Done.  Capture file is $CAPTURE_FILE"
+NetworkManager
