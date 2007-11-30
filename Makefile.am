@@ -84,7 +84,7 @@ bumprev:
 	newrev="$$(($$rev + 1))"; \
 	echo "Bumping revision from $$ver.$$rev to $$newver.$$newrev"; \
 	sed -i -e "/^AC_INIT/ s/$$ver\.$$rev/$$newver.$$newrev/" "$(top_srcdir)/configure.ac"; \
-	git-log v$$ver.$$rev..v$$newver.$$newrev \
+	git-log v$$ver.$$rev..HEAD \
 		| git-shortlog \
 		| sed -e "s/^\(.*\) ([0-9]\+):\$$/* `date '+%a %b %d %Y'` \1 <bernie@codewiz.org> - $$newver.$$newrev-1/" \
 		| sed -e 's/^[\t ]\{2,\}/- /' \
