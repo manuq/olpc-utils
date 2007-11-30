@@ -76,6 +76,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Nov 30 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.51-1
+- Fix olpc#5195: Console font too small when using pretty boot.
+- Bump revision
+
 * Fri Nov 30 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.50-1
 - Add autoconf check for PAM
 - Update spec file
