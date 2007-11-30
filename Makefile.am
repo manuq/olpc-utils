@@ -115,15 +115,15 @@ push:
 	git-push --tags
 
 #.PRECIOUS: $(SPECFILE) <- automake dislikes it
-$(SPECFILE): changelog.tmp
+spec: changelog.tmp
 	sed -i -e '/^%changelog/ r $<' -e 's/^Version:.*$$/Version:\t@VERSION@/' $@
 
 .PHONY: srpm
-srpm $(SRPM): distcheck $(SPECFILE) $(TARBALL)
+srpm $(SRPM): distcheck $(TARBALL)
 	$(RPMBUILD) -bs $(SPECFILE)
 
 .PHONY: rpm
-rpm: distcheck $(SPECFILE) $(TARBALL)
+rpm: distcheck $(TARBALL)
 	$(RPMBUILD) -bb $(SPECFILE)
 
 .PHONY: import
