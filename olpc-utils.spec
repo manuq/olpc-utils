@@ -18,7 +18,7 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  pam-devel
 Requires:       pam
-  
+- 
 %description
 
 Tools for starting an X session, mapping keys on the OLPC keyboards
@@ -46,7 +46,7 @@ install -D -m 0644 %{SOURCE100} $RPM_BUILD_ROOT/etc/skel/.xsession-example
 
 %preun
 if [ $1 = 0 ]; then
-  /sbin/chkconfig --del olpc-configure
+- /sbin/chkconfig --del olpc-configure
 fi
 
 
@@ -167,7 +167,7 @@ rm -rf %{buildroot}
 * Mon Nov 02 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.32-1
 - Bump revision to 0.32
 - Juggle keyboard and language configuration stuff between olpc-configure
-  and olpc-session
+- and olpc-session
 
 * Mon Nov 01 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.31-1
 - Bump revision to 0.31
