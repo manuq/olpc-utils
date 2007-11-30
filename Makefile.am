@@ -75,6 +75,7 @@ EXTRA_DIST = autogen.sh $(SPECFILE) cvs-import.sh
 # Here comes the crazy package build machinery automation -- bernie
 #
 
+# FIXME: this rule is bulky... find a way to delegate to the smaller rules below
 .PHONY: bumprev
 bumprev:
 	ver=`echo "@VERSION@" | sed -n -e 's/\([0-9]\+\)\.[0-9]\+/\1/p'`; \
@@ -83,6 +84,12 @@ bumprev:
 	newrev="$$(($$rev + 1))"; \
 	echo "Bumping revision from $$ver.$$rev to $$newver.$$newrev"; \
 	sed -i -e "/^AC_INIT/ s/$$ver\.$$rev/$$newver.$$newrev/" "$(top_srcdir)/configure.ac"; \
+	git-log v$$ver.$$rev..v$$newver.$$newrev \
+		| git-shortlog \
+		| sed -e "s/^\(.*\) ([0-9]\+):\$$/* `date '+%a %b %d %Y'` \1 <bernie@codewiz.org> - $$newver.$$newrev-1/" \
+		| sed -e 's/^[\t ]\{2,\}/- /' \
+       		> changelog.tmp \
+	sed -i -e '/^%changelog/ r $<' -e 's/^Version:.*$$/Version:\t@VERSION@/' olpc-utils.spec; \
 	git-commit -e -a -m "Bump revision" || exit 1; \
 	git-tag v$$newver.$$newrev || exit 1; \
 	git-push || exit 1; \
@@ -90,7 +97,7 @@ bumprev:
 	#
 
 .PHONY: changelog
-changelog:
+changelog changelog.tmp:
 	ver=`echo "@VERSION@" | sed -n -e 's/\([0-9]\+\)\.[0-9]\+/\1/p'`; \
 	rev=`echo "@VERSION@" | sed -n -e 's/[0-9]\+\.\([0-9]\+\)/\1/p'`; \
 	oldver="$$ver"; \
@@ -107,9 +114,9 @@ push:
 	git-push
 	git-push --tags
 
-
-#TODO: generate specfile
-#$(SPECFILE): $(SPECFILE).in
+#.PRECIOUS: $(SPECFILE) <- automake dislikes it
+$(SPECFILE): changelog.tmp
+	sed -i -e '/^%changelog/ r $<' -e 's/^Version:.*$$/Version:\t@VERSION@/' $@
 
 .PHONY: srpm
 srpm $(SRPM): distcheck $(SPECFILE) $(TARBALL)

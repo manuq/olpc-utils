@@ -8,7 +8,7 @@
 
 # Bump this version each time comatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=3
+OLPC_CONFIGURE_VERSION=4
 
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
@@ -144,10 +144,10 @@ configure_root() {
     rm -f xorg.conf
     ln -sf $XORG_CONF xorg.conf
 
-# LANG=C speeds up boot considerably (measured 5sec) -- bernie
     cat >/etc/sysconfig/i18n <<__EOF__
+# LANG=C considerably speeds up boot (measured 5sec) -- bernie
 LANG=C
-SYS_FONT=sun12x22
+SYSFONT=sun12x22
 __EOF__
 
 # We keep keyboard settings here to avoid users from messing around
