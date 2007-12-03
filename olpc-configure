@@ -17,11 +17,11 @@ MFG_DATA=/ofw/mfg-data
 /usr/sbin/alsactl restore
 
 if [ -x /usr/sbin/olpc-bios-sig ] ; then
-    if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
-        # Libertas Marvell LED configuration
-        # map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
-        /sbin/iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
-    fi
+	if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
+		# Libertas Marvell LED configuration
+		# map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
+		/sbin/iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
+	fi
 fi
 
 # Read a manufacturing data tag and strip the leading NUL
@@ -30,78 +30,78 @@ mfgtag () {
 }
 
 read_nvram() {
-    dd if=/dev/nvram bs=1 skip=$(($1)) count=$2 2>/dev/null
+	dd if=/dev/nvram bs=1 skip=$(($1)) count=$2 2>/dev/null
 }
 
 read_config() {
-# Some defaults
-    XKB_MODEL="olpc"
-    XKB_LAYOUT="us"
-    SYS_LANG="en_US.UTF-8"
+	# Some defaults
+	XKB_MODEL="olpc"
+	XKB_LAYOUT="us"
+	SYS_LANG="en_US.UTF-8"
 
 	if X -version 2>&1 | grep -q 'Version 1.3'; then
 		XVER='-1.3'
 	fi
 	XORG_CONF=xorg-emu${XVER}.conf
 
-    if grep -q Geode /proc/cpuinfo; then
-    # TODO: put this all in a hal callout or something similar
-	XORG_CONF=xorg-dcon${XVER}.conf
+	if grep -q Geode /proc/cpuinfo; then
+		# TODO: put this all in a hal callout or something similar
+		XORG_CONF=xorg-dcon${XVER}.conf
 
-    # on A-test boards exit here
-	BUILD_HEADER=`read_nvram 0x42 1`
-	[ "x$BUILD_HEADER" = "xA" -o "x$BUILD_HEADER" = "x" ] && exit 0
+		# on A-test boards exit here
+		BUILD_HEADER=`read_nvram 0x42 1`
+		[ "x$BUILD_HEADER" = "xA" -o "x$BUILD_HEADER" = "x" ] && exit 0
 
-	if [ -f $MFG_DATA/KL ]; then
-	    XKB_MODEL="`mfgtag KM`"
-	    XKB_LAYOUT="`mfgtag KL`"
-	    XKB_VARIANT="`mfgtag KV`"
-	    SYS_LANG="`mfgtag LO`"
-	elif [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
-            KB_HEADER=`read_nvram 0x44 2`
-            if [ "x$KB_HEADER" = "xKB" ] ; then
-		KB_CODE=`read_nvram 0x46 10`
-		if [ "x$KB_CODE" = "xus_INTL" ] ; then
-                    XKB_LAYOUT="us"
-		elif [ "x$KB_CODE" = "xes" ] ; then
-                    XKB_LAYOUT="es"
-                    SYS_LANG="es_AR.UTF-8"
-		elif [ "x$KB_CODE" = "xpt_BR" ] ; then
-                    XKB_LAYOUT="br"
-                    SYS_LANG="pt_BR.UTF-8"
-		elif [ "x$KB_CODE" = "xara" ] ; then
-                    XKB_LAYOUT="us(olpc2),ara(olpc)"
-                    SYS_LANG="ar_LY.UTF-8"
-		elif [ "x$KB_CODE" = "xth" ] ; then
-                    XKB_LAYOUT="us(olpc2),th(olpc)"
-                    SYS_LANG="th_TH.UTF-8"
-		elif [ "x$KB_CODE" = "xng" ] ; then
-                    XKB_LAYOUT="ng(olpc)"
-		elif [ "x$KB_CODE" = "xpk" ] ; then
-                    XKB_LAYOUT="us(olpc2),ur(olpc)"
-                    SYS_LANG="ur_PK.UTF-8"
-		elif [ "x$KB_CODE" = "xet" ] ; then
-                    XKB_LAYOUT="us(olpc2),et"
-                    SYS_LANG="am_ET.UTF-8"
+		if [ -f $MFG_DATA/KL ]; then
+			XKB_MODEL="`mfgtag KM`"
+			XKB_LAYOUT="`mfgtag KL`"
+			XKB_VARIANT="`mfgtag KV`"
+			SYS_LANG="`mfgtag LO`"
+		elif [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
+			KB_HEADER=`read_nvram 0x44 2`
+			if [ "x$KB_HEADER" = "xKB" ] ; then
+				KB_CODE=`read_nvram 0x46 10`
+				if [ "x$KB_CODE" = "xus_INTL" ] ; then
+					XKB_LAYOUT="us"
+				elif [ "x$KB_CODE" = "xes" ] ; then
+					XKB_LAYOUT="es"
+					SYS_LANG="es_AR.UTF-8"
+				elif [ "x$KB_CODE" = "xpt_BR" ] ; then
+					XKB_LAYOUT="br"
+					SYS_LANG="pt_BR.UTF-8"
+				elif [ "x$KB_CODE" = "xara" ] ; then
+					XKB_LAYOUT="us(olpc2),ara(olpc)"
+					SYS_LANG="ar_LY.UTF-8"
+				elif [ "x$KB_CODE" = "xth" ] ; then
+					XKB_LAYOUT="us(olpc2),th(olpc)"
+					SYS_LANG="th_TH.UTF-8"
+				elif [ "x$KB_CODE" = "xng" ] ; then
+					XKB_LAYOUT="ng(olpc)"
+				elif [ "x$KB_CODE" = "xpk" ] ; then
+					XKB_LAYOUT="us(olpc2),ur(olpc)"
+					SYS_LANG="ur_PK.UTF-8"
+				elif [ "x$KB_CODE" = "xet" ] ; then
+					XKB_LAYOUT="us(olpc2),et"
+					SYS_LANG="am_ET.UTF-8"
+				fi
+			fi
 		fi
-            fi
 	fi
-    fi
 }
 
 # configurations which happen in /home
 # these don't need to be repeated when we upgrade.
 configure_home() {
-    cat >$OLPC_HOME/.i18n <<__EOF__
+	cat >$OLPC_HOME/.i18n <<__EOF__
 LANG="$SYS_LANG"
 __EOF__
-    chown olpc:olpc $OLPC_HOME/.i18n
+	chown olpc:olpc $OLPC_HOME/.i18n
 
-    # can't live in $OLPC_HOME because activities can't read this dir.
-    SERNUM="`mfgtag SN`"
-    UUID="`mfgtag U#`"
-    sed -e "s/REPLACE_WITH_SERIALNUMBER/$SERNUM/" \
-	-e "s/REPLACE_WITH_UUID/$UUID/" > /home/.devkey.html <<__EOF__
+	# can't live in $OLPC_HOME because activities can't read this dir.
+	SERNUM="`mfgtag SN`"
+	UUID="`mfgtag U#`"
+	sed -e "s/REPLACE_WITH_SERIALNUMBER/$SERNUM/" \
+	    -e "s/REPLACE_WITH_UUID/$UUID/" > /home/.devkey.html <<__EOF__
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
@@ -124,7 +124,7 @@ __EOF__
 </body>
 </html>
 __EOF__
-    chmod a+r,a-w /home/.devkey.html
+	chmod a+r,a-w /home/.devkey.html
 }
 
 update_home_permissions() {
@@ -136,22 +136,22 @@ update_home_permissions() {
 # these need to be repeated when we upgrade.
 configure_root() {
 
-# First X layout used also as kernel keytable
-    KERN_KEYTABLE=`echo "$XKB_LAYOUT" |  cut -d , -f 1`
+	# First X layout used also as kernel keytable
+	KERN_KEYTABLE=`echo "$XKB_LAYOUT" |  cut -d , -f 1`
 
-    cd /etc/X11
-    rm -f xorg.conf
-    ln -sf $XORG_CONF xorg.conf
+	cd /etc/X11
+	rm -f xorg.conf
+	ln -sf $XORG_CONF xorg.conf
 
-    cat >/etc/sysconfig/i18n <<__EOF__
+	cat >/etc/sysconfig/i18n <<__EOF__
 # LANG=C considerably speeds up boot (measured 5sec) -- bernie
 LANG=C
 SYSFONT=sun12x22
 __EOF__
 
-# We keep keyboard settings here to avoid users from messing around
-# with them in their home and maybe shut themselves out
-    cat >/etc/sysconfig/keyboard <<__EOF__
+	# We keep keyboard settings here to avoid users from messing around
+	# with them in their home and maybe shut themselves out
+	cat >/etc/sysconfig/keyboard <<__EOF__
 KEYTABLE="$KERN_KEYTABLE"
 XKB_MODEL="$XKB_MODEL"
 XKB_LAYOUT="$XKB_LAYOUT"
