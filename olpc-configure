@@ -172,11 +172,10 @@ __EOF__
 	# Add some ASCII art by [31d1]
 	cat >/etc/motd << __EOF__
 
-  \_____/    Hello, children of the world!
-  || o ||    Ciao, bambini di tutto il mondo!
-  |._X_.|    Hallo, kinderen van de wereld!
- //_=_=_\\\\
- 
+                                    \_____/
+ Ciao, bambini di tutto il mondo!   || o ||    ¡Hola, chicos del mundo!
+ Hallo, Kinder der Welt!            |._X_.|    Hallo, kinderen van de wereld!
+ Hello, children of the world!     //_=_=_\\\\   Olá, crianças do mundo!
 __EOF__
 
 	# Update library index
