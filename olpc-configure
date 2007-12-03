@@ -44,7 +44,7 @@ read_config() {
 	fi
 	XORG_CONF=xorg-emu${XVER}.conf
 
-    if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
+    if grep -q Geode /proc/cpuinfo; then
     # TODO: put this all in a hal callout or something similar
 	XORG_CONF=xorg-dcon${XVER}.conf
 
