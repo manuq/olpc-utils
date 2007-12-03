@@ -48,10 +48,6 @@ read_config() {
 		# TODO: put this all in a hal callout or something similar
 		XORG_CONF=xorg-dcon${XVER}.conf
 
-		# on A-test boards exit here
-		BUILD_HEADER=`read_nvram 0x42 1`
-		[ "x$BUILD_HEADER" = "xA" -o "x$BUILD_HEADER" = "x" ] && exit 0
-
 		if [ -f $MFG_DATA/KL ]; then
 			XKB_MODEL="`mfgtag KM`"
 			XKB_LAYOUT="`mfgtag KL`"
