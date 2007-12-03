@@ -175,7 +175,7 @@ rm -rf %{buildroot}
 * Mon Nov 02 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.32-1
 - Bump revision to 0.32
 - Juggle keyboard and language configuration stuff between olpc-configure
-  and olpc-session
+- and olpc-session
 
 * Mon Nov 01 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.31-1
 - Bump revision to 0.31
