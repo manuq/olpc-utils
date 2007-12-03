@@ -35,10 +35,10 @@ xset m 7/4 0
 xset r rate 500 30
 
 # set keyboard layout
-[ -n "$XKB_MODEL" ]   &&   model_string="-model $XKB_MODEL"
-[ -n "$XKB_LAYOUT" ]  &&  layout_string="-layout $XKB_LAYOUT"
-[ -n "$XKB_VARIANT" ] && variant_string="-variant $XKB_VARIANT"
-setxkbmap $model_string $layout_string $variant_string
+setxkbmap \
+	${XKB_MODEL:+ -model $XKB_MODEL} \
+	${XKB_LAYOUT:+ -layout $XKB_LAYOUT} \
+	${XKB_VARIANT:+ -variant $XKB_VARIANT}
 
 # disable repeat on several keys
 xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 79 -r \
