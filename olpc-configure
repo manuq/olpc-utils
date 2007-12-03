@@ -39,6 +39,11 @@ read_config() {
     XKB_LAYOUT="us"
     SYS_LANG="en_US.UTF-8"
 
+	if X -version 2>&1 | grep -q 'Version 1.3'; then
+		XVER='-1.3'
+	fi
+	XORG_CONF=xorg-emu${XVER}.conf
+
     if [ "$(grep -i geode /proc/cpuinfo | wc -l)" != "0" ] ; then
     # TODO: put this all in a hal callout or something similar
 	XORG_CONF=xorg-dcon${XVER}.conf
@@ -130,12 +135,6 @@ update_home_permissions() {
 # configurations which happen in the root fs 
 # these need to be repeated when we upgrade.
 configure_root() {
-    XVER=
-    if X -version 2>&1 | grep -q 'Version 1.3'; then
-	XVER='-1.3'
-    fi
-    XORG_CONF=xorg-emu${XVER}.conf
-
 
 # First X layout used also as kernel keytable
     KERN_KEYTABLE=`echo "$XKB_LAYOUT" |  cut -d , -f 1`
@@ -158,6 +157,11 @@ XKB_MODEL="$XKB_MODEL"
 XKB_LAYOUT="$XKB_LAYOUT"
 XKB_VARIANT="$XKB_VARIANT"
 __EOF__
+
+	# Update library index
+	cd /usr/share/library-common
+	./make_index.py
+	chown -R olpc:olpc /home/olpc/.library_pages
 }
 
 #
