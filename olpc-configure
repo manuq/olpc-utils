@@ -169,6 +169,16 @@ XKB_LAYOUT="$XKB_LAYOUT"
 XKB_VARIANT="$XKB_VARIANT"
 __EOF__
 
+	# Add some ASCII art by [31d1]
+	cat >/etc/motd << __EOF__
+
+  \_____/    Hello, children of the world!
+  || o ||    Ciao, bambini di tutto il mondo!
+  |._X_.|    Hallo, kinderen van de wereld!
+ //_=_=_\\\\
+ 
+__EOF__
+
 	# Update library index
 	cd /usr/share/library-common
 	./make_index.py
