@@ -191,7 +191,7 @@ case "$1" in
 
 	# check whether /home configuration is necessary.
 	if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
-		if [ "$olpc_home_version" -le "2" ]; then
+		if [ "0$olpc_home_version" -le "2" ]; then
 			update_home_permissions
 		fi
 		read_config
