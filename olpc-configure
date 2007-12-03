@@ -13,16 +13,20 @@ OLPC_CONFIGURE_VERSION=5
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
 
-# load alsa configuration here since doing it at module load time wasn't working
-/usr/sbin/alsactl restore
+configure_hw() {
+	echo "olpc-configure: configuring hardware..."
 
-if [ -x /usr/sbin/olpc-bios-sig ] ; then
-	if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
-		# Libertas Marvell LED configuration
-		# map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
-		/sbin/iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
+	# load alsa configuration here since doing it at module load time wasn't working
+	/usr/sbin/alsactl restore
+
+	if [ -x /usr/sbin/olpc-bios-sig ] ; then
+		if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
+			# Libertas Marvell LED configuration
+			# map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
+			/sbin/iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
+		fi
 	fi
-fi
+}
 
 # Read a manufacturing data tag and strip the leading NUL
 mfgtag () {
@@ -181,6 +185,9 @@ case "$1" in
   start|restart)
 	olpc_home_version="`cat $OLPC_HOME/.olpc-configured 2>/dev/null`"
 	olpc_root_version="`cat /.olpc-configured 2>/dev/null`"
+
+	# unconditionally configure the hardware
+	configure_hw
 
 	# check whether /home configuration is necessary.
 	if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
