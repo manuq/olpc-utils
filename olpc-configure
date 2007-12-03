@@ -8,7 +8,7 @@
 
 # Bump this version each time comatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=4
+OLPC_CONFIGURE_VERSION=5
 
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
@@ -177,22 +177,31 @@ __EOF__
 # This is organized to minimize boot time by bailing out early
 # in the common case of an already configured system
 #
+case "$1" in
+  start|restart)
+	olpc_home_version="`cat $OLPC_HOME/.olpc-configured 2>/dev/null`"
+	olpc_root_version="`cat /.olpc-configured 2>/dev/null`"
 
-# check whether /home configuration is necessary.
-olpc_home_version="`cat $OLPC_HOME/.olpc-configured 2>/dev/null`"
-if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
-	if [ "$olpc_home_version" -le "2" ]; then
-		update_home_permissions
+	# check whether /home configuration is necessary.
+	if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
+		if [ "$olpc_home_version" -le "2" ]; then
+			update_home_permissions
+		fi
+		read_config
+		configure_home
+		echo "$OLPC_CONFIGURE_VERSION" >$OLPC_HOME/.olpc-configured
 	fi
-	read_config
-	configure_home
-	echo "$OLPC_CONFIGURE_VERSION" >$OLPC_HOME/.olpc-configured
-fi
 
-# check whether / configuration is necessary.
-olpc_root_version="`cat /.olpc-configured 2>/dev/null`"
-if [ "$olpc_root_version" != "$OLPC_CONFIGURE_VERSION" ]; then
-	[ -n "$XKB_MODEL" ] || read_config
-	configure_root
-	echo "$OLPC_CONFIGURE_VERSION" >/.olpc-configured
-fi
+	# check whether / configuration is necessary.
+	if [ "$olpc_root_version" != "$OLPC_CONFIGURE_VERSION" ]; then
+		[ -n "$XKB_MODEL" ] || read_config
+		configure_root
+		echo "$OLPC_CONFIGURE_VERSION" >/.olpc-configured
+	fi
+	;;
+  stop|status)
+  	;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|status}"
+  	;;
+esac
