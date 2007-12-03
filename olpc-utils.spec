@@ -1,6 +1,6 @@
 Name:		olpc-utils
-Version:	0.51
-Release:	2%{?dist}
+Version:	@VERSION@
+Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
 Group:		System Environment/Base
@@ -77,6 +77,19 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Dec 03 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.52-1
+- Fix http://dev.laptop.org/ticket/5114
+- Simplify test for Geode
+- Reindent with TABs to match other init scripts
+- Remove check for A-test boards (the following code is harmelss)
+- Be a little more verbose on progress.
+- Fix https://dev.laptop.org/ticket/5217: Update library index
+- Only run checks on start
+- Use $OLPC_HOME consistently
+- Only run hardware configuration on startup.
+- Fix numeric test on empty flag file.
+- Bump revision
+
 * Fri Nov 30 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.51-2
 - Add olpc-netcapture to %files
 
@@ -175,7 +188,7 @@ rm -rf %{buildroot}
 * Mon Nov 02 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.32-1
 - Bump revision to 0.32
 - Juggle keyboard and language configuration stuff between olpc-configure
-- and olpc-session
+  and olpc-session
 
 * Mon Nov 01 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.31-1
 - Bump revision to 0.31
