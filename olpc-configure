@@ -88,6 +88,8 @@ read_config() {
 # configurations which happen in /home
 # these don't need to be repeated when we upgrade.
 configure_home() {
+	echo "olpc-configure: reconfiguring home..."
+
 	cat >$OLPC_HOME/.i18n <<__EOF__
 LANG="$SYS_LANG"
 __EOF__
@@ -121,9 +123,17 @@ __EOF__
 </html>
 __EOF__
 	chmod a+r,a-w /home/.devkey.html
+
+	if [ -x /usr/share/library-common/make_index.py ]; then
+		echo "olpc-configure: running make_index..."
+		/usr/share/library-common/make_index.py
+		chown -R olpc:olpc /home/olpc/.library_pages
+	fi
 }
 
 update_home_permissions() {
+	echo "olpc-configure: setting permissions on home..."
+
 	find /home/olpc -type d -print0 | xargs -0 chmod 770
 	chmod 775 /home/olpc /home/olpc/Activities
 }
@@ -131,6 +141,7 @@ update_home_permissions() {
 # configurations which happen in the root fs 
 # these need to be repeated when we upgrade.
 configure_root() {
+	echo "olpc-configure: reconfiguring root..."
 
 	# First X layout used also as kernel keytable
 	KERN_KEYTABLE=`echo "$XKB_LAYOUT" |  cut -d , -f 1`
@@ -153,11 +164,6 @@ XKB_MODEL="$XKB_MODEL"
 XKB_LAYOUT="$XKB_LAYOUT"
 XKB_VARIANT="$XKB_VARIANT"
 __EOF__
-
-	# Update library index
-	cd /usr/share/library-common
-	./make_index.py
-	chown -R olpc:olpc /home/olpc/.library_pages
 }
 
 #
