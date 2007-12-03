@@ -164,6 +164,11 @@ XKB_MODEL="$XKB_MODEL"
 XKB_LAYOUT="$XKB_LAYOUT"
 XKB_VARIANT="$XKB_VARIANT"
 __EOF__
+
+	# Update library index
+	cd /usr/share/library-common
+	./make_index.py
+	chown -R olpc:olpc /home/olpc/.library_pages
 }
 
 #
