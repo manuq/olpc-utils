@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	@VERSION@
+Version:	0.52
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -77,6 +77,12 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Dec 03 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.53-1
+- Simplyfy setxkb invocation
+- Add ASCII art for motd (need more translations)
+- More languages for the motd
+- Replace fake input driver hack with proper config option.
+
 * Mon Dec 03 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.52-1
 - Fix http://dev.laptop.org/ticket/5114
 - Simplify test for Geode
