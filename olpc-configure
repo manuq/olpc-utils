@@ -127,15 +127,15 @@ __EOF__
 	if [ -x /usr/share/library-common/make_index.py ]; then
 		echo "olpc-configure: running make_index..."
 		/usr/share/library-common/make_index.py
-		chown -R olpc:olpc /home/olpc/.library_pages
+		chown -R olpc:olpc $OLPC_HOME/.library_pages
 	fi
 }
 
 update_home_permissions() {
 	echo "olpc-configure: setting permissions on home..."
 
-	find /home/olpc -type d -print0 | xargs -0 chmod 770
-	chmod 775 /home/olpc /home/olpc/Activities
+	find $OLPC_HOME -type d -print0 | xargs -0 chmod 770
+	chmod 775 $OLPC_HOME $OLPC_HOME/Activities
 }
 
 # configurations which happen in the root fs 
@@ -168,7 +168,7 @@ __EOF__
 	# Update library index
 	cd /usr/share/library-common
 	./make_index.py
-	chown -R olpc:olpc /home/olpc/.library_pages
+	chown -R olpc:olpc $OLPC_HOME/.library_pages
 }
 
 #
