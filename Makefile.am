@@ -44,6 +44,7 @@ CVS_URL     = cvs://cvs.fedoraproject.org/cvs/pkgs?$(CVS_REPO)\#$(CVS_TAG)
 dist_x11_DATA = \
 	xorg-dcon.conf \
 	xorg-emu.conf \
+	xorg-vmware.conf \
 	xorg-dcon-1.3.conf \
 	xorg-emu-1.3.conf \
 	#
