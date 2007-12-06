@@ -8,7 +8,7 @@
 
 # Bump this version each time comatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=5
+OLPC_CONFIGURE_VERSION=6
 
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
@@ -140,6 +140,7 @@ update_home_permissions() {
 
 	find $OLPC_HOME -type d -print0 | xargs -0 chmod 770
 	chmod 775 $OLPC_HOME $OLPC_HOME/Activities
+	chmod 755 $OLPC_HOME/.ssh 2>/dev/null
 }
 
 # configurations which happen in the root fs 
