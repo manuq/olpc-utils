@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.52
+Version:	0.53
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -77,6 +77,11 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Dec 07 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.54-1
+- Add VMware configuration.
+- Fix http://dev.laptop.org/ticket/5320
+- Display motd in profile, not through /bin/login
+
 * Mon Dec 03 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.53-1
 - Simplyfy setxkb invocation
 - Add ASCII art for motd (need more translations)
