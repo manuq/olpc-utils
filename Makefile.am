@@ -17,6 +17,7 @@
 
 x11dir = ${sysconfdir}/X11
 initdir = ${sysconfdir}/rc.d/init.d
+profiledir = ${sysconfdir}/profile.d
 
 PKGNAME  = olpc-utils
 PKGVER   = @VERSION@
@@ -51,6 +52,8 @@ dist_x11_DATA = \
 
 dist_init_SCRIPTS = olpc-configure
 
+dist_profile_SCRIPTS = zzz_olpc.sh
+
 dist_bin_SCRIPTS = \
 	olpc-session \
 	olpc-logbat \
@@ -58,6 +61,8 @@ dist_bin_SCRIPTS = \
 	olpc-netstatus \
 	olpc-netcapture \
 	#
+
+dist_sysconf_DATA = motd.olpc
 
 sbin_PROGRAMS = olpc-bios-sig setolpckeys olpc-dm
 

@@ -161,6 +161,11 @@ LANG=C
 SYSFONT=sun12x22
 __EOF__
 
+	cat >/root/.i18n <<__EOF__
+# We don't fully support i18n for the console, but we still want UTF-8
+LANG=en_US.UTF-8
+__EOF__
+
 	# We keep keyboard settings here to avoid users from messing around
 	# with them in their home and maybe shut themselves out
 	cat >/etc/sysconfig/keyboard <<__EOF__
@@ -168,15 +173,6 @@ KEYTABLE="$KERN_KEYTABLE"
 XKB_MODEL="$XKB_MODEL"
 XKB_LAYOUT="$XKB_LAYOUT"
 XKB_VARIANT="$XKB_VARIANT"
-__EOF__
-
-	# Add some ASCII art by [31d1]
-	cat >/etc/motd << __EOF__
-
-                                    \_____/
- Ciao, bambini di tutto il mondo!   || o ||    ¡Hola, chicos del mundo!
- Hallo, Kinder der Welt!            |._X_.|    Hallo, kinderen van de wereld!
- Hello, children of the world!     //_=_=_\\\\   Olá, crianças do mundo!
 __EOF__
 
 	# Update library index
