@@ -80,6 +80,13 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Dec 14 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.55-1
+- Add a couple of new languages
+- Add missing files
+- Ensure correct keyboard is loaded even on first boot
+- Don't create /root/.i18n as it makes us loose the boot time optimization
+- Add code to help us improve boot time
+
 * Fri Dec 07 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.54-1
 - Add VMware configuration.
 - Fix http://dev.laptop.org/ticket/5320
