@@ -54,5 +54,9 @@ xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 79 -r \
 # source custom user session, if present
 [ -f "$HOME/.xsession" ] && . "$HOME/.xsession"
 
+# useful for performance work
+mv $HOME/.boot_time $HOME/.boot_time.prev 2>/dev/null
+cat /proc/uptime >$HOME/.boot_time
+
 # finally, run sugar
 exec /usr/bin/sugar
