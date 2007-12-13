@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.53
+Version:	0.54
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -68,8 +68,11 @@ rm -rf %{buildroot}
 %{_bindir}/olpc-netcapture
 %{_bindir}/olpc-netstatus
 %{_bindir}/olpc-session
+%{_sysconfdir}/profile.d/zzz_olpc.sh
+%{_sysconfdir}/motd.olpc
 %{_sysconfdir}/X11/xorg-dcon.conf
 %{_sysconfdir}/X11/xorg-emu.conf
+%{_sysconfdir}/X11/xorg-vmware.conf
 %{_sysconfdir}/X11/xorg-dcon-1.3.conf
 %{_sysconfdir}/X11/xorg-emu-1.3.conf
 %{_sysconfdir}/rc.d/init.d/olpc-configure
