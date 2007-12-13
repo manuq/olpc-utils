@@ -161,11 +161,6 @@ LANG=C
 SYSFONT=sun12x22
 __EOF__
 
-	cat >/root/.i18n <<__EOF__
-# We don't fully support i18n for the console, but we still want UTF-8
-LANG=en_US.UTF-8
-__EOF__
-
 	# We keep keyboard settings here to avoid users from messing around
 	# with them in their home and maybe shut themselves out
 	cat >/etc/sysconfig/keyboard <<__EOF__
