@@ -80,6 +80,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Dec 14 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.56-1
+- Really bump revision
+
 * Fri Dec 14 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.55-1
 - Add a couple of new languages
 - Add missing files
