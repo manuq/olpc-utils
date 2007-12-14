@@ -2,6 +2,7 @@
 #
 # Copyright (c) 2007 OLPC
 # Author: galanis at laptop.org 
+# Version 0.2
 #
 # this program is free software; you can redistribute it and/or modify
 # it under the terms of the gnu general public license as published by
@@ -17,6 +18,23 @@
 # along with this program; if not, write to the free software
 # foundation, inc., 51 franklin st, fifth floor, boston, ma  02110-1301  usa
 
+function info {
+model=`cat /ofw/model`
+serial=`cat /ofw/serial-number`
+build=`cat /boot/olpc_build`
+fw=`cat /ofw/openprom/model`
+libertas=`ethtool -i msh0|grep firmware|awk '{print $2}'`
+echo
+echo 'Model     : '$model
+echo 'Serial    : '$serial
+echo
+echo 'Build     : '$build
+echo 'Firmware  : '$fw
+echo 'Libertas  : '$libertas
+
+}
+
+function net {
 
 #nick
 i=$(cat /home/olpc/.sugar/default/config|grep nick)
@@ -148,3 +166,19 @@ fi
 echo 'Ethernet  : '$ethernet
 echo 'Config    : '$config$asmpp
 echo ''
+}
+
+function help {
+
+echo "Usage: olpc-netstatus [-i|-n]"
+echo
+echo "  -i     device info only"
+echo "  -n     network info only"
+echo
+}
+
+if [ "$1" = "-i" ];then info;echo
+elif [ "$1" = "-n" ];then net
+elif [ -n "$1" ];then help;
+else info;net
+fi 
