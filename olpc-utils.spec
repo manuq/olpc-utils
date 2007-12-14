@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.54
+Version:	0.55
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary

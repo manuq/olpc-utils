@@ -96,7 +96,7 @@ bumprev:
 		| sed -e 's/^[\t ]\{2,\}/- /' \
        		> changelog.tmp; \
 	sed -i -e '/^%changelog/ r changelog.tmp' -e 's/^Version:.*$$/Version:\t@VERSION@/' $(top_srcdir)/olpc-utils.spec; \
-	git-commit -e -a -m "Bump revision" || exit 1; \
+	git-commit -e -a -m "Bump revision to $$newver.$$newrev" || exit 1; \
 	git-tag v$$newver.$$newrev || exit 1; \
 	git-push || exit 1; \
 	git-push --tags || exit 1; \
