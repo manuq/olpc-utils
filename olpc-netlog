@@ -2,6 +2,7 @@
 #
 # Copyright (c) 2007 OLPC
 # Author: galanis at laptop.org 
+# Version 0.2
 #
 # this program is free software; you can redistribute it and/or modify
 # it under the terms of the gnu general public license as published by
@@ -17,54 +18,105 @@
 # along with this program; if not, write to the free software
 # foundation, inc., 51 franklin st, fifth floor, boston, ma  02110-1301  usa
 
-if [ "x$PRESENCESERVICE_DEBUG" != "x1" ]; then
-	echo "Not all logs are turned on"
+timestamp=`date +20%y-%m-%d.%H-%M-%S`
+serial=`cat /ofw/serial-number`
+target="logtemp"
+sugarpath="/home/olpc/.sugar/default/logs"
+
+function general {
+	[ -d $target ] && rm -r logtemp
+	mkdir $target
+
+	olpc-netstatus -i &> $target/info
+}
+
+function sugar {
+	mkdir $target/sugar
+	cp /home/olpc/.sugar/default/logs/*.log $target/sugar
+}
+
+function kernel {
+	mkdir $target/kernel
+	cp /var/log/messages $target/kernel
+	cp /var/log/Xorg.0.log $target/kernel
+	dmesg > $target/kernel/dmesg.out
+}
+
+function net {
+	mkdir $target/net	
+	
+	cat /etc/resolv.conf &> $target/net/resolv.conf
+	cat /home/olpc/.sugar/default/nm/networks.cfg &> $target/net/networks.cfg
+	cat /etc/NetworkManager/mesh-start &> $target/net/mesh-start
+
+	ifconfig &> $target/net/ifconfig.out
+	iwconfig &> $target/net/iwconfig.out
+	route -n &> $target/net/route.out
+	ps auxf &> $target/net/ps.out
+	netstat -apT &> $target/net/netstat.out
+	olpc-netstatus -n &> $target/net/netstatus
+}
+
+function help {
+	echo "Usage: olpc-netlog [OPTION]"
+	echo "Store important logs in a tarball named by time and serial number."
+	echo "Specify which logs to store using the options. Default is all logs."
+	echo
+	echo "Options:"
+	echo "  -n     network logs              :  olpc-netstatus -n output"
+	echo "                                      ifconfig output"
+	echo "                                      iwconfig output"
+	echo "                                      route output"
+	echo "                                      ps -auxf output"
+	echo "                                      netstat -apT output"
+	echo "                                      /etc/resolv.conf"
+	echo "                                      /home/olpc/.sugar/default/nm/networks.cfg"
+	echo "                                      /etc/NetworkManager/mesh-start"
+	echo
+	echo "  -s     sugar and activities logs :  $sugarpath/datastore.log"
+	echo "                                      $sugarpath/telepathy-salut.log"
+	echo "                                      $sugarpath/telepathy-gabble.log"
+	echo "                                      $sugarpath/presenceservice.log"
+	echo "                                      $sugarpath/shellservice.log"
+	echo "                                      $sugarpath/shell.log"
+	echo "                                      all activity logs"
+	echo
+	echo "  -k     kernel related logs       :  dmesg output"
+	echo "                                      /var/log/messages"
+	echo "                                      /var/log/Xorg.0.log"
+	echo
+}
+
+if [ "$1" = "--help" ]; then
+	help
+	exit 0
 fi
 
-timestamp=$(date +20%y%m%d.%H.%M.%S)
-target=./logtemp
+param=`echo " $*"|sed s/" "//g|sed s/-//g`
 
-model=$(cat /ofw/model)
-build=$(cat /boot/olpc_build)
-fw=$(cat /ofw/openprom/model)
-libertas=$(ethtool -i msh0|grep firmware|awk '{print $2}')
+general
 
-if [ ! -d $target ];then mkdir $target;fi
-echo $model > $target/info
-echo $build >> $target/info
-echo $fw >> $target/info
-echo $libertas >> $target/info
-
-logdir=/home/olpc/.sugar/default/logs
-
-cp /var/log/messages $target/messages
-cp /var/log/Xorg.0.log $target/Xorg.0.log
-cp /etc/resolv.conf $target/resolv.conf
-if [ -f /etc/NetworkManager/mesh-start ];then cp /etc/NetworkManager/mesh-start $target;fi
-
-if [ -f $logdir/telepathy-salut ];then cp $logdir/telepathy-salut.log $target;fi
-if [ -f $logdir/telepathy-gabble ];then cp $logdir/telepathy-gabble.log $target;fi
-if [ -f $logdir/presenceservice.log ];then cp $logdir/presenceservice.log $target;fi
-
-ifconfig &> $target/ifconfig.out
-iwconfig &> $target/iwconfig.out
-route -n &> $target/route.out
-ps auxf &> $target/ps.out
-netstat -apT &> $target/netstat.out
-
-loc=$(dirname $0)
-inwhich=$(which olpc-netstatus 2> /dev/null)
-
-if [ ${#inwhich} -ne 0 ]
-then
-	olpc-netstatus > $target/netstatus
+if [ -z "$param" ]; then kernel;sugar;net
+elif ! echo " $param"|grep -E "(n|k|s)" > /dev/null
+then 
+	echo "Warning: all logs were selected"
+	echo "For help use 'olpc-netlog' --help"
+	kernel;sugar;net 
 else
-	if [ -f $loc/olpc-netstatus ]
-	then 
-		bash $loc/olpc-netstatus > $target/netstatus
+
+	echo "$param"|grep n > /dev/null && net
+	echo "$param"|grep k > /dev/null && kernel
+	echo "$param"|grep s > /dev/null && sugar
+
+	rest=`echo $param|sed s/n//|sed s/s//|sed s/k//`
+	if [ -n "$rest" ];then
+		echo -e "Warning: Parameters \"$rest\" were ignored"
+		echo "For help use 'olpc-netlog --help'"
 	fi
-fi
+fi	
 
 cd $target
-tar -czf ../netlog.$timestamp.tgz .
-cd - > /dev/null
+tar -czf ../logs.$serial.$timestamp.tgz *
+cd ../
+
+rm -r logtemp
