@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.56
+Version:	$newver.$newrev
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -80,6 +80,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sun Dec 16 2007 Giannis Galanis <bernie@codewiz.org> - 0.57-1
+- Merge olpc-netstatus 0.2
+- Merge olpc-netlog 0.2
+
 * Fri Dec 14 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.56-1
 - Really bump revision
 
