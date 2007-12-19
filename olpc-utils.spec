@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.58
+Version:	0.59
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -82,6 +82,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Dec 20 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.59-1
+- Remove stupid 'exit 0' in zzz_olpc.sh that makes bash *exit* rather than skip the scriptlet
+- Depend on tcpdump for olpc-netcapture.
+
 * Sun Dec 16 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.58-1
 - Fix version replacement in spec file
 
