@@ -18,6 +18,8 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  pam-devel
 Requires:       pam
+# for olpc-netcapture
+Requires:	tcpdump
 
 %description
 
