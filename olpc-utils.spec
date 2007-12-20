@@ -20,6 +20,8 @@ BuildRequires:  pam-devel
 Requires:       pam
 # for olpc-netcapture
 Requires:	tcpdump
+# for olpc-configure
+Requires:	/usr/bin/find
 
 %description
 
