@@ -16,10 +16,16 @@ Source0:	olpc-utils-%{version}.tar.bz2
 Source100:	dot-xsession-example
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
+# for olpc-dm
 BuildRequires:  pam-devel
 Requires:       pam
+
 # for olpc-netcapture
 Requires:	tcpdump
+
+# for olpc-netlog
+Requires:	ethtool
+
 # for olpc-configure
 Requires:	/usr/bin/find
 
