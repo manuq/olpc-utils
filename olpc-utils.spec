@@ -25,6 +25,8 @@ Requires:	tcpdump
 
 # for olpc-netlog
 Requires:	ethtool
+Requires:	tar
+Requires:	gzip
 
 # for olpc-configure
 Requires:	/usr/bin/find

@@ -68,6 +68,7 @@ sbin_PROGRAMS = setolpckeys olpc-dm
 
 AM_CFLAGS = -Wall -W
 
+# FIXME: what is this used for?  Can we drop it?  -- bernie
 setolpckeys_SOURCES = setolpckeys.c
 
 olpc_dm_SOURCES = olpc-dm.c
