@@ -71,7 +71,6 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %{_sbindir}/setolpckeys
-%{_sbindir}/olpc-bios-sig
 %{_sbindir}/olpc-dm
 %{_bindir}/olpc-logbat
 %{_bindir}/olpc-netlog

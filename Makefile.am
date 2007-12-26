@@ -64,11 +64,9 @@ dist_bin_SCRIPTS = \
 
 dist_sysconf_DATA = motd.olpc
 
-sbin_PROGRAMS = olpc-bios-sig setolpckeys olpc-dm
+sbin_PROGRAMS = setolpckeys olpc-dm
 
 AM_CFLAGS = -Wall -W
-
-olpc_bios_sig_SOURCES = olpc-bios-sig.c
 
 setolpckeys_SOURCES = setolpckeys.c
 

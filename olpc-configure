@@ -19,12 +19,10 @@ configure_hw() {
 	# load alsa configuration here since doing it at module load time wasn't working
 	/usr/sbin/alsactl restore
 
-	if [ -x /usr/sbin/olpc-bios-sig ] ; then
-		if [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
-			# Libertas Marvell LED configuration
-			# map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
-			/sbin/iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
-		fi
+	if [ "`cut -c 7-8 /ofw/openprom/model 2>/dev/null`" = "Q2" ] ; then
+		# Libertas Marvell LED configuration
+		# map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
+		/sbin/iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
 	fi
 }
 
@@ -57,7 +55,7 @@ read_config() {
 			XKB_LAYOUT="`mfgtag KL`"
 			XKB_VARIANT="`mfgtag KV`"
 			SYS_LANG="`mfgtag LO`"
-		elif [ "`/usr/sbin/olpc-bios-sig | cut -c 7-8`" = "Q2" ] ; then
+		elif [ "`cut -c 7-8 /ofw/openprom/model 2>/dev/null`" = "Q2" ] ; then
 			KB_HEADER=`read_nvram 0x44 2`
 			if [ "x$KB_HEADER" = "xKB" ] ; then
 				KB_CODE=`read_nvram 0x46 10`
