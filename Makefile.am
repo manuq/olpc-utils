@@ -29,10 +29,10 @@ RPMDIST  = olpc2
 DISTVAR  = olpc
 SPECFILE = $(PKGNAME).spec
 RPMBUILD = rpmbuild \
-	--define "_sourcedir $(srcdir)" \
-	--define "_builddir $(builddir)" \
-	--define "_srcrpmdir $(builddir)" \
-	--define "_rpmdir $(builddir)" \
+	--define "_sourcedir $(abs_srcdir)" \
+	--define "_builddir $(abs_builddir)" \
+	--define "_srcrpmdir $(abs_builddir)" \
+	--define "_rpmdir $(abs_builddir)" \
 	--define "dist .$(RPMDIST)" \
 	--define "$(DISTVAR) 1" \
 	#
