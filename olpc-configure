@@ -179,11 +179,13 @@ __EOF__
 	chown -R olpc:olpc $OLPC_HOME/.library_pages
 
 	if [ -x /usr/sbin/rainbow-replay-spool ]; then
-		echo "olpc-configure: replaying rainbow spool..."
+		echo "olpc-configure: ensuring rainbow spool exists..."
+		chmod 755 /security
 		for dir in uid_pool gid_pool bundle_id_to_gid gid_to_data_dir uid_to_instance_dir uid_to_home_dir; do
 			mkdir -p "/security/1/$dir"
 			chmod 755 "/security/1/$dir"
 		done
+		echo "olpc-configure: replaying rainbow spool..."
 		/usr/sbin/rainbow-replay-spool
 	fi
 }
