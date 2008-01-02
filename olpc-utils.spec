@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.59
+Version:	0.60
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -91,6 +91,17 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Jan 02 2008 Bernardo Innocenti <bernie@codewiz.org> - 0.60-1
+- Depend on /usr/bin/find
+- Remove files in $OLPC_HOME before creating them.
+- Add missing dependencies.
+- Use /ofw/openprom/model instead of olpc-bios-sig
+- Add more missing dependencies
+- Remove stray reference to olpc-bios-sig.c.
+- Pass absolute paths to rpmbuild
+- Add back sbin dirs to unprivileged users PATH
+- Invoke rainbow-replay-spool
+
 * Thu Dec 20 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.59-1
 - Remove stupid 'exit 0' in zzz_olpc.sh that makes bash *exit* rather than skip the scriptlet
 - Depend on tcpdump for olpc-netcapture.
