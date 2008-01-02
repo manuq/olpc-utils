@@ -173,9 +173,15 @@ __EOF__
 	loadkeys "$KERN_KEYTABLE"
 
 	# Update library index
+	echo "olpc-configure: updating library index..."
 	cd /usr/share/library-common
 	./make_index.py
 	chown -R olpc:olpc $OLPC_HOME/.library_pages
+
+	if [ -x /usr/sbin/rainbow-replay-spool ]; then
+		echo "olpc-configure: replaying rainbow spool..."
+		/usr/sbin/rainbow-replay-spool
+	fi
 }
 
 #
