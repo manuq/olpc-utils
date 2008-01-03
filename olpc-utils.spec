@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.61
+Version:	0.62
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -94,6 +94,14 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Jan 03 2008 Bernardo Innocenti <bernie@codewiz.org> - 0.62-1
+- Insert extra spacing at the top for cosmetic reasons
+- Spacing fixes
+- Add missing cron job for olpc-pwr-prof
+
+* Thu Jan 03 2008 Richard Smith <bernie@codewiz.org> - 0.62-1
+- Power profile scripts
+
 * Thu Jan 03 2008 Michael Stone <bernie@codewiz.org> - 0.61-1
 - Construct Rainbow's spool dir if it doesn't exist - #5033
 - Ensure /security has reasonable permissions.
