@@ -25,10 +25,10 @@ then
 	echo `cat /boot/olpc_build` >> $FILEPATH$LOGFILE
 fi
 
-	CAP=`cat $B_INFO/capacity`
-	VOLT=`cat $B_INFO/voltage_avg`
-	CURR=`cat $B_INFO/current_avg`
-	TEMP=`cat $B_INFO/temp`
-	ACR=`cat $B_INFO/accum_current`
-	CAPLEVEL=`cat $B_INFO/capacity_level`
-	echo `date +%s`",$CAP,$VOLT,$CURR,$TEMP,$ACR,$STAT,$CAPLEVEL" >> $FILEPATH$LOGFILE
+CAP=`cat $B_INFO/capacity`
+VOLT=`cat $B_INFO/voltage_avg`
+CURR=`cat $B_INFO/current_avg`
+TEMP=`cat $B_INFO/temp`
+ACR=`cat $B_INFO/accum_current`
+CAPLEVEL=`cat $B_INFO/capacity_level`
+echo `date +%s`",$CAP,$VOLT,$CURR,$TEMP,$ACR,$STAT,$CAPLEVEL" >> $FILEPATH$LOGFILE
