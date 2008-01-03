@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.60
+Version:	0.61
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -91,6 +91,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Jan 03 2008 Michael Stone <bernie@codewiz.org> - 0.61-1
+- Construct Rainbow's spool dir if it doesn't exist - #5033
+- Ensure /security has reasonable permissions.
+
 * Wed Jan 02 2008 Bernardo Innocenti <bernie@codewiz.org> - 0.60-1
 - Depend on /usr/bin/find
 - Remove files in $OLPC_HOME before creating them.
