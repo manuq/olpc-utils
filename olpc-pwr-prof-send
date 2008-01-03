@@ -1,0 +1,7 @@
+#! /bin/sh
+
+FILEPATH="/root/"
+FILENAME="pwr_prof.csv"
+cat $FILEPATH$FILENAME
+rm -f $FILEPATH$FILENAME
+

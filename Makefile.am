@@ -18,6 +18,7 @@
 x11dir = ${sysconfdir}/X11
 initdir = ${sysconfdir}/rc.d/init.d
 profiledir = ${sysconfdir}/profile.d
+crondir = ${sysconfdir}/cron.d
 
 PKGNAME  = olpc-utils
 PKGVER   = @VERSION@
@@ -60,9 +61,13 @@ dist_bin_SCRIPTS = \
 	olpc-netlog \
 	olpc-netstatus \
 	olpc-netcapture \
+	olpc-pwr-prof \
+	olpc-pwr-prof-send \
 	#
 
 dist_sysconf_DATA = motd.olpc
+
+dist_cron_DATA = olpc-pwr-prof.cron
 
 sbin_PROGRAMS = setolpckeys olpc-dm
 

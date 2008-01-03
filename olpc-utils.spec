@@ -79,7 +79,10 @@ rm -rf %{buildroot}
 %{_bindir}/olpc-netcapture
 %{_bindir}/olpc-netstatus
 %{_bindir}/olpc-session
+%{_bindir}/olpc-pwr-prof
+%{_bindir}/olpc-pwr-prof-send
 %{_sysconfdir}/profile.d/zzz_olpc.sh
+%{_sysconfdir}/cron.d/olpc-pwr-prof.cron
 %{_sysconfdir}/motd.olpc
 %{_sysconfdir}/X11/xorg-dcon.conf
 %{_sysconfdir}/X11/xorg-emu.conf
