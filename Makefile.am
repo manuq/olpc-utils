@@ -22,20 +22,20 @@ crondir = ${sysconfdir}/cron.d
 
 PKGNAME  = olpc-utils
 PKGVER   = @VERSION@
-PKGREL   = 1.$(RPMDIST)
+PKGREL   = 1.$(DISTVER)
 NVR      = $(PKGNAME)-$(PKGVER)-$(PKGREL)
 TARBALL  = $(PKGNAME)-$(PKGVER).tar.bz2
 SRPM     = $(NVR).src.rpm
-RPMDIST  = olpc2
-DISTVAR  = olpc
+DISTVER  = olpc2
+DIST     = olpc
 SPECFILE = $(PKGNAME).spec
 RPMBUILD = rpmbuild \
 	--define "_sourcedir $(abs_srcdir)" \
 	--define "_builddir $(abs_builddir)" \
 	--define "_srcrpmdir $(abs_builddir)" \
 	--define "_rpmdir $(abs_builddir)" \
-	--define "dist .$(RPMDIST)" \
-	--define "$(DISTVAR) 1" \
+	--define "dist .$(DISTVER)" \
+	--define "$(DIST) 1" \
 	#
 
 CVS_TAG     = $(shell echo $(NVR) | sed s/\\\./_/g)
@@ -142,11 +142,11 @@ import: $(SRPM)
 
 .PHONY: build
 build:
-	koji build dist-$(RPMDIST) $(CVS_URL)
+	koji build dist-$(DISTVER) $(CVS_URL)
 
 .PHONY: scratchbuild
 scratchbuild:
-	koji build --scratch dist_$(RPMDIST) $(SRPM)
+	koji build --scratch dist_$(DISTVER) $(SRPM)
 
 .PHONY: release
 release: distcheck changelog push import build
