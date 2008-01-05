@@ -8,7 +8,7 @@
 
 # Bump this version each time comatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=6
+OLPC_CONFIGURE_VERSION=7
 
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
@@ -136,11 +136,27 @@ __EOF__
 }
 
 update_home_permissions() {
-	echo "olpc-configure: setting permissions on home..."
+	echo "olpc-configure: fixing permissions on home (dlo#4928, dlo#5626)..."
 
-	find $OLPC_HOME -type d -print0 | xargs -0 chmod 770
-	chmod 775 $OLPC_HOME $OLPC_HOME/Activities
-	chmod 755 $OLPC_HOME/.ssh 2>/dev/null
+	# Our first attempt at fixing dlo#4928 assumed that home was totally
+	# private and public data would be explicitly made available.
+	# Since it's inpractical, we relax this requirement and undo the
+	# changes made by earlier versions of this script.
+	# However, we must be careful not to mess with the rainbow isolation
+	# scheme which is intentionally 770.
+	find $OLPC_HOME -type d -perm 770 -name isolation -prune -o -print0 | xargs -0 chmod 755
+
+	# Home must be world aXessible so that activities installed
+	# in ~/Activities can reach their bundles
+	# We make the home also listable because we expect that confidential
+	# data will be explicitly isolated in nested subdirectories.
+	chmod 755 $OLPC_HOME
+
+	# SSH would bitch if permissions on .ssh happens to be too lax
+	chmod 700 $OLPC_HOME/.ssh 2>/dev/null
+
+	# .sugar contains plenty of confidential data
+	chmod 700 $OLPC_HOME/.sugar 2>/dev/null
 }
 
 # configurations which happen in the root fs 
@@ -179,12 +195,6 @@ __EOF__
 	chown -R olpc:olpc $OLPC_HOME/.library_pages
 
 	if [ -x /usr/sbin/rainbow-replay-spool ]; then
-		echo "olpc-configure: ensuring rainbow spool exists..."
-		chmod 755 /security
-		for dir in uid_pool gid_pool bundle_id_to_gid gid_to_data_dir uid_to_instance_dir uid_to_home_dir; do
-			mkdir -p "/security/1/$dir"
-			chmod 755 "/security/1/$dir"
-		done
 		echo "olpc-configure: replaying rainbow spool..."
 		/usr/sbin/rainbow-replay-spool
 	fi
@@ -206,7 +216,7 @@ case "$1" in
 
 	# check whether /home configuration is necessary.
 	if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
-		if [ "0$olpc_home_version" -le "2" ]; then
+		if [ "0$olpc_home_version" -le "6" ]; then
 			update_home_permissions
 		fi
 		read_config
