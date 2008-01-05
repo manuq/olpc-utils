@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.62
+Version:	0.63
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -94,6 +94,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Jan 05 2008 Bernardo Innocenti <bernie@codewiz.org> - 0.63-1
+- Rename RPMDIST to DISTVER and DISTVAR to DIST
+- dlo#5626: Fix permissions in /home/bernie.
+
 * Thu Jan 03 2008 Bernardo Innocenti <bernie@codewiz.org> - 0.62-1
 - Insert extra spacing at the top for cosmetic reasons
 - Spacing fixes
