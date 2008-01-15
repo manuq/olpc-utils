@@ -1,10 +1,10 @@
 Name:		olpc-utils
-Version:	0.63
+Version:	0.64
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
 Group:		System Environment/Base
-License:	GPL
+License:	GPLv2
 # The source for this package was pulled from upstream's vcs.  Use the
 # following commands to generate the tarball:
 #  git clone git://dev.laptop.org/projects/olpc-utils;
@@ -30,6 +30,9 @@ Requires:	gzip
 
 # for olpc-configure
 Requires:	/usr/bin/find
+
+# for become_root
+Requires:	/bin/su
 
 %description
 
@@ -81,6 +84,7 @@ rm -rf %{buildroot}
 %{_bindir}/olpc-session
 %{_bindir}/olpc-pwr-prof
 %{_bindir}/olpc-pwr-prof-send
+%{_bindir}/become_root
 %{_sysconfdir}/profile.d/zzz_olpc.sh
 %{_sysconfdir}/cron.d/olpc-pwr-prof.cron
 %{_sysconfdir}/motd.olpc
@@ -94,6 +98,13 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Jan 14 2008 Michael Stone <michael@laptop.org> - 0.64-1
+- 'become_root' script merged upstream.
+- Update License field to GPLv2 in order to match the COPYING file.
+
+* Fri Jan 12 2008 Michael Stone <michael@laptop.org> - 0.63-2
+- Install a simple 'become_root' script to ease dlo#5537.
+
 * Sat Jan 05 2008 Bernardo Innocenti <bernie@codewiz.org> - 0.63-1
 - Rename RPMDIST to DISTVER and DISTVAR to DIST
 - dlo#5626: Fix permissions in /home/bernie.
