@@ -4,7 +4,7 @@ Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
 Group:		System Environment/Base
-License:	GPLv2
+License:	GPLv2+
 # The source for this package was pulled from upstream's vcs.  Use the
 # following commands to generate the tarball:
 #  git clone git://dev.laptop.org/projects/olpc-utils;
