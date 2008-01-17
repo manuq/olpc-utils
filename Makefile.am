@@ -64,6 +64,7 @@ dist_bin_SCRIPTS = \
 	olpc-pwr-prof \
 	olpc-pwr-prof-send \
 	become_root \
+	olpc-clean-previews \
 	#
 
 dist_sysconf_DATA = motd.olpc

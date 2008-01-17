@@ -36,8 +36,8 @@ Requires:	/bin/su
 
 %description
 
-Tools for starting an X session, mapping keys on the OLPC keyboards
-and checking BIOS signature.
+Tools for starting an X session, mapping keys on the OLPC keyboards,
+becoming root, and cleaning the datastore.
 
 %prep
 %setup -q
@@ -85,6 +85,7 @@ rm -rf %{buildroot}
 %{_bindir}/olpc-pwr-prof
 %{_bindir}/olpc-pwr-prof-send
 %{_bindir}/become_root
+%{_bindir}/olpc-clean-previews
 %{_sysconfdir}/profile.d/zzz_olpc.sh
 %{_sysconfdir}/cron.d/olpc-pwr-prof.cron
 %{_sysconfdir}/motd.olpc

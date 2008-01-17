@@ -6,9 +6,9 @@
 # description: olpc-configure performs one-time configuration
 # processname: olpc-configure
 
-# Bump this version each time comatibility gets broken in ways that require
+# Bump this version each time compatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=7
+OLPC_CONFIGURE_VERSION=8
 
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
@@ -159,6 +159,12 @@ update_home_permissions() {
 	chmod 700 $OLPC_HOME/.sugar 2>/dev/null
 }
 
+clean_previews() {
+	echo "olpc-configure: cleaning the previews directory..."
+
+	/usr/bin/olpc-clean-previews
+}
+
 # configurations which happen in the root fs 
 # these need to be repeated when we upgrade.
 configure_root() {
@@ -218,6 +224,9 @@ case "$1" in
 	if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
 		if [ "0$olpc_home_version" -le "6" ]; then
 			update_home_permissions
+		fi
+		if [ "0$olpc_home_version" -le "7" ]; then
+			clean_previews
 		fi
 		read_config
 		configure_home
