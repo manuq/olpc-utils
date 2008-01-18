@@ -1,0 +1,3 @@
+ - drop setolpckeys
+ - drop olpc-dm
+ - drop xorg-1.3 support
