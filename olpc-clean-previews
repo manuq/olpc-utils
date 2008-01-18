@@ -56,7 +56,13 @@ def purge_previews(datastore_path):
    # Build our SearchConnection with which we'll probe the index of the
    # datastore.
    datastore_index_path = os.path.join(datastore_path, "store", "index")
-   search_conn = secore.SearchConnection(datastore_index_path)
+
+   try:
+       search_conn = secore.SearchConnection(datastore_index_path)
+   except secore.xapian.DatabaseOpeningError, er:
+
+       # The datastore does not even exist: we're done
+       return
 
    # Get the directory with previews and get a list of files stored there.
    preview_dir = os.path.join(datastore_path, "store", "preview")
@@ -79,6 +85,7 @@ def purge_previews(datastore_path):
       except KeyError:
 
          # No matching datastore file.  Purge.
+         sys.stderr.write("Deleting orphan preview file: %s" % preview_file)
          os.unlink(os.path.join(preview_dir, preview_file))
 
    # Now that we're done with the SearchConnection, close it.  Strictly
