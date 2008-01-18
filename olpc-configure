@@ -225,7 +225,7 @@ case "$1" in
 		if [ "0$olpc_home_version" -le "6" ]; then
 			update_home_permissions
 		fi
-		if [ "0$olpc_home_version" -le "7" ]; then
+		if [ "0$olpc_home_version" -le "7" ] && [ "0$olpc_home_version" -gt "0" ]; then
 			clean_previews
 		fi
 		read_config
