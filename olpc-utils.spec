@@ -95,6 +95,7 @@ rm -rf %{buildroot}
 %{_sysconfdir}/X11/xorg-dcon-1.3.conf
 %{_sysconfdir}/X11/xorg-emu-1.3.conf
 %{_sysconfdir}/rc.d/init.d/olpc-configure
+%{_sysconfdir}/udev/rules.d
 %{_sysconfdir}/skel/.xsession-example
 
 

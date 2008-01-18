@@ -19,6 +19,7 @@ x11dir = ${sysconfdir}/X11
 initdir = ${sysconfdir}/rc.d/init.d
 profiledir = ${sysconfdir}/profile.d
 crondir = ${sysconfdir}/cron.d
+udevrulesdir = ${sysconfdir}/udev/rules.d
 
 PKGNAME  = olpc-utils
 PKGVER   = @VERSION@
@@ -70,6 +71,8 @@ dist_bin_SCRIPTS = \
 dist_sysconf_DATA = motd.olpc
 
 dist_cron_DATA = olpc-pwr-prof.cron
+
+dist_udevrules_DATA = 10-olpc-netif.rules
 
 sbin_PROGRAMS = setolpckeys olpc-dm
 
