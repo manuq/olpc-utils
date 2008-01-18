@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.64
+Version:	0.65
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -99,6 +99,19 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Jan 18 2008 Bernardo Innocenti <bernie@codewiz.org> - 0.65-1
+- Use GPLv2+ license tag as nothing in this package is GPLv2-only.
+- Make preview cleaner robust in the case of a missing datastore
+- Do not bother running journal cleaner on fresh installations (saves time on first boot)
+- Add a silly TODO list
+- Bump revision to 0.65
+
+* Fri Jan 17 2008 Giannis Galanis <bernie@codewiz.org> - 0.65-1
+- Import olpc-netlog-0.3 and olpc-netstatus-0.3
+
+* Fri Jan 17 2008 Phil Bordelon <bernie@codewiz.org> - 0.65-1
+- Add 'clean-previews' and incorporate it into olpc-configure.
+
 * Mon Jan 14 2008 Michael Stone <michael@laptop.org> - 0.64-1
 - 'become_root' script merged upstream.
 - Update License field to GPLv2 in order to match the COPYING file.
