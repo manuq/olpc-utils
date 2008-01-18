@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2007 OLPC
 # Author: galanis at laptop.org 
-# Version 0.2
+# Version 0.3
 #
 # this program is free software; you can redistribute it and/or modify
 # it under the terms of the gnu general public license as published by
@@ -116,7 +116,7 @@ else
 fi	
 
 cd $target
-tar -czf ../logs.$serial.$timestamp.tgz *
+tar -cjf ../logs.$serial.$timestamp.tar.bz2 *
 cd ../
 
 rm -r logtemp

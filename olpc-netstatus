@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2007 OLPC
 # Author: galanis at laptop.org 
-# Version 0.2
+# Version 0.3
 #
 # this program is free software; you can redistribute it and/or modify
 # it under the terms of the gnu general public license as published by
@@ -114,20 +114,17 @@ echo ''
 
 #essid
 essid=''
-i=$(iwconfig eth0|grep ESSID)
-essid=${i:33:$((${#i}-59))}
+essid=`iwconfig eth0|grep ESSID|awk 'BEGIN{FS="ESSID:\""}{print $2}'|awk 'BEGIN{FS="\""}{print $1}'`
 echo 'Essid     : '$essid
 
 
 #channel
 ch=''
-for i in $(iwconfig eth0)
-do
-	if [ ${i:0:5} = Frequ ];then j=${i:10};fi
-	if [ "$j" = 2.412 ];then ch=1;fi
-	if [ "$j" = 2.437 ];then ch=6;fi
-	if [ "$j" = 2.462 ];then ch=11;fi
-done
+freq=`iwconfig eth0|grep Freq|grep -v eth0|awk 'BEGIN{FS="uency:"}{print $2}'|awk '{print $1}'`
+[ "$freq" = 2.412 ] && ch=1
+[ "$freq" = 2.437 ] && ch=6
+[ "$freq" = 2.462 ] && ch=11
+
 echo 'Channel   : '$ch
 echo ''
 
