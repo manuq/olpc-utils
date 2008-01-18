@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.65
+Version:	0.66
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -100,6 +100,12 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Jan 19 2008 Bernardo Innocenti <bernie@codewiz.org> - 0.66-1
+- dlo#5746: Do not try to rename msh0.
+
+* Sat Jan 19 2008 Giannis Galanis <bernie@codewiz.org> - 0.66-1
+- dlo#5153: Fix sysfs path to rtap
+
 * Fri Jan 18 2008 Bernardo Innocenti <bernie@codewiz.org> - 0.65-1
 - Use GPLv2+ license tag as nothing in this package is GPLv2-only.
 - Make preview cleaner robust in the case of a missing datastore
