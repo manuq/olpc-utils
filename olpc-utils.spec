@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.66
+Version:	0.67
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -100,6 +100,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Jan 19 2008 Giannis Forgot-to-bump-the-version Galanis <bernie@codewiz.org> - 0.67-1
+- Import olpc-netstatus 0.4 from Yanni
+
 * Sat Jan 19 2008 Bernardo Innocenti <bernie@codewiz.org> - 0.66-1
 - dlo#5746: Do not try to rename msh0.
 
