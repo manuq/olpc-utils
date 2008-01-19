@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2007 OLPC
 # Author: galanis at laptop.org 
-# Version 0.3
+# Version 0.4
 #
 # this program is free software; you can redistribute it and/or modify
 # it under the terms of the gnu general public license as published by
@@ -23,7 +23,7 @@ model=`cat /ofw/model`
 serial=`cat /ofw/serial-number`
 build=`cat /boot/olpc_build`
 fw=`cat /ofw/openprom/model`
-libertas=`ethtool -i msh0|grep firmware|awk '{print $2}'`
+libertas=`ethtool -i eth0|grep firmware|awk '{print $2}'`
 echo
 echo 'Model     : '$model
 echo 'Serial    : '$serial
@@ -44,37 +44,15 @@ echo 'Nick      : '$nick
 
 #mac
 mac=''
-mac=$(ifconfig|grep msh0|awk '{print $5}'|tr '[A-F]' '[a-f]')
+mac=$(ifconfig|grep eth0|awk '{print $5}'|tr '[A-F]' '[a-f]')
 echo 'MAC       : '$mac
 echo ''
 
-#interfaces
-interfaces=''
-ips=''
-msh0=''
-interfaces=$(ifconfig|grep HWaddr|awk '{print $1}')
-
-for f in $(echo $interfaces)
+#ip
+for i in `ifconfig|grep HWaddr|awk '{print $1}'`
 do
-	out=$(ifconfig $f|grep "inet addr")
-	if [ ${#out} -eq 0 ];then ipf='-'
-	else
-		i=$(echo $out|awk '{print $2}')
-		ipf=${i:5}
-		if [ $f = "msh0" ]; then ipmsh=$ipf;fi
-		if [ $f = "eth0" ]; then ipeth=$ipf;fi
-	fi
-	ips=$(echo $ips' '$ipf) 
-done
-
-t=0
-for  f in $(echo $interfaces)
-do
-	t=$((t+1))
-	ip=$(echo $ips|awk '{print $'$t'}')
-	if [ "$ip" = "-" ];then echo 'IP '$f'   : '
-	else echo 'IP '$f'   : '$ip
-	fi
+	echo -n "IP $i   : "
+	echo `ifconfig $i|grep "inet addr"|awk 'BEGIN{FS="addr:"}{print $2}'|awk '{print $1}'` 
 done
 
 #nameserver
@@ -101,14 +79,7 @@ done< <(ps U olpc|grep telepathy|awk '{print $5}')
 
 #jabber
 jabber=''
-for i in $(netstat -tpT|grep telepathy)
-do
-	j=$(echo $i|grep xmpp)
-	if [ ${#j} -ne 0 ]
-	then
-		jabber=${j:0:$((${#j}-12))}
-	fi
-done
+jabber=`netstat -tpT --numeric-ports 2> /dev/null|grep telepathy|grep ESTABLISHED|awk '{print $5}'|awk 'BEGIN{FS=":522"}{print $1}'`
 echo 'Jabber    : '$jabber
 echo ''
 
@@ -130,17 +101,35 @@ echo ''
 
 #ethernet
 ethernet=''
-for i in $(ifconfig|grep HWaddr|awk '{print $1}')
+for i in `ifconfig|grep HWaddr|awk '{print $1}'`
 do
-	j=$(iwconfig $i 2>&1|grep "no wireless")
-	if [ ${#j} -ne 0 ];then ethernet=$i;fi
+	iwconfig $i 2>&1|grep "no wireless" > /dev/null && ethernet="$i $ethernet"
 done
 
 #config
+eth=''
+msh=''
+ipeth=''
+ipmsh=''
+
+for i in `ifconfig|grep HWaddr|grep ^eth|awk '{print $1}'`
+do
+	ifconfig $i|grep "inet addr" > /dev/null && eth=$i
+done
+
+for i in `ifconfig|grep HWaddr|grep ^msh|awk '{print $1}'`
+do
+	ifconfig $i 2>&1|grep "inet addr" > /dev/null && msh=$i
+done
+
+[ -n "$eth" ] && ipeth=`ifconfig $eth|grep "inet addr"|awk 'BEGIN{FS="addr:"}{print $2}'|awk '{print $1}'`
+[ -n "$msh" ] && ipmsh=`ifconfig $msh|grep "inet addr"|awk 'BEGIN{FS="addr:"}{print $2}'|awk '{print $1}'`
+
 config=''
 if [ ${#ipeth} -ne 0 ]
 then 
-	config='Access point'
+	echo $ethernet|grep $eth > /dev/null && config="Ethernet"
+	echo $ethernet|grep $eth > /dev/null || config="Access point"
 elif [ ${#dns} -eq 0 ]
 then
 	config='Link-local'
@@ -149,19 +138,15 @@ then
 	config='MPP'
 else config='School server'
 fi	
-if [ ${#ipmsh} -eq 0 ];then config='';fi
+[ ${#ipmsh} -eq 0 ] && [ ! "$config" = "Ethernet" ] && config=""
 
 
 #acting as MPP
 asmpp='' 
-if [ ${#ipmsh} -ne 0 ]
-then
-	out=$(cat /etc/dhcpd.conf|grep $ipmsh)
-	if [ ${#out} -gt 0 ]; then asmpp=' - Acting as MPP';fi
-fi
+[ -n "$ipmsh" ] && cat /etc/dhcpd.conf 2>&1|grep "$ipmsh" > /dev/null && asmpp=' - Acting as MPP'
 
-echo 'Ethernet  : '$ethernet
-echo 'Config    : '$config$asmpp
+echo "Ethernet  : $ethernet"
+echo "Config    : $config$asmpp"
 echo ''
 }
 
