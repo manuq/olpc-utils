@@ -34,11 +34,14 @@ export LANG
 xset m 7/4 0 
 xset r rate 500 30
 
+[ -n "$XKB_OPTION" ] && XKB_OPTION=`echo "$XKB_OPTION" | sed -e 's/\b/-option /g'`
+
 # set keyboard layout
 setxkbmap \
 	${XKB_MODEL:+ -model $XKB_MODEL} \
 	${XKB_LAYOUT:+ -layout $XKB_LAYOUT} \
-	${XKB_VARIANT:+ -variant $XKB_VARIANT}
+	${XKB_VARIANT:+ -variant $XKB_VARIANT} \
+	$XKB_OPTION
 
 # disable repeat on several keys
 xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 79 -r \
