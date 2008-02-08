@@ -86,6 +86,7 @@ rm -rf %{buildroot}
 %{_bindir}/olpc-pwr-prof-send
 %{_bindir}/become_root
 %{_bindir}/olpc-clean-previews
+%{_bindir}/olpc-audit
 %{_sysconfdir}/profile.d/zzz_olpc.sh
 %{_sysconfdir}/cron.d/olpc-pwr-prof.cron
 %{_sysconfdir}/motd.olpc
@@ -100,6 +101,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Feb 08 2008 Michael Stone <michael@laptop.org> - 0.68-1
+- Import olpc-audit from Marcus
+
 * Sat Jan 19 2008 Giannis Forgot-to-bump-the-version Galanis <bernie@codewiz.org> - 0.67-1
 - Import olpc-netstatus 0.4 from Yanni
 
