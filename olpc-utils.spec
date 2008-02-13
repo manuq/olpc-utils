@@ -84,7 +84,7 @@ rm -rf %{buildroot}
 %{_bindir}/olpc-session
 %{_bindir}/olpc-pwr-prof
 %{_bindir}/olpc-pwr-prof-send
-%{_bindir}/become_root
+%{_bindir}/sudo
 %{_bindir}/olpc-clean-previews
 %{_bindir}/olpc-audit
 %{_sysconfdir}/profile.d/zzz_olpc.sh
@@ -103,6 +103,8 @@ rm -rf %{buildroot}
 %changelog
 * Fri Feb 08 2008 Michael Stone <michael@laptop.org> - 0.68-1
 - Import olpc-audit from Marcus
+- Import sudo from cscott
+- Drop become_root
 
 * Sat Jan 19 2008 Giannis Forgot-to-bump-the-version Galanis <bernie@codewiz.org> - 0.67-1
 - Import olpc-netstatus 0.4 from Yanni

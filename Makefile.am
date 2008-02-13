@@ -64,7 +64,7 @@ dist_bin_SCRIPTS = \
 	olpc-netcapture \
 	olpc-pwr-prof \
 	olpc-pwr-prof-send \
-	become_root \
+	sudo \
 	olpc-clean-previews \
 	olpc-audit \
 	#
