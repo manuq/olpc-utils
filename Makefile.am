@@ -152,7 +152,7 @@ build:
 
 .PHONY: scratchbuild
 scratchbuild:
-	koji build --scratch dist_$(DISTVER) $(SRPM)
+	koji build --scratch dist-$(DISTVER) $(SRPM)
 
 .PHONY: release
 release: distcheck changelog push import build

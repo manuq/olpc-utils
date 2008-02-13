@@ -1,7 +1,0 @@
-#!/bin/bash
-
-if [ -x /usr/bin/sudo ]; then
-  sudo su -
-else
-  su -
-fi
