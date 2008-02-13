@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.67
+Version:	0.68
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -101,7 +101,7 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Fri Feb 08 2008 Michael Stone <michael@laptop.org> - 0.68-1
+* Fri Feb 12 2008 Michael Stone <michael@laptop.org> - 0.68-1
 - Import olpc-audit from Marcus
 - Import sudo from cscott
 - Drop become_root
