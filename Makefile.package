@@ -1,0 +1,23 @@
+
+PKGNAME     = olpc-utils
+COMPLETION  = 0.68
+RELEASE     = 1
+SOURCES     = src usr etc $(wildcard Makefile*) COPYING TODO
+
+ARCH        = noarch
+DIST        = olpc
+DISTVER     = olpc2
+BUILDROOT   = fedora-7-i386
+
+LOCAL_REPO  = $(shell pwd)/rpms
+REMOTE_REPO = dev.laptop.org:public_html/releases
+
+release-deploy:
+	scp $(TARBALL)  $(REMOTE_REPO)/SOURCES/
+	scp $(SPEC)     $(REMOTE_REPO)/SPECS/
+	scp $(SRPM)     $(REMOTE_REPO)/SRPMS/
+	scp $(RPM)      $(REMOTE_REPO)/RPMS/
+
+snapshot-deploy:
+	cp -f $(RPM) ~/public_html/$(PKGNAME).rpm
+
