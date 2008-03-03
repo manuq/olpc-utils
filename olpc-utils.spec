@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.68
+Version:	0.69
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -101,6 +101,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sun Mar 02 2008 Michael Stone <michael@laptop.org> - 0.69-1
+- Teach olpc-configure about usb customization keys.
+
 * Fri Feb 12 2008 Michael Stone <michael@laptop.org> - 0.68-1
 - Import olpc-audit from Marcus
 - Import sudo from cscott
