@@ -87,6 +87,15 @@ read_config() {
 	fi
 }
 
+rebuild_library_index() {
+	if [ -x /usr/share/library-common/make_index.py ]; then
+		echo '* olpc-configure: Rebuilding the library index.'
+		rm -rf $OLPC_HOME/.library_pages
+		/usr/share/library-common/make_index.py
+		chown -R olpc:olpc $OLPC_HOME/.library_pages
+	fi
+}
+
 # configurations which happen in /home
 # these don't need to be repeated when we upgrade.
 configure_home() {
@@ -127,12 +136,7 @@ __EOF__
 __EOF__
 	chmod a+r,a-w /home/.devkey.html
 
-	if [ -x /usr/share/library-common/make_index.py ]; then
-		echo "olpc-configure: running make_index..."
-		rm -rf $OLPC_HOME/.library_pages
-		/usr/share/library-common/make_index.py
-		chown -R olpc:olpc $OLPC_HOME/.library_pages
-	fi
+	rebuild_library_index
 }
 
 update_home_permissions() {
@@ -195,10 +199,7 @@ __EOF__
 	loadkeys "$KERN_KEYTABLE"
 
 	# Update library index
-	echo "olpc-configure: updating library index..."
-	cd /usr/share/library-common
-	./make_index.py
-	chown -R olpc:olpc $OLPC_HOME/.library_pages
+	rebuild_library_index
 
 	if [ -x /usr/sbin/rainbow-replay-spool ]; then
 		echo "olpc-configure: replaying rainbow spool..."
@@ -238,6 +239,19 @@ case "$1" in
 		[ -n "$XKB_MODEL" ] || read_config
 		configure_root
 		echo "$OLPC_CONFIGURE_VERSION" >/.olpc-configured
+	fi
+
+	# check whether we need to reconfigure in response to usb-driven customizations
+	if [ -f "$OLPC_HOME/.usb-customizations" ]; then
+		olpc_usb_version="`cat $OLPC_HOME/.usb-customizations 2>/dev/null`"
+		if [ -n "$olpc_home_version" ] && [ "$olpc_home_version" -ge "1" ]; then
+			rebuild_library_index
+		fi
+
+		# we've done whatever we can; remove the customization flag
+		# XXX: This choice means that whichever image is booted after usb-based
+		# customizations gets to decide what customizations it wants to do. <MS>
+		rm -rf "$OLPC_HOME/.usb-customizations"
 	fi
 	;;
   stop|status)
