@@ -244,7 +244,7 @@ case "$1" in
 	# check whether we need to reconfigure in response to usb-driven customizations
 	if [ -f "$OLPC_HOME/.usb-customizations" ]; then
 		olpc_usb_version="`cat $OLPC_HOME/.usb-customizations 2>/dev/null`"
-		if [ -n "$olpc_home_version" ] && [ "$olpc_home_version" -ge "1" ]; then
+		if [ -n "$olpc_usb_version" ] && [ "$olpc_usb_version" -ge "1" ]; then
 			rebuild_library_index
 		fi
 
