@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.72
+Version:	0.73
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -101,6 +101,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri May 16 2008 Michael Stone <michael@laptop.org> - 0.73-1
+- dlo#6767: Run make_index.py with a reasonable value of LANG.
+
 * Fri May 16 2008 Sayamindu Dasgupta <sayamindu@gmail.com> - 0.72-1
 - dlo#6945: Export GTK_IM_MODULE so that other modules such as Amharic does not get picked up. 
 
