@@ -21,6 +21,8 @@
 # provide some defaults
 LANG="en_US.UTF-8"
 XKB_LAYOUT="us"
+# We need to stop loading of certain GTK Input Modules (d.l.o #6945)
+GTK_IM_MODULE="gtk-im-context-simple"
 
 # enable internationalization
 [ -f "$HOME/.i18n" ] && . "$HOME/.i18n"
@@ -29,6 +31,7 @@ export LANG
 # load keyboard settings
 [ -f "/etc/sysconfig/keyboard" ] && . "/etc/sysconfig/keyboard"
 [ -f "$HOME/.kbd" ] && . "$HOME/.kbd"
+export GTK_IM_MODULE
 
 # set mouse & keyboard speed
 xset m 7/4 0 
