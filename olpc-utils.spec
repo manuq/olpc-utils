@@ -1,5 +1,5 @@
 Name:		olpc-utils
-Version:	0.71
+Version:	0.72
 Release:	1%{?dist}
 Summary:	OLPC utilities
 URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
@@ -101,6 +101,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri May 16 2008 Sayamindu Dasgupta <sayamindu@gmail.com> - 0.72-1
+- dlo#6945: Export GTK_IM_MODULE so that other modules such as Amharic does not get picked up. 
+
 * Sun Mar 21 2008 Michael Stone <michael@laptop.org> - 0.71-1
 - dlo#5746: Use a more precise udev ignore-me rule for msh* interfaces.
 
