@@ -35,6 +35,12 @@ read_nvram() {
 	dd if=/dev/nvram bs=1 skip=$(($1)) count=$2 2>/dev/null
 }
 
+# Work around for typo in Ethiopian mfg-data 
+# http://dev.laptop.org/ticket/6945#comment:16
+mfgtag_stripspaces() {
+	cat $MFG_DATA/$1 | tr -d [:space:] | tr -d '\000' 2>/dev/null
+} 
+
 read_config() {
 	# Some defaults
 	XKB_MODEL="olpc"
@@ -52,7 +58,7 @@ read_config() {
 
 		if [ -f $MFG_DATA/KL ]; then
 			XKB_MODEL="`mfgtag KM`"
-			XKB_LAYOUT="`mfgtag KL`"
+			XKB_LAYOUT="`mfgtag_stripspaces KL`"
 			XKB_VARIANT="`mfgtag KV`"
 			SYS_LANG="`mfgtag LO`"
 		elif [ "`cut -c 7-8 /ofw/openprom/model 2>/dev/null`" = "Q2" ] ; then
