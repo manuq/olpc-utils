@@ -65,4 +65,4 @@ mv $HOME/.boot_time $HOME/.boot_time.prev 2>/dev/null
 cat /proc/uptime >$HOME/.boot_time
 
 # finally, run sugar
-exec /usr/bin/sugar
+exec /usr/bin/ck-xinit-session /usr/bin/sugar
