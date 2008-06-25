@@ -92,18 +92,18 @@ rm -rf %{buildroot}
 
 %changelog
 * Tue Jun 24 2008 Michael Stone <michael@laptop.org> 0.75-1
-- Merge Fedora's divergence.
-- dlo#7211: Touchpad is super-sensitive in olpc3 builds.
-    mstone: Use a larger threshold.
-    erikg: Reduce acceleration.   (we'll try this one first)
-- dlo#7266: Can't restart/shutdown system from sugar with olpc3.
-    dsd/marco: Properly initialize a ConsoleKit session.
-- dlo#7289: No USB automount with olpc3.
-    dsd/marco: Properly initialize a ConsoleKit session.
-- ausil: include x11-input.fdi
-- ausil: update xorg-dcon.conf
-- ausil: (temporarily?) drop our custom sudo implementation.
-- ???: provide .xsession-example.
+- mstone:
+    Merge Fedora's divergence.
+    Replace autotools with GNUmake.
+- erikg: Reduce mouse acceleration.
+    dlo#7211: Touchpad is super-sensitive in olpc3 builds.
+- dsd/marco: Properly initialize a ConsoleKit session.
+    dlo#7266: Can't restart/shutdown system from sugar with olpc3.
+    dlo#7289: No USB automount with olpc3.
+- ausil:
+    include x11-input.fdi
+    update xorg-dcon.conf
+    (temporarily?) drop our custom sudo implementation.
 
 * Tue May 27 2008 Sayamindu Dasgupta <sayamindu@gmail.com> 0.74-1
 - dlo#6945: Added workaround for typo in mfg-data for Ethiopian machines.
