@@ -46,11 +46,11 @@ usr/sbin/olpc-dm: $(OLPC_DM_OBJS)
 $(DESTDIR)/usr/%: usr/%
 	install -D $< $@
 
+$(DESTDIR)/etc/rc.d/init.d/%: etc/rc.d/init.d/%
+	install -D -m 755 $< $@
+
 $(DESTDIR)/etc/%: etc/%
 	install -D -m 644 $< $@
-
-$(DESTDIR)/etc/rc.d/init.d/%: etc/rc.d/init.d/%
-	install -D $< $@
 
 $(foreach d,$(shell find $(OVERLAYS) -type d),$(DESTDIR)/$d):
 	install -D -d $@

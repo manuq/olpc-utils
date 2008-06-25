@@ -1,30 +1,30 @@
-Name:		@PKGNAME@
-Version:	@VERSION@
-Release:	@RELEASE@%{?dist}
-Summary:	OLPC utilities
-URL:		http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
-Group:		System Environment/Base
-License:	GPLv2+
-Source0:	%{name}-%{version}.tar.bz2
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Name:       @PKGNAME@
+Version:    @VERSION@
+Release:    @RELEASE@%{?dist}
+Summary:    OLPC utilities
+URL:        http://dev.laptop.org/git?p=projects/olpc-utils;a=summary
+Group:      System Environment/Base
+License:    GPLv2+
+Source0:    %{name}-%{version}.tar.bz2
+BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 # for olpc-dm
 BuildRequires:  pam-devel
 Requires:       pam
 
 # for olpc-netcapture
-Requires:	tcpdump
+Requires:   tcpdump
 
 # for olpc-netlog
-Requires:	ethtool
-Requires:	tar
-Requires:	gzip
+Requires:   ethtool
+Requires:   tar
+Requires:   gzip
 
 # for olpc-configure
-Requires:	/usr/bin/find
+Requires:   /usr/bin/find
 
 # for become_root
-Requires:	/bin/su
+Requires:   /bin/su
 
 %description
 
@@ -48,8 +48,9 @@ make install DESTDIR=%{buildroot}
 /sbin/chkconfig --add olpc-configure
 
 
-%preunif [ $1 = 0 ]; then
-	/sbin/chkconfig --del olpc-configure
+%preun
+if [ $1 = 0 ]; then
+    /sbin/chkconfig --del olpc-configure
 fi
 
 
@@ -76,17 +77,17 @@ rm -rf %{buildroot}
 %{_bindir}/olpc-audit
 %{_sysconfdir}/profile.d/zzz_olpc.sh
 %{_sysconfdir}/cron.d/olpc-pwr-prof.cron
-%{_sysconfdir}/hal/fdi/policy/x11-input.fdi
-%{_sysconfdir}/motd.olpc
-%{_sysconfdir}/X11/xorg-dcon.conf
-%{_sysconfdir}/X11/xorg-emu.conf
-%{_sysconfdir}/X11/xorg-vmware.conf
-%{_sysconfdir}/X11/xorg-dcon-1.3.conf
-%{_sysconfdir}/X11/xorg-emu-1.3.conf
-%{_sysconfdir}/pam.d/olpc-login
 %{_sysconfdir}/rc.d/init.d/olpc-configure
-%{_sysconfdir}/udev/rules.d
-%{_sysconfdir}/skel/.xsession-example
+%config(noreplace) %{_sysconfdir}/hal/fdi/policy/x11-input.fdi
+%config(noreplace) %{_sysconfdir}/motd.olpc
+%config(noreplace) %{_sysconfdir}/X11/xorg-dcon.conf
+%config(noreplace) %{_sysconfdir}/X11/xorg-emu.conf
+%config(noreplace) %{_sysconfdir}/X11/xorg-vmware.conf
+%config(noreplace) %{_sysconfdir}/X11/xorg-dcon-1.3.conf
+%config(noreplace) %{_sysconfdir}/X11/xorg-emu-1.3.conf
+%config(noreplace) %{_sysconfdir}/pam.d/olpc-login
+%config(noreplace) %{_sysconfdir}/udev/rules.d
+%config(noreplace) %{_sysconfdir}/skel/.xsession-example
 
 
 %changelog
@@ -229,7 +230,7 @@ rm -rf %{buildroot}
 - Bump revision
 
 * Fri Nov 30 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.51-2
-- Add olpc-netcapture to %files
+- Add olpc-netcapture to %%files
 
 * Fri Nov 30 2007 Bernardo Innocenti <bernie@codewiz.org> - 0.51-1
 - Fix olpc#5195: Console font too small when using pretty boot.
