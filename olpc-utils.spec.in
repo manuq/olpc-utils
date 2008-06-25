@@ -36,12 +36,12 @@ becoming root, and cleaning the datastore.
 
 
 %build
-make %{?_smp_mflags}
+make -f Makefile.build %{?_smp_mflags}
 
 
 %install
 rm -rf %{buildroot}
-make install DESTDIR=%{buildroot}
+make -f Makefile.build install DESTDIR=%{buildroot}
 
 
 %post
