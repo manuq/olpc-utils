@@ -84,6 +84,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Jul 07 2008 Michael Stone <michael@laptop.org> 0.77-1
+- Bump revision number.
+
 * Thu Jul 03 2008 C. Scott Ananian <cscott@laptop.org> 0.76-1
 - dlo#6432: local installation of RPMs on first boot.
 - dlo#7171: move network testing tools to olpc-netutils

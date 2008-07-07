@@ -1,10 +1,10 @@
 
 PKGNAME     = olpc-utils
-COMPLETION  = 0.76
+COMPLETION  = 0.77
 RELEASE     = 1
 SOURCES     = src usr etc $(wildcard Makefile*) COPYING TODO
 
-ARCH        = noarch
+ARCH        = i386
 DIST        = olpc
 DISTVER     = olpc3
 BUILDROOT   = fedora-9-i386
@@ -16,7 +16,7 @@ release-deploy:
 	scp $(TARBALL)  $(REMOTE_REPO)/SOURCES/
 	scp $(SPEC)     $(REMOTE_REPO)/SPECS/
 	scp $(SRPM)     $(REMOTE_REPO)/SRPMS/
-	scp $(RPM)      $(REMOTE_REPO)/RPMS/
+	scp `find $(LOCAL_REPO)/$(PKGNAME)-$(COMPLETION)-$(RELEASE) -name '*.rpm' -a -not -name '*.src.rpm'` $(REMOTE_REPO)/RPMS/
 
 snapshot-deploy:
 	cp -f $(RPM) ~/public_html/$(PKGNAME).rpm
