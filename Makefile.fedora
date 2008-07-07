@@ -48,6 +48,7 @@ MOCK = /usr/bin/mock \
 	--define "dist .$(DISTVER)" \
 	--define "$(DIST) 1"
 
+RPMLINT = /usr/bin/rpmlint
 
 # Construction Rules
 
@@ -73,13 +74,17 @@ $(TARBALL): $(foreach src,$(SOURCES),$(SRCDIR)/$(src))
 	tar cjf $(TARBALL) -C $(BUILDDIR) $(BUILDNAME)
 
 $(SRPM): $(SPEC) $(TARBALL)
-	$(RPMBUILD) -bs $(BUILDDIR)/$(PKGNAME).spec
+	$(RPMBUILD) --nodeps -bs $(BUILDDIR)/$(PKGNAME).spec
 
 build: $(SRCDIR) $(SRPM)
 	$(MOCK) -r $(BUILDROOT) --uniqueext=`whoami` --resultdir=$(BUILDDIR) --rebuild $(SRPM)
 
 lint:
-	rpmlint $(wildcard $(BUILDDIR)/*.rpm)
+	@if [ -x $(RPMLINT) ]; then \
+	     $(RPMLINT) $(wildcard $(BUILDDIR)/*.rpm) ; \
+	else \
+	     echo "** SKIPPING LINT CHECKS ($(RPMLINT) not installed) **" ; \
+	fi
 
 clean:
 	rm -rf $(LOCAL_REPO)

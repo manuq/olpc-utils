@@ -12,19 +12,14 @@ BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  pam-devel
 Requires:       pam
 
-# for olpc-netcapture
-Requires:   tcpdump
-
-# for olpc-netlog
-Requires:   ethtool
-Requires:   tar
-Requires:   gzip
-
 # for olpc-configure
 Requires:   /usr/bin/find
 
 # for become_root
 Requires:   /bin/su
+
+# for olpc-test-devkey
+Requires:   olpcupdate >= 2.10
 
 %description
 
@@ -67,14 +62,12 @@ rm -rf %{buildroot}
 %{_sbindir}/setolpckeys
 %{_sbindir}/olpc-dm
 %{_bindir}/olpc-logbat
-%{_bindir}/olpc-netlog
-%{_bindir}/olpc-netcapture
-%{_bindir}/olpc-netstatus
 %{_bindir}/olpc-session
 %{_bindir}/olpc-pwr-prof
 %{_bindir}/olpc-pwr-prof-send
 %{_bindir}/olpc-clean-previews
 %{_bindir}/olpc-audit
+%{_bindir}/olpc-test-devkey
 %{_sysconfdir}/profile.d/zzz_olpc.sh
 %{_sysconfdir}/cron.d/olpc-pwr-prof.cron
 %{_sysconfdir}/rc.d/init.d/olpc-configure
@@ -91,6 +84,11 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Jul 03 2008 C. Scott Ananian <cscott@laptop.org> 0.76-1
+- dlo#6432: local installation of RPMs on first boot.
+- dlo#7171: move network testing tools to olpc-netutils
+- add olpc-test-devkey script to verify a developer key.
+
 * Tue Jun 24 2008 Michael Stone <michael@laptop.org> 0.75-1
 - mstone:
     Merge Fedora's divergence.

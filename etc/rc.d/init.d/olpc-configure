@@ -103,6 +103,23 @@ rebuild_library_index() {
 	fi
 }
 
+# see dev.laptop.org trac #6432 for use case and spec.
+install_customization_packages () {
+	# we'd like to look on USB/SD here, but udev/sugar hasn't mounted
+	# them yet =(
+	for pkgdir in /home/olpc/.custom/rpms ; do # other paths?
+		if [ ! -d "$pkgdir" ]; then continue; fi
+		pkgs=$(find "$pkgdir" -name '*.rpm' -a ! -name '*.src.rpm' )
+		if [ -n "$pkgs" ]; then
+			echo '* olpc-configure: Installing customization packages:'
+			echo "$pkgs"
+			rpm -Uvh $pkgs
+		fi
+		unset pkgs
+	done
+	unset pkgdir
+}
+
 # configurations which happen in /home
 # these don't need to be repeated when we upgrade.
 configure_home() {
@@ -211,6 +228,11 @@ __EOF__
 	if [ -x /usr/sbin/rainbow-replay-spool ]; then
 		echo "olpc-configure: replaying rainbow spool..."
 		/usr/sbin/rainbow-replay-spool
+	fi
+
+	# developer customizations.
+	if /usr/bin/olpc-test-devkey -q ; then
+		install_customization_packages
 	fi
 }
 
