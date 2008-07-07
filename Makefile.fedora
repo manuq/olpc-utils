@@ -19,20 +19,28 @@ include ./Makefile.package
 
 # Select build id.
 
-BUILDNAME   = $(PKGNAME)-$(VERSION)
 SNAPSHOT   := $(shell date +%Y%m%d)git$(shell git log | head -n1 | awk '{print substr($$2,0,6)}')
-BUILDNO    := $(shell cat build-no)
+BUILDNO    := $(shell if [ -f "build-no" ]; then cat build-no; else echo 1; fi)
 OLDBUILDNO := $(shell echo '$(BUILDNO) - 1' | bc)
 incr-build:
 	@if [ -f "build-no" ]; then echo "1 + `cat build-no`" | bc > build-new && mv build-new build-no; else echo 1 > build-no; fi
 
+ifeq (,$(findstring snapshot,$(MAKECMDGOALS)))
+  VERSION=$(COMPLETION)
+else
+  VERSION=$(COMPLETION).$(BUILDNO).$(SNAPSHOT)
+endif
+
+NV    = $(PKGNAME)-$(VERSION)
+NVR   = $(PKGNAME)-$(VERSION)-$(RELEASE)
+
 # Files.
 
-BUILDDIR   = $(LOCAL_REPO)/$(PKGNAME)-$(VERSION)-$(RELEASE)
-SRCDIR     = $(BUILDDIR)/$(BUILDNAME)
-TARBALL    = $(BUILDDIR)/$(PKGNAME)-$(VERSION).tar.bz2
-SRPM       = $(BUILDDIR)/$(PKGNAME)-$(VERSION)-$(RELEASE).$(DISTVER).src.rpm
-RPM        = $(BUILDDIR)/$(PKGNAME)-$(VERSION)-$(RELEASE).$(DISTVER).$(ARCH).rpm
+BUILDDIR   = $(LOCAL_REPO)/$(NVR)
+SRCDIR     = $(BUILDDIR)/$(NV)
+TARBALL    = $(BUILDDIR)/$(NV).tar.bz2
+SRPM       = $(BUILDDIR)/$(NVR).$(DISTVER).src.rpm
+RPM        = $(BUILDDIR)/$(NVR).$(DISTVER).$(ARCH).rpm
 SPEC       = $(BUILDDIR)/$(PKGNAME).spec
 
 # Build commands.
@@ -70,14 +78,27 @@ $(SRCDIR)/%: %.in
 $(SRCDIR)/%: %
 	cp -r $< $@
 
-$(TARBALL): $(foreach src,$(SOURCES),$(SRCDIR)/$(src))
-	tar cjf $(TARBALL) -C $(BUILDDIR) $(BUILDNAME)
+$(TARBALL): $(SRCDIR) $(foreach src,$(SOURCES),$(SRCDIR)/$(src))
+	tar cjf $(TARBALL) -C $(BUILDDIR) $(NV)
 
 $(SRPM): $(SPEC) $(TARBALL)
 	$(RPMBUILD) --nodeps -bs $(BUILDDIR)/$(PKGNAME).spec
 
-build: $(SRCDIR) $(SRPM)
+build: $(SRPM)
 	$(MOCK) -r $(BUILDROOT) --uniqueext=`whoami` --resultdir=$(BUILDDIR) --rebuild $(SRPM)
+
+
+# Tags, Signatures, Lint, and Clean
+
+$(TARBALL).asc: $(TARBALL)
+	gpg -ab $<
+
+sign: $(TARBALL).asc
+
+.git/refs/tags/v$(COMPLETION):
+	git tag -s -m "Bump revision to $(COMPLETION)" v$(COMPLETION)
+
+tag: .git/refs/tags/v$(COMPLETION)
 
 lint:
 	@if [ -x $(RPMLINT) ]; then \
@@ -93,17 +114,13 @@ clean:
 
 # Snapshot and Release Rules
 
-release  release-lint  release-deploy:   VERSION=$(COMPLETION)
-snapshot:  VERSION=$(COMPLETION).$(BUILDNO).$(SNAPSHOT)
-snapshot-lint snapshot-deploy:  VERSION=$(COMPLETION).$(OLDBUILDNO).$(SNAPSHOT)
+snapshot-deploy: VERSION=$(COMPLETION).$(OLDBUILDNO).$(SNAPSHOT)
 
-snapshot-lint release-lint:
-	$(MAKE) -f $(THIS_MAKEFILE) VERSION=$(VERSION) lint
+snapshot-lint release-lint: lint
 
-snapshot release: incr-build
-	$(MAKE) -f $(THIS_MAKEFILE) VERSION=$(VERSION) clean build lint
+snapshot release: incr-build clean build lint
 
-.PHONY: clean incr-build snapshot release snapshot-deploy release-deploy snapshot-lint release-lint
+.PHONY: clean sign tag incr-build snapshot release snapshot-deploy release-deploy snapshot-lint release-lint
 
 
 # vim: set noet ts=8 sw=8 :
