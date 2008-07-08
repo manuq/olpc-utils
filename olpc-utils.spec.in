@@ -84,6 +84,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Jul 08 2008 Michael Stone <michael@laptop.org> 0.78-1
+- dsd: dlo#7211: Increase mouse sensitivity.
+
 * Mon Jul 07 2008 Michael Stone <michael@laptop.org> 0.77-1
 - Bump revision number.
 
