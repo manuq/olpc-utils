@@ -34,7 +34,7 @@ export LANG
 export GTK_IM_MODULE
 
 # set mouse & keyboard speed
-xset m 7/6 0
+xset m 7/4 0
 xset r rate 500 30
 
 [ -n "$XKB_OPTION" ] && XKB_OPTION=`echo "$XKB_OPTION" | sed -e 's/\b/-option /g'`
