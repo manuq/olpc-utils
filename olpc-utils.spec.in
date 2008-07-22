@@ -84,6 +84,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Jul 22 2008 Michael Stone <michael@laptop.org> 0.79-1
+- cscott: dlo#7495: Trigger activity update on base OS upgrade.
+
 * Tue Jul 08 2008 Michael Stone <michael@laptop.org> 0.78-1
 - dsd: dlo#7211: Increase mouse sensitivity.
 
