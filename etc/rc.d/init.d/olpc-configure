@@ -230,6 +230,9 @@ __EOF__
 		/usr/sbin/rainbow-replay-spool
 	fi
 
+	# trigger activity upgrade (dlo trac #7495)
+	touch "$OLPC_HOME/.sugar-update"
+
 	# developer customizations.
 	if /usr/bin/olpc-test-devkey -q ; then
 		install_customization_packages
