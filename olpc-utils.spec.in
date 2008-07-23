@@ -84,6 +84,12 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Jul 23 2008 Michael Stone <michael@laptop.org> 0.80-1
+- sayamindu: dlo#7474: Choose the XIM method by default.
+
+- pgf: dlo#7537: Be slightly more precise when assigning permissions to
+                 /home/olpc.
+
 * Tue Jul 22 2008 Michael Stone <michael@laptop.org> 0.79-1
 - cscott: dlo#7495: Trigger activity update on base OS upgrade.
 
