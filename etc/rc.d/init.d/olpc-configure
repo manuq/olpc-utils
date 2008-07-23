@@ -172,7 +172,7 @@ update_home_permissions() {
 	# changes made by earlier versions of this script.
 	# However, we must be careful not to mess with the rainbow isolation
 	# scheme which is intentionally 770.
-	find $OLPC_HOME -type d -perm 770 -name isolation -prune -o -print0 | xargs -0 chmod 755
+	find $OLPC_HOME -type d -perm 770 -name isolation -prune -o -print0 | xargs -0 chmod a+rX,u+w,go-w
 
 	# Home must be world aXessible so that activities installed
 	# in ~/Activities can reach their bundles
@@ -181,7 +181,7 @@ update_home_permissions() {
 	chmod 755 $OLPC_HOME
 
 	# SSH would bitch if permissions on .ssh happens to be too lax
-	chmod 700 $OLPC_HOME/.ssh 2>/dev/null
+	find $OLPC_HOME/.ssh -print0 | xargs -0 chmod u+rwX,go-rwx
 
 	# .sugar contains plenty of confidential data
 	chmod 700 $OLPC_HOME/.sugar 2>/dev/null
