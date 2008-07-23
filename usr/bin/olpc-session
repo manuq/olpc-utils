@@ -22,7 +22,7 @@
 LANG="en_US.UTF-8"
 XKB_LAYOUT="us"
 # We need to stop loading of certain GTK Input Modules (d.l.o #6945)
-GTK_IM_MODULE="gtk-im-context-simple"
+GTK_IM_MODULE="xim"
 
 # enable internationalization
 [ -f "$HOME/.i18n" ] && . "$HOME/.i18n"
