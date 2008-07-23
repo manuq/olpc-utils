@@ -27,6 +27,10 @@
 #define TTY_MODE         0620
 #define	TTYGRPNAME       "tty"
 #define _PATH_HUSHLOGIN  ".hushlogin"
+#define AUTH_HOME        "/var/tmp/olpc-auth"
+#define XAUTHORITY       AUTH_HOME "/.Xauthority"
+#define XSERVERAUTH      AUTH_HOME "/.Xserverauth"
+#define ICEAUTHORITY     AUTH_HOME "/.ICEauthority"
 
 #  include <security/pam_appl.h>
 #  include <security/pam_misc.h>
@@ -313,8 +317,10 @@ olpc_login(void)
 
   setgid(pwd->pw_gid);
 
-  environ = (char**)malloc(sizeof(char*));
-  memset(environ, 0, sizeof(char*));
+  clearenv(); /* sanitize environment */
+  /* XXX: in theory, we'd allow some values from the old environment through
+   * (note the below code assumes we've let the old HOME through), but
+   * it's too much trouble. */
 
   setenv("HOME", pwd->pw_dir, 0);    /* legal to override */
   setenv("PATH", _PATH_DEFPATH, 1);
@@ -324,6 +330,12 @@ olpc_login(void)
      HP-UX 6.5 does it. We'll not allow modifying it.
      */
   setenv("LOGNAME", pwd->pw_name, 1);
+
+  /* Use tmpfs for Xauthority, ICEauthority, and server authority files. */
+  /* dlo trac #317 */
+  setenv("XAUTHORITY", XAUTHORITY, 1);
+  setenv("XSERVERAUTH", XSERVERAUTH, 1);
+  setenv("ICEAUTHORITY", ICEAUTHORITY, 1);
 
   {
     int i;
@@ -441,6 +453,11 @@ olpc_login(void)
       pwd->pw_dir = "/";
       printf("Logging in with home = \"/\".\n");
     }
+
+  /* As OLPC_USER, create directory for the .Xauthority files (dlo trac #317)*/
+  /* intentionally ignore retval; we are confident that xauth will correctly
+   * report any truly fatal errors. */
+  mkdir(AUTH_HOME, 0700);
 
   /* exec startx. wait on child to cleanup */
   execl("/usr/bin/startx", "startx", "/usr/bin/olpc-session", "--", "-fp", "built-ins", "-wr", NULL);
