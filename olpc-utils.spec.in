@@ -84,6 +84,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Jul 24 2008 Michael Stone <michael@laptop.org> 0.81-1
+- cscott: dlo#317: Set appropriate ICEAUTHORITY, XAUTHORITY, and XSERVERAUTH
+  variables to move these to a tmpfs.
+
 * Wed Jul 23 2008 Michael Stone <michael@laptop.org> 0.80-1
 - sayamindu: dlo#7474: Choose the XIM method by default.
 - pgf: dlo#7537: Be more precise when assigning permissions to /home/olpc.
