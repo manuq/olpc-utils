@@ -115,8 +115,8 @@ olpc_login(void)
    *     seteuid 0, setuid olpc -> start X -> start pam session -> fork ->
    *     seteuid olpc -> start clients
    */
-  tty_name = "tty2";
-  tty_number = "2";
+  tty_name = "tty3";
+  tty_number = "3";
 
   /* set pgid to pid */
   setpgrp();
@@ -425,15 +425,6 @@ olpc_login(void)
 
   /* make sure we have a controlling tty */
   openlog("olpc-login", LOG_ODELAY, LOG_AUTHPRIV);	/* reopen */
-
-  /*
-   * TIOCSCTTY: steal tty from other process group.
-   */
-  if (ioctl(0, TIOCSCTTY, (char *)1))
-    {
-      syslog(LOG_ERR, "Couldn't set controlling terminal: %s", strerror(errno));
-      exit(1);
-    }
 
   signal(SIGINT, SIG_DFL);
 
