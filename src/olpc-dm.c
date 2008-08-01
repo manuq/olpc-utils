@@ -80,11 +80,12 @@ parent_sig_handler(int signal)
 
 
 /* Use PAM to login as user */
+void olpc_login(const char *) __attribute__((noreturn));
 void
 olpc_login(const char *tty_name)
 {
   extern int optind;
-  extern char *optarg, **environ;
+  extern char *optarg;
   int fflag, hflag, pflag, cnt;
   int quietlog;
   char *domain;
