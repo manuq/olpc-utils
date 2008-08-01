@@ -81,7 +81,7 @@ parent_sig_handler(int signal)
 
 /* Use PAM to login as user */
 void
-olpc_login(void)
+olpc_login(const char *tty_name)
 {
   extern int optind;
   extern char *optarg, **environ;
@@ -89,6 +89,7 @@ olpc_login(void)
   int quietlog;
   char *domain;
   char tbuf[MAXPATHLEN + 2];
+  char tty_name_buf[MAXPATHLEN];
   int retcode;
   pam_handle_t *pamh = NULL;
   struct pam_conv conv = { misc_conv, NULL };
@@ -104,7 +105,7 @@ olpc_login(void)
   xstrncpy(thishost, tbuf, sizeof(thishost));
   domain = index(tbuf, '.');
 
-  username = tty_name = hostname = NULL;
+  username = hostname = NULL;
   fflag = hflag = pflag = 0;
 
   for (cnt = getdtablesize(); cnt > 2; cnt--)
@@ -114,9 +115,49 @@ olpc_login(void)
    *     to start X first.  Flow should go like this once we get rid of startx
    *     seteuid 0, setuid olpc -> start X -> start pam session -> fork ->
    *     seteuid olpc -> start clients
+   *
+   * CSA: see dlo trac #5705 for some more explanation, and
+   *      http://www.steve.org.uk/Reference/Unix/faq_2.html#SEC16
+   *      for the canonical steps invoked by a daemon.  When olpc-dm
+   *      was invoked from initscripts, it needed to partially daemonize
+   *      ourself to remove tty0 as our controlling terminal, and then
+   *      choose a new specific tty we wanted to bind to.  Now that
+   *      upstart is invoking us without a controlling tty, this isn't
+   *      necessary.  PAM does want a tty name, so it can ask for a
+   *      password if necessary; use ttyname to determine the tty bound to
+   *      stdin if olpc-dm wasn't invoked with a specific tty on the
+   *      command-line.  (upstart will bind /dev/console to stdin).
    */
-  tty_name = "tty3";
-  tty_number = "3";
+  if (tty_name == NULL)
+    {
+      tty_name = tty_name_buf;
+      tty_name_buf[0] = '\0';
+      retcode = ttyname_r(0/*stdin fd*/, tty_name_buf, sizeof(tty_name_buf));
+      if (retcode != 0)
+	{
+	  fprintf(stderr, "Can't get tty name, aborting: %s\n",
+		  strerror(retcode));
+	  syslog(LOG_ERR, "Can't get tty name: %s", strerror(retcode));
+	  exit(1);
+	}
+    }
+  /* strip off '/dev/' prefix from tty_name if present; this is to match
+   * the wtmp format, which is a bit crufty. */
+#define DEV_PREFIX "/dev/"
+  if (strncmp(DEV_PREFIX, tty_name, strlen(DEV_PREFIX)) == 0)
+    {
+      tty_name += strlen(DEV_PREFIX);
+    }
+  /* strip off 'tty' prefix from tty_name to get tty_number */
+#define TTY_PREFIX "tty"
+  if (strncmp(TTY_PREFIX, tty_name, strlen(TTY_PREFIX)) == 0)
+    {
+      tty_number = tty_name + strlen(TTY_PREFIX);
+    }
+  else
+    {
+      tty_number = "";
+    }
 
   /* set pgid to pid */
   setpgrp();
@@ -458,9 +499,11 @@ olpc_login(void)
 int
 main (int argc, char *argv[])
 {
-  (void)argc;
-  (void)argv;
+  char *tty_name = NULL;
 
-  olpc_login();
+  if (argc > 2)
+    tty_name = argv[1];
+
+  olpc_login(tty_name);
   return 0;
 }
