@@ -84,6 +84,13 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Aug 02 2008 Michael Stone <michael@laptop.org> 0.82-1
+- C. Scott Ananian (2):
+    dlo#5705: allow specification of the tty used for X on the command line.
+    Delint olpc-dm.
+- Martin Dengler (1):
+    dlo#7442 start olpc-dm on tty3 and no other
+
 * Thu Jul 24 2008 Michael Stone <michael@laptop.org> 0.81-1
 - cscott: dlo#317: Set appropriate ICEAUTHORITY, XAUTHORITY, and XSERVERAUTH
   variables to move these to a tmpfs.
