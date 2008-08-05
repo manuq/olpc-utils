@@ -81,7 +81,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/pam.d/olpc-login
 %config(noreplace) %{_sysconfdir}/udev/rules.d
 %config(noreplace) %{_sysconfdir}/skel/.xsession-example
-
+%attr(0755, root, root) %config(noreplace) %{_sysconfdir}/ConsoleKit/run-session.d/pam-foreground-compat.ck
 
 %changelog
 * Sat Aug 02 2008 Michael Stone <michael@laptop.org> 0.82-1
