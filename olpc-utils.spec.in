@@ -83,6 +83,12 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/ConsoleKit/run-session.d/pam-foreground-compat.ck
 
 %changelog
+* Tue Aug 05 2008 Michael Stone <michael@laptop.org> 0.83-1
+- C. Scott Ananian (1):
+    Trac #5705: fix dbus at_console policy rule.
+- Richard Smith (1):
+    Update power logging scripts.
+
 * Sat Aug 02 2008 Michael Stone <michael@laptop.org> 0.82-1
 - C. Scott Ananian (2):
     dlo#5705: allow specification of the tty used for X on the command line.
