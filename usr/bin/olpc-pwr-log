@@ -1,0 +1,139 @@
+#!/bin/sh
+# Copyright One Laptop Per Child
+# Power loging script
+# Released under GPLv3
+
+VERSION="1.9"
+FDATE=`date "+%y%m%d-%H%M%S"`
+HOST=`hostname -s`
+B_INFO=/sys/class/power_supply/olpc-battery
+
+# This is the (approx) delay inbetween reading
+DELAY=10
+
+echo "Checking/waiting for a battery"
+
+until [ $(< $B_INFO/present ) = 1 ]
+do
+	sleep 1
+done
+
+echo "Yah! Found one."
+
+# Now that we wait for a battery we can use the batter serial number in the filename
+DS_SERNUM=$(< $B_INFO/serial_number )
+LOGFILE="pwr-$FDATE-$DS_SERNUM.csv"
+
+if [ -e $B_INFO/eeprom ]
+then
+# Skip 64 bytes and read 5 bytes; display without an address and in single byte mode
+# I don't use od directly since the -j skip does not do a real fseek.
+	echo "Reading eeprom data."
+	MFG_SER=`dd if=$B_INFO/eeprom bs=1 skip=64 count=5 2> /dev/null | od -A n -t x1`
+	CHGCNT=`dd if=$B_INFO/eeprom bs=1 skip=74 count=2 2> /dev/null| od -A n -t x1 `
+	CHGSOC=`dd if=$B_INFO/eeprom bs=1 skip=76 count=1 2> /dev/null| od -A n -t x1 `
+	DISCNT=`dd if=$B_INFO/eeprom bs=1 skip=77 count=2 2> /dev/null| od -A n -t x1 `
+	DISSOC=`dd if=$B_INFO/eeprom bs=1 skip=79 count=1 2> /dev/null| od -A n -t x1 `
+else
+	echo "Can't read the eeprom data because your kernel dosen't support eeprom dump"
+	MFG_SER="NA"
+	CHGCNT="NA"
+	CHGSOC="NA"
+	DISCNT="NA"
+	DISSOC="NA"
+fi
+
+echo "Starting log $LOGFILE"
+echo
+
+echo "pwr_log Ver: $VERSION" > $LOGFILE
+echo -n "HOST: " >> $LOGFILE
+echo $HOST >> $LOGFILE
+echo -n "DATE: " >> $LOGFILE
+echo `date` >> $LOGFILE
+echo -n "ECVER: " >> $LOGFILE
+echo `cat /ofw/ec-name` >> $LOGFILE
+echo -n "OFWVER: " >> $LOGFILE
+echo `cat /ofw/openprom/model` >> $LOGFILE
+echo -n "MODEL: " >> $LOGFILE
+echo `cat /ofw/model` >> $LOGFILE
+echo -n "BATTECH: " >> $LOGFILE
+echo `cat $B_INFO/technology` >> $LOGFILE
+echo -n "BATMFG: " >> $LOGFILE
+echo `cat $B_INFO/manufacturer` >> $LOGFILE
+echo -n "BATSER: " >> $LOGFILE
+echo $DS_SERNUM >> $LOGFILE
+echo -n "BUILD: " >> $LOGFILE
+echo `cat /boot/olpc_build` >> $LOGFILE
+echo -n "MFGSER: " >> $LOGFILE
+echo $MFG_SER >> $LOGFILE
+echo -n "CHGCNT: " >> $LOGFILE
+echo $CHGCNT >> $LOGFILE
+echo -n "CHGSOC: " >> $LOGFILE
+echo $CHGSOC >> $LOGFILE
+echo -n "DISCNT: " >> $LOGFILE
+echo $DISCNT >> $LOGFILE
+echo -n "DISSOC: " >> $LOGFILE
+echo $DISSOC >> $LOGFILE
+
+# Allow the addition of some descriptive text from the cmd line
+echo $1 >> $LOGFILE
+echo "<StartData>" >> $LOGFILE
+
+# feed this the wall clock time in seconds you wish to delay
+# It will spin until that time has passed. If the system is suspeneded
+# it may sleep more.
+function wallclock_delay {
+	DATE1=`date +%s`
+	EXPIRE=$((DATE1+$1))
+	while [ `date +%s` -lt $EXPIRE ]; do
+		sleep 2
+	done
+}
+
+# convert a number into 2's complement
+function conv_2s_comp {
+
+# this has since been changed in the kernel so that it returns
+# a signed value rather than unsigned. which fixes the math
+# So if its already negative then bail
+
+	if [ $1 -lt 0 ]
+	then
+		echo $1
+		return
+	fi
+
+	if [ $1 -gt 32767 ]
+	then
+		echo $(( 0 - (65535-$1+1) ))
+		return
+	fi
+
+	echo $1
+}
+
+CAPACITY=capacity_level
+if [ -n $B_INFO/$CAPACITY ]
+then
+	CAPACITY=capacity
+fi
+
+ACR_TEMP=`cat $B_INFO/accum_current`
+START_ACR=$(conv_2s_comp ${ACR_TEMP-0})
+
+while true
+do
+	CAPLEVEL=$(< $B_INFO/$CAPACITY )
+	VOLT=`cat $B_INFO/voltage_avg`
+	CURR=`cat $B_INFO/current_avg`
+	TEMP=`cat $B_INFO/temp`
+	ACR_TEMP=`cat $B_INFO/accum_current`
+	ACR=$(conv_2s_comp ${ACR_TEMP-0})
+	STAT=`cat $B_INFO/status`
+	ACR_DIFF=$(( ${ACR-0}-${START_ACR-0} ))
+	PWR=$(( $ACR_DIFF * 625 / 1500 ))
+	echo `date +%s`",$CAPLEVEL,$VOLT,$CURR,$TEMP,$ACR,$STAT,$PWR" | tee -a $LOGFILE
+	sync
+	wallclock_delay $DELAY
+done
