@@ -41,11 +41,13 @@ make -f Makefile.build install DESTDIR=%{buildroot}
 
 %post
 /sbin/chkconfig --add olpc-configure
+/sbin/chkconfig --add diskspacecheck
 
 
 %preun
 if [ $1 = 0 ]; then
     /sbin/chkconfig --del olpc-configure
+    /sbin/chkconfig --del diskspacecheck
 fi
 
 
@@ -70,6 +72,7 @@ rm -rf %{buildroot}
 %{_sysconfdir}/profile.d/zzz_olpc.sh
 %{_sysconfdir}/cron.d/olpc-pwr-prof.cron
 %{_sysconfdir}/rc.d/init.d/olpc-configure
+%{_sysconfdir}/rc.d/init.d/diskspacecheck
 %config(noreplace) %{_sysconfdir}/hal/fdi/policy/x11-input.fdi
 %config(noreplace) %{_sysconfdir}/motd.olpc
 %config(noreplace) %{_sysconfdir}/X11/xorg-dcon.conf
