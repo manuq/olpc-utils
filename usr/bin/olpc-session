@@ -21,12 +21,22 @@
 # provide some defaults
 LANG="en_US.UTF-8"
 XKB_LAYOUT="us"
-# We need to stop loading of certain GTK Input Modules (d.l.o #6945)
-GTK_IM_MODULE="xim"
 
 # enable internationalization
 [ -f "$HOME/.i18n" ] && . "$HOME/.i18n"
 export LANG
+
+# We need to stop loading of certain GTK Input Modules (d.l.o #6945)
+# Normally we would load the "gtk-im-context-simple" module, but 
+# some keyboards require to use Compose tables, in which case we need 
+# to use the "xim" module
+# In reality, the Compose tables get loaded if the locale is set 
+# appropriately, so we use the LANG variable below
+if [ "$LANG" = "am_ET.UTF-8" ]; then
+  GTK_IM_MODULE="xim"
+else
+  GTK_IM_MODULE="gtk-im-context-simple"
+fi
 
 # load keyboard settings
 [ -f "/etc/sysconfig/keyboard" ] && . "/etc/sysconfig/keyboard"
