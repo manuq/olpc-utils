@@ -86,6 +86,12 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/ConsoleKit/run-session.d/pam-foreground-compat.ck
 
 %changelog
+* Fri Aug 15 2008 Sayamindu Dasgupta <sayamindu@laptop.org> 0.84-1
+- Sayamindu Dasgupta (1):
+    dlo#7818: Load the XIM GTK Input Module conditionally.
+- Chris Ball (1):
+    dlo#7932, dlo#7125: Install disk-space failsafe script.
+
 * Tue Aug 05 2008 Michael Stone <michael@laptop.org> 0.83-1
 - C. Scott Ananian (1):
     Trac #5705: fix dbus at_console policy rule.
