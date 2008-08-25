@@ -8,9 +8,9 @@
 # log files and features
 #export LM_DEBUG=net
 #export GABBLE_DEBUG=all
-#export GABBLE_LOGFILE=/home/olpc/.sugar/default/logs/telepathy-gabble.log
+#export GABBLE_LOGFILE=+/home/olpc/.sugar/default/logs/telepathy-gabble.log
 #export SALUT_DEBUG=all
-#export SALUT_LOGFILE=/home/olpc/.sugar/default/logs/telepathy-salut.log
+#export SALUT_LOGFILE=+/home/olpc/.sugar/default/logs/telepathy-salut.log
 #export GIBBER_DEBUG=all
 #export PRESENCESERVICE_DEBUG=1
 #export SUGAR_LOGGER_LEVEL=debug
