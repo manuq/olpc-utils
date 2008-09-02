@@ -85,6 +85,10 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/ConsoleKit/run-session.d/pam-foreground-compat.ck
 
 %changelog
+* Tue Sep 02 2008 Michael Stone <michael@laptop.org> 0.85-1
+- Michael Stone (1):
+    dlo#7690: Remove the msh0-renaming rule since dlo#5746 was fixed upstream.
+
 * Fri Aug 15 2008 Sayamindu Dasgupta <sayamindu@laptop.org> 0.84-1
 - Sayamindu Dasgupta (1):
     dlo#7818: Load the XIM GTK Input Module conditionally.
