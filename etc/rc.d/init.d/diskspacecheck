@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 #
 # chkconfig: 345 02 02
 # description: If the NAND doesn't have enough free space, delete datastore\
@@ -50,7 +50,7 @@ def main():
 
         # The below string is in latin-1, because Unicode isn't present
         # in the environment when this script runs.
-        string = """
+        string = u"""
 Your disk is nearly full.  The system cannot operate with a full disk.
 To create free space, some of the entries in your Journal will now be
 deleted.  If you wish to avoid having items deleted, power down your
@@ -62,19 +62,19 @@ Press the return key to delete some Journal entries, or the 'c' key
 and then return key to attempt to boot anyway.
 
 
-Su disco est· casi lleno.  El sistema no puede funcionar si el disco
-est· lleno.  Para liberar espacio, se deben borrar algunas entradas de
+Su disco est√° casi lleno.  El sistema no puede funcionar si el disco
+est√° lleno.  Para liberar espacio, se deben borrar algunas entradas de
 su Diario ahora.  Si prefiere no tener que borrar datos, apague su XO y
-llÈvelo a un experto para que haga una copia de seguridad y
-recuperaciÛn de datos.
+ll√©velo a un experto para que haga una copia de seguridad y
+recuperaci√≥n de datos.
 
-CÛdigo del error:  DISKFULL
+C√≥digo del error:  DISKFULL
 
 Pulse retorno tecla para borrar algunas entradas del Diario, o presiona 
 'c' y retorno para iniciar de cualquier manera.
 """
 
-        key = raw_input(string)
+        key = raw_input(string.encode('utf-8'))
 
         if key is 'c':
            return
@@ -106,5 +106,6 @@ def unfreeze_dcon():
     dcon = open('/sys/class/backlight/dcon-bl/device/freeze', 'w')
     dcon.write('0')
     dcon.close()
-
+    os.system("/sbin/setsysfont")
+    os.system("/bin/unicode_start sun12x22")
 main()
