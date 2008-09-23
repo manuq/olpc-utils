@@ -85,6 +85,10 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/ConsoleKit/run-session.d/pam-foreground-compat.ck
 
 %changelog
+* Tue Sep 23 2008 Michael Stone <michael@laptop.org> 0.87-1
+- Chris Ball (1):
+    dlo#7932: Set up utf8 environment, and display a UTF-8 string.
+
 * Tue Sep 02 2008 Michael Stone <michael@laptop.org> 0.86-1
 - Guillaume Desmottes (1):
     xsession-example: open Telepathy log files in append mode instead of trunc (#8142)
