@@ -2,110 +2,38 @@
 # -*- coding: utf-8 -*-
 #
 # chkconfig: 345 02 02
-# description: If the NAND doesn't have enough free space, delete datastore\
-#              objects until it does.  This doesn't modify the datastore's\
-#              index.
+# description: If the NAND doesn't have enough free space, set up a VT for\
+#              diskspacerecover.
 # processname: diskspacecheck
 
 # Author:      Chris Ball <cjb@laptop.org>
 
-import os, sys, statvfs, subprocess, shutil
+import os, sys, statvfs, pyvt, time
 
 THRESHOLD = 1024 * 20  # 20MB
 DATASTORE_PATH = "/home/olpc/.sugar/default/datastore/store/*-*"
 ACTIVITY_PATH  = "/home/olpc/Activities/*"
 
-def main():
-    # First, check to see whether we have enough free space.
-    if find_freespace() < THRESHOLD:
-        print "Not enough disk space."
+# Determine free space on /.
+stat = os.statvfs("/")
+freebytes  = stat[statvfs.F_BSIZE] * stat[statvfs.F_BAVAIL]
+freekbytes = freebytes / 1024
 
-        # Per Trac #5637, delete orphaned leaks in .sugar/default/data.
-        # This is safe on any build.
-        try:
-            shutil.rmtree("/home/olpc/.sugar/default/data")
-        except OSError:
-            pass
-        
-        if find_freespace() >= THRESHOLD:
-            # The above gained enough free space.
-            return
+# If we have enough disk space, exit.
+if freekbytes > THRESHOLD:
+    exit
 
-        # Okay, we'll have to delete some real data.
-        # Add datastore files to filelist string
-        lines = os.popen("du -s %s" % DATASTORE_PATH).readlines()
-        
-        # Add activities to filelist
-        lines += (os.popen("du -s %s" % ACTIVITY_PATH).readlines())
-        
-        filesizes = [line.split('\t') for line in lines]
-        for file in filesizes:
-           file[0] = int(file[0])     # size
-           file[1] = file[1].rstrip() # path
-        filesizes.sort()
-        filelist = [file[1] for file in filesizes]
-        
-        # Unfreeze the DCON, print a message.
-        unfreeze_dcon()
+# Disable pretty-boot.
+if os.system("ps awux | grep 0-boot-anim-start | grep -v grep") == 0:
+    # Pretty-boot is running.  Kill it, and set up a new VT for the next script.
+    os.system("/etc/init.d/z-boot-anim-stop start")
+    pyvt.chcon("/dev/tty1")
+    pyvt.chcon("/dev/console")
+    pyvt.chvt(2)
 
-        # The below string is in latin-1, because Unicode isn't present
-        # in the environment when this script runs.
-        string = u"""
-Your disk is nearly full.  The system cannot operate with a full disk.
-To create free space, some of the entries in your Journal will now be
-deleted.  If you wish to avoid having items deleted, power down your
-XO and bring it to an expert for backup and recovery.
-
-Error code:  DISKFULL
-
-Press the return key to delete some Journal entries, or the 'c' key 
-and then return key to attempt to boot anyway.
-
-
-Su disco está casi lleno.  El sistema no puede funcionar si el disco
-está lleno.  Para liberar espacio, se deben borrar algunas entradas de
-su Diario ahora.  Si prefiere no tener que borrar datos, apague su XO y
-llévelo a un experto para que haga una copia de seguridad y
-recuperación de datos.
-
-Código del error:  DISKFULL
-
-Pulse retorno tecla para borrar algunas entradas del Diario, o presiona 
-'c' y retorno para iniciar de cualquier manera.
-"""
-
-        key = raw_input(string.encode('utf-8'))
-
-        if key is 'c':
-           return
-            
-        # Now, delete files/directories one at a time.
-        while find_freespace() < THRESHOLD and len(filelist) > 0:
-            delete_entry(filelist.pop())
-
-def find_freespace():
-    # Determine free space on /.
-    stat = os.statvfs("/")
-    freebytes  = stat[statvfs.F_BSIZE] * stat[statvfs.F_BAVAIL]
-    freekbytes = freebytes / 1024
-    return freekbytes
-
-def delete_entry(entry):
-    # Delete a single file from the datastore, or an activity directory
-    print "Deleting " + entry
-    try:
-        if os.path.isdir(entry):
-            shutil.rmtree(entry)
-        else:
-            os.remove(entry)                
-    except OSError:
-        print "Couldn't delete " + entry
-
-def unfreeze_dcon():
-    # Don't think there's anything useful I can do if this write fails.
-    dcon = open('/sys/class/backlight/dcon-bl/device/freeze', 'w')
-    dcon.write('0')
-    dcon.close()
-    os.system("/sbin/setsysfont")
-    os.system("/bin/unicode_start sun12x22")
-main()
+# Don't think there's anything useful I can do if this write fails.
+dcon = open('/sys/class/backlight/dcon-bl/device/freeze', 'w')
+dcon.write('0')
+dcon.close()
+os.system("/sbin/setsysfont")
+os.system("/bin/unicode_start sun12x22")
