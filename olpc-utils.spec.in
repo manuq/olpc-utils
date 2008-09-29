@@ -88,6 +88,10 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/ConsoleKit/run-session.d/pam-foreground-compat.ck
 
 %changelog
+* Mon Sep 29 2008 Michael Stone <michael@laptop.org> 0.88-1
+- Chris Ball (1):
+    dlo#7932: Fix failsafe script in the presence of pretty-boot.
+
 * Tue Sep 23 2008 Michael Stone <michael@laptop.org> 0.87-1
 - Chris Ball (1):
     dlo#7932: Set up utf8 environment, and display a UTF-8 string.
