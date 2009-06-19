@@ -16,7 +16,7 @@ Requires:	/usr/bin/xauth
 Requires:   /usr/bin/find
 
 # for olpc-test-devkey
-Requires:   olpcupdate >= 2.10
+#Requires:   olpcupdate >= 2.10
 
 # for olpc-session
 Requires:      /usr/share/sugar/data

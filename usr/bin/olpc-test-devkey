@@ -1,4 +1,4 @@
-#!/usr/bin/python2.5
+#!/usr/bin/python
 """olpc-test-devkey is a simple utility program to check the existence and
 validity of a user's developer key."""
 # Copyright (C) 2008 One Laptop Per Child Association, Inc.
