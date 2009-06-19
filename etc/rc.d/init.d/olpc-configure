@@ -195,7 +195,9 @@ update_home_permissions() {
 	chmod 755 $OLPC_HOME
 
 	# SSH would bitch if permissions on .ssh happens to be too lax
-	find $OLPC_HOME/.ssh -print0 | xargs -0 chmod u+rwX,go-rwx
+	if [ -d "$OLPC_HOME/.ssh" ]; then
+		find $OLPC_HOME/.ssh -print0 | xargs -0 chmod u+rwX,go-rwx
+	fi
 
 	# .sugar contains plenty of confidential data
 	chmod 700 $OLPC_HOME/.sugar 2>/dev/null
