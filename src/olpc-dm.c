@@ -1,510 +1,546 @@
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <pwd.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <string.h>
-#include <time.h>
-#include <utmp.h>
-#include <termios.h>
-#include <setjmp.h>
-#include <ctype.h>
-#include <grp.h>
-#include <sys/ioctl.h>
-#include <sys/wait.h>
+/*
+ * olpc-dm: A completely uninteractive desktop manager which just executes
+ * the given X session script as a predetermined user.
+ *
+ * Copyright (C) 2009 One Laptop per Child
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+ */
+
+#define _GNU_SOURCE
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/file.h>
-#include <sys/syslog.h>
-#include <sys/sysmacros.h>
-#include <sys/param.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <paths.h>
+#include <pwd.h>
+#include <grp.h>
+#include <signal.h>
+#include <string.h>
+#include <time.h>
 
-#include <linux/major.h>
+#include <ck-connector.h>
 
-#define OLPC_USER        "olpc"
+//#define DEBUG
+#define X_DISPLAY ":0"
+#define X_SESSION "/usr/bin/olpc-session"
+#define OLPC_USER "olpc"
 
-#define TTY_MODE         0620
-#define	TTYGRPNAME       "tty"
-#define _PATH_HUSHLOGIN  ".hushlogin"
 #define AUTH_HOME        "/var/tmp/olpc-auth"
 #define XAUTHORITY       AUTH_HOME "/.Xauthority"
 #define XSERVERAUTH      AUTH_HOME "/.Xserverauth"
 #define ICEAUTHORITY     AUTH_HOME "/.ICEauthority"
 
-#  include <security/pam_appl.h>
-#  include <security/pam_misc.h>
-#  define PAM_MAX_LOGIN_TRIES	3
-#  define PAM_FAIL_CHECK if (retcode != PAM_SUCCESS) { \
-       fprintf(stderr,"\n%s\n",pam_strerror(pamh, retcode)); \
-       syslog(LOG_ERR,"%s",pam_strerror(pamh, retcode)); \
-       pam_end(pamh, retcode); exit(1); \
-   }
-#  define PAM_END { \
-	pam_setcred(pamh, PAM_DELETE_CRED); \
-	retcode = pam_close_session(pamh,0); \
-	pam_end(pamh,retcode); \
-}
+static CkConnector *ckc = NULL;
+static const char *ck_cookie = NULL;
+static pid_t client_pid = -1;
+static pid_t server_pid = -1;
+static volatile int signal_caught = 0;
+static volatile int got_usr1 = 0;
 
-int     timeout = 60;
+#define die() _die(__LINE__, NULL)
+#define die_msg(fmt...) _die(__LINE__, fmt)
+#define die_perror(msg) _die_perror(__LINE__, msg)
 
-struct passwd *pwd;
-
-static struct passwd pwdcopy;
-char    hostaddress[16];	/* used in checktty.c */
-char	*hostname;		/* idem */
-static char	*username, *tty_name, *tty_number;
-static char	thishost[100];
-static pid_t	pid;
-
-static inline void xstrncpy(char *dest, const char *src, size_t n) {
-        strncpy(dest, src, n-1);
-        dest[n-1] = 0;
-}
-
-static int childPid = 0;
-static volatile int got_sig = 0;
-
-
-
-static void
-parent_sig_handler(int signal)
+__attribute__((noreturn))
+static void _die(int line, const char *fmt, ...)
 {
-  if(childPid)
-    kill(-childPid, signal);
-  else
-    got_sig = 1;
-  if(signal == SIGTERM)
-    kill(-childPid, SIGHUP); /* because the shell often ignores SIGTERM */
-}
+	va_list ap;
 
+	fprintf(stderr, "olpc-dm: failure condition encountered on line %d\n",
+		line);
 
-/* Use PAM to login as user */
-void olpc_login(const char *) __attribute__((noreturn));
-void
-olpc_login(const char *tty_name)
-{
-  extern int optind;
-  extern char *optarg;
-  int fflag, hflag, pflag, cnt;
-  int quietlog;
-  char *domain;
-  char tbuf[MAXPATHLEN + 2];
-  char tty_name_buf[MAXPATHLEN];
-  int retcode;
-  pam_handle_t *pamh = NULL;
-  struct pam_conv conv = { misc_conv, NULL };
-  struct sigaction sa, oldsa_hup, oldsa_term;
-  pid = getpid();
-
-  signal(SIGQUIT, SIG_IGN);
-  signal(SIGINT, SIG_IGN);
-
-  setpriority(PRIO_PROCESS, 0, 0);
-
-  gethostname(tbuf, sizeof(tbuf));
-  xstrncpy(thishost, tbuf, sizeof(thishost));
-  domain = index(tbuf, '.');
-
-  username = hostname = NULL;
-  fflag = hflag = pflag = 0;
-
-  for (cnt = getdtablesize(); cnt > 2; cnt--)
-    close(cnt);
-
-  /* TODO: This is not right, we should open the display :0 but we need
-   *     to start X first.  Flow should go like this once we get rid of startx
-   *     seteuid 0, setuid olpc -> start X -> start pam session -> fork ->
-   *     seteuid olpc -> start clients
-   *
-   * CSA: see dlo trac #5705 for some more explanation, and
-   *      http://www.steve.org.uk/Reference/Unix/faq_2.html#SEC16
-   *      for the canonical steps invoked by a daemon.  When olpc-dm
-   *      was invoked from initscripts, it needed to partially daemonize
-   *      ourself to remove tty0 as our controlling terminal, and then
-   *      choose a new specific tty we wanted to bind to.  Now that
-   *      upstart is invoking us without a controlling tty, this isn't
-   *      necessary.  PAM does want a tty name, so it can ask for a
-   *      password if necessary; use ttyname to determine the tty bound to
-   *      stdin if olpc-dm wasn't invoked with a specific tty on the
-   *      command-line.  (upstart will bind /dev/console to stdin).
-   */
-  if (tty_name == NULL)
-    {
-      tty_name = tty_name_buf;
-      tty_name_buf[0] = '\0';
-      retcode = ttyname_r(0/*stdin fd*/, tty_name_buf, sizeof(tty_name_buf));
-      if (retcode != 0)
-	{
-	  fprintf(stderr, "Can't get tty name, aborting: %s\n",
-		  strerror(retcode));
-	  syslog(LOG_ERR, "Can't get tty name: %s", strerror(retcode));
-	  exit(1);
+	if (fmt != NULL) {
+		fprintf(stderr, "olpc-dm: ");
+		va_start(ap, fmt);
+		vfprintf(stderr, fmt, ap);
+		va_end(ap);
+		fputc('\n', stderr);
 	}
-    }
-  /* strip off '/dev/' prefix from tty_name if present; this is to match
-   * the wtmp format, which is a bit crufty. */
-#define DEV_PREFIX "/dev/"
-  if (strncmp(DEV_PREFIX, tty_name, strlen(DEV_PREFIX)) == 0)
-    {
-      tty_name += strlen(DEV_PREFIX);
-    }
-  /* strip off 'tty' prefix from tty_name to get tty_number */
-#define TTY_PREFIX "tty"
-  if (strncmp(TTY_PREFIX, tty_name, strlen(TTY_PREFIX)) == 0)
-    {
-      tty_number = tty_name + strlen(TTY_PREFIX);
-    }
-  else
-    {
-      tty_number = "";
-    }
 
-  /* set pgid to pid */
-  setpgrp();
-  /* this means that setsid() will fail */
-
-  openlog("olpc-login", LOG_ODELAY, LOG_AUTHPRIV);
-
-  retcode = pam_start("olpc-login", OLPC_USER, &conv, &pamh);
-  if(retcode != PAM_SUCCESS)
-    {
-      fprintf(stderr, "olpc-login: PAM Failure, aborting: %s\n",
-              pam_strerror(pamh, retcode));
-      syslog(LOG_ERR, "Couldn't initialize PAM: %s",
-             pam_strerror(pamh, retcode));
-      exit(99);
-    }
-  retcode = pam_set_item(pamh, PAM_TTY, tty_name);
-  PAM_FAIL_CHECK;
-
-  /*
-   * Authentication may be skipped (for example, during krlogin, rlogin, etc...),
-   * but it doesn't mean that we can skip other account checks. The account
-   * could be disabled or password expired (althought kerberos ticket is valid).
-   * -- kzak@redhat.com (22-Feb-2006)
-   */
-  retcode = pam_acct_mgmt(pamh, 0);
-
-  if(retcode == PAM_NEW_AUTHTOK_REQD)
-    retcode = pam_chauthtok(pamh, PAM_CHANGE_EXPIRED_AUTHTOK);
-
-  PAM_FAIL_CHECK;
-
-  /*
-   * Grab the user information out of the password file for future usage
-   * First get the username that we are actually using, though.
-   */
-  retcode = pam_get_item(pamh, PAM_USER, (const void **) &username);
-  PAM_FAIL_CHECK;
-
-  if (!username || !*username)
-    {
-      fprintf(stderr, "\nSession setup problem, abort.\n");
-      syslog(LOG_ERR, "NULL user name in %s:%d. Abort.",
-             __FUNCTION__, __LINE__);
-      pam_end(pamh, PAM_SYSTEM_ERR);
-      exit(1);
-    }
-
-  if (!(pwd = getpwnam(username)))
-    {
-      fprintf(stderr, "\nSession setup problem, abort.\n");
-      syslog(LOG_ERR, "Invalid user name \"%s\" in %s:%d. Abort.",
-             username, __FUNCTION__, __LINE__);
-      pam_end(pamh, PAM_SYSTEM_ERR);
-      exit(1);
-    }
-
-  /*
-   * Create a copy of the pwd struct - otherwise it may get
-   * clobbered by PAM
-   */
-  memcpy(&pwdcopy, pwd, sizeof(*pwd));
-  pwd = &pwdcopy;
-  pwd->pw_name   = strdup(pwd->pw_name);
-  pwd->pw_passwd = strdup(pwd->pw_passwd);
-  pwd->pw_gecos  = strdup(pwd->pw_gecos);
-  pwd->pw_dir  = strdup(pwd->pw_dir);
-  pwd->pw_shell  = strdup(pwd->pw_shell);
-  if (!pwd->pw_name || !pwd->pw_passwd || !pwd->pw_gecos ||
-	!pwd->pw_dir || !pwd->pw_shell)
-    {
-      fprintf(stderr, "olpc-login: Out of memory\n");
-      syslog(LOG_ERR, "Out of memory");
-      pam_end(pamh, PAM_SYSTEM_ERR);
-      exit(1);
-    }
-  username = pwd->pw_name;
-
-  /*
-   * Initialize the supplementary group list.
-   * This should be done before pam_setcred because
-   * the PAM modules might add groups during pam_setcred.
-   */
-  if (initgroups(username, pwd->pw_gid) < 0)
-    {
-      syslog(LOG_ERR, "initgroups: %m");
-      fprintf(stderr, "\nSession setup problem, abort.\n");
-      pam_end(pamh, PAM_SYSTEM_ERR);
-      exit(1);
-    }
-
-  retcode = pam_open_session(pamh, 0);
-  PAM_FAIL_CHECK;
-
-  retcode = pam_setcred(pamh, PAM_ESTABLISH_CRED);
-  if (retcode != PAM_SUCCESS)
-      pam_close_session(pamh, 0);
-  PAM_FAIL_CHECK;
-
-  /* committed to login -- turn off timeout */
-  alarm((unsigned int)0);
-
-  endpwent();
-
-  /* This requires some explanation: As root we may not be able to
-     read the directory of the user if it is on an NFS mounted
-     filesystem. We temporarily set our effective uid to the user-uid
-     making sure that we keep root privs. in the real uid.
-
-     A portable solution would require a fork(), but we rely on Linux
-     having the BSD setreuid() */
-
-  {
-    char tmpstr[MAXPATHLEN];
-    uid_t ruid = getuid();
-    gid_t egid = getegid();
-
-    /* avoid snprintf - old systems do not have it, or worse,
-       have a libc in which snprintf is the same as sprintf */
-    if (strlen(pwd->pw_dir) + sizeof(_PATH_HUSHLOGIN) + 2 > MAXPATHLEN)
-      quietlog = 0;
-    else
-      {
-        sprintf(tmpstr, "%s/%s", pwd->pw_dir, _PATH_HUSHLOGIN);
-                setregid(-1, pwd->pw_gid);
-                setreuid(0, pwd->pw_uid);
-                quietlog = (access(tmpstr, R_OK) == 0);
-                setuid(0); /* setreuid doesn't do it alone! */
-                setreuid(ruid, 0);
-                setregid(-1, egid);
-      }
-  }
-
-  /* for linux, write entries in utmp and wtmp */
-  {
-    struct utmp ut;
-    struct utmp *utp;
-    struct timeval tv;
-	
-    utmpname(_PATH_UTMP);
-    setutent();
-
-    /* Find pid in utmp.
-       login sometimes overwrites the runlevel entry in /var/run/utmp,
-       confusing sysvinit. I added a test for the entry type, and the problem
-       was gone. (In a runlevel entry, st_pid is not really a pid but some number
-       calculated from the previous and current runlevel).
-       Michael Riepe <michael@stud.uni-hannover.de>
-     */
-    while ((utp = getutent()))
-      if (utp->ut_pid == pid
-          && utp->ut_type >= INIT_PROCESS
-          && utp->ut_type <= DEAD_PROCESS)
-        break;
-
-	/* If we can't find a pre-existing entry by pid, try by line.
-	   BSD network daemons may rely on this. (anonymous) */
-    if (utp == NULL)
-      {
-        setutent();
-        ut.ut_type = LOGIN_PROCESS;
-        strncpy(ut.ut_line, tty_name, sizeof(ut.ut_line));
-        utp = getutline(&ut);
-      }
-	
-    if (utp)
-      {
-        memcpy(&ut, utp, sizeof(ut));
-      }
-    else
-      {
-        /* some gettys/telnetds don't initialize utmp... */
-        memset(&ut, 0, sizeof(ut));
-      }
-	
-    if (ut.ut_id[0] == 0)
-      strncpy(ut.ut_id, tty_number, sizeof(ut.ut_id));
-	
-    strncpy(ut.ut_user, username, sizeof(ut.ut_user));
-    xstrncpy(ut.ut_line, tty_name, sizeof(ut.ut_line));
-    gettimeofday(&tv, NULL);
-    ut.ut_tv.tv_sec = tv.tv_sec;
-    ut.ut_tv.tv_usec = tv.tv_usec;
-    ut.ut_type = USER_PROCESS;
-    ut.ut_pid = pid;
-    if (hostname)
-      {
-        xstrncpy(ut.ut_host, hostname, sizeof(ut.ut_host));
-        if (hostaddress[0])
-          memcpy(&ut.ut_addr_v6, hostaddress, sizeof(ut.ut_addr_v6));
-      }
-	
-    pututline(&ut);
-    endutent();
-
-    updwtmp(_PATH_WTMP, &ut);
-  }
-
-  setgid(pwd->pw_gid);
-
-  clearenv(); /* sanitize environment */
-  /* XXX: in theory, we'd allow some values from the old environment through
-   * (note the below code assumes we've let the old HOME through), but
-   * it's too much trouble. */
-
-  setenv("HOME", pwd->pw_dir, 0);    /* legal to override */
-  setenv("PATH", _PATH_DEFPATH, 1);
-  setenv("SHELL", pwd->pw_shell, 1);
-
-  /* LOGNAME is not documented in login(1) but
-     HP-UX 6.5 does it. We'll not allow modifying it.
-     */
-  setenv("LOGNAME", pwd->pw_name, 1);
-
-  /* Use tmpfs for Xauthority, ICEauthority, and server authority files. */
-  /* dlo trac #317 */
-  setenv("XAUTHORITY", XAUTHORITY, 1);
-  setenv("XSERVERAUTH", XSERVERAUTH, 1);
-  setenv("ICEAUTHORITY", ICEAUTHORITY, 1);
-
-  {
-    int i;
-    char ** env = pam_getenvlist(pamh);
-
-    if (env != NULL)
-      {
-        for (i=0; env[i]; i++)
-          putenv(env[i]);
-      }
-  }
-
-  /* allow tracking of good logins.
-     -steve philp (sphilp@mail.alliance.net) */
-
-  if (hostname)
-    syslog(LOG_INFO, "LOGIN ON %s BY %s FROM %s", tty_name,
-           pwd->pw_name, hostname);
-  else
-    syslog(LOG_INFO, "LOGIN ON %s BY %s", tty_name,
-           pwd->pw_name);
-
-  signal(SIGALRM, SIG_DFL);
-  signal(SIGQUIT, SIG_DFL);
-  signal(SIGTSTP, SIG_IGN);
-
-  /*
-   * We must fork before setuid() because we need to call
-   * pam_close_session() as root.
-   */
-  memset(&sa, 0, sizeof(sa));
-  sa.sa_handler = SIG_IGN;
-  sigaction(SIGINT, &sa, NULL);
-
-  sigaction(SIGHUP, &sa, &oldsa_hup); /* ignore while we detach from the tty */
-  ioctl(0, TIOCNOTTY, NULL);
-
-  sa.sa_handler = parent_sig_handler;
-  sigaction(SIGHUP, &sa, NULL);
-  sigaction(SIGTERM, &sa, &oldsa_term);
-
-  /*
-   * FIXME: something bad happens here that causes olpc-dm to remain attached
-   * to the tty from which it was spawned, react to things like ^C and kill
-   * innocent sessions that happen to be running on that tty -- bernie
-   */
-  closelog();
-  childPid = fork();
-  if (childPid < 0)
-    {
-      int errsv = errno;
-      /* error in fork() */
-      fprintf(stderr, "olpc-login: failure forking: %s", strerror(errsv));
-      PAM_END;
-      exit(1);
-    }
-
-  if (childPid)
-    {
-      close(0); close(1); close(2);
-      sa.sa_handler = SIG_IGN;
-      sigaction(SIGQUIT, &sa, NULL);
-      sigaction(SIGINT, &sa, NULL);
-      while(wait(NULL) == -1 && errno == EINTR) /**/ ;
-      openlog("olpc-login", LOG_ODELAY, LOG_AUTHPRIV);
-	  /*
-	   * FIXME: something bad happens here that causes innocent
-	   * sessions on same tty to die -- bernie
-	   */
-      PAM_END;
-      exit(0);
-    }
-
-  sigaction(SIGHUP, &oldsa_hup, NULL);
-  sigaction(SIGTERM, &oldsa_term, NULL);
-  if(got_sig) exit(1);
-
-  /* child */
-  /*
-   * Problem: if the user's shell is a shell like ash that doesnt do
-   * setsid() or setpgrp(), then a ctrl-\, sending SIGQUIT to every
-   * process in the pgrp, will kill us.
-   */
-
-  /* start new session */
-  setsid();
-
-  /* make sure we have a controlling tty */
-  openlog("olpc-login", LOG_ODELAY, LOG_AUTHPRIV);	/* reopen */
-
-  signal(SIGINT, SIG_DFL);
-
-  /* discard permissions last so can't get killed and drop core */
-  if(setuid(pwd->pw_uid) < 0 && pwd->pw_uid)
-    {
-      syslog(LOG_ALERT, "setuid() failed");
-      exit(1);
-    }
-
-  /* wait until here to change directory! */
-  if (chdir(pwd->pw_dir) < 0)
-    {
-      printf("No directory %s!\n", pwd->pw_dir);
-      if (chdir("/"))
-        exit(0);
-      pwd->pw_dir = "/";
-      printf("Logging in with home = \"/\".\n");
-    }
-
-  /* As OLPC_USER, create directory for the .Xauthority files (dlo trac #317)*/
-  /* intentionally ignore retval; we are confident that xauth will correctly
-   * report any truly fatal errors. */
-  mkdir(AUTH_HOME, 0700);
-
-  /* exec startx. wait on child to cleanup */
-  execl("/usr/bin/startx", "startx", "/usr/bin/olpc-session", "--", "-fp", "built-ins", "-wr", NULL);
-  exit(0);
+	_exit(1);
 }
 
-int
-main (int argc, char *argv[])
+__attribute__((noreturn))
+static void _die_perror(int line, const char *msg)
 {
-  char *tty_name = NULL;
-
-  if (argc > 2)
-    tty_name = argv[1];
-
-  olpc_login(tty_name);
-  return 0;
+	fprintf(stderr, "olpc-dm: failure condition encountered on line %d\n",
+		line);
+	perror(msg);
+	_exit(1);
 }
+
+#ifdef DEBUG
+#define dbg(msg...) _debug(msg)
+
+static void _debug(const char *fmt, ...)
+{
+	va_list ap;
+
+	printf("olpc-dm: ");
+	va_start(ap, fmt);
+	vprintf(fmt, ap);
+	va_end(ap);
+	putchar('\n');
+}
+
+#else
+#define dbg(msg...)
+#endif
+
+/* start X server as the leader of a process group, and wait until it has
+ * come online before returning */
+static void start_server(void)
+{
+	pid_t pid;
+	sigset_t mask, old;
+
+	/* we use a trick to make the X server send us a SIGUSR1 to let us know
+	 * when it is ready to start accepting connections. */
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGUSR1);
+	sigprocmask(SIG_BLOCK, &mask, &old);
+
+	pid = vfork();
+	if (pid == -1)
+		die();
+
+	if (pid == 0) {
+		/* child */
+		sigprocmask(SIG_SETMASK, &old, NULL);
+
+		/* Don't hang on read/write to tty */
+		signal(SIGTTIN, SIG_IGN);
+		signal(SIGTTOU, SIG_IGN);
+
+		/* Ignore SIGUSR1. This way the server will send the parent a SIGUSR1
+		 * when it is ready to accept connections. */
+		signal(SIGUSR1, SIG_IGN);
+
+		if (setpgid(0, getpid()))
+			die_perror("setpgid server");
+
+#ifndef DEBUG
+		freopen("/dev/null", "r", stdin);
+		freopen("/var/log/olpc-dm-X.log", "w", stdout);
+		freopen("/var/log/olpc-dm-X.error.log", "w", stderr);
+#endif
+		execl("/usr/bin/X", "X", X_DISPLAY, "-wr", "-auth", XSERVERAUTH, NULL);
+		die_perror("exec X");
+	}
+
+	/* parent */
+	dbg("server pid is %d", pid);
+	server_pid = pid;
+
+	/* wait for SIGUSR1 to indicate readiness, but with a 15 second timeout */
+	alarm(15);
+	got_usr1 = 0;
+	sigsuspend(&old);
+	alarm(0);
+	sigprocmask(SIG_SETMASK, &old, NULL);
+
+	if (!got_usr1)
+		die_msg("Timeout waiting for server to become ready");
+}
+
+/* get the tty number that the X server is using from the 7th field in
+ * /proc/123/stat */
+static int get_server_tty(void)
+{
+#define STAT_BUFSIZE 128
+	char *buf = malloc(STAT_BUFSIZE);
+	char filename[17];
+	int r;
+	size_t rd;
+	FILE *fd;
+	char *base = buf;
+	char *next;
+	int i;
+
+	if (!buf)
+		die();
+
+	r = snprintf(filename, sizeof(filename), "/proc/%d/stat", server_pid);
+	if (r >= sizeof(filename))
+		die();
+
+	fd = fopen(filename, "r");
+	if (!fd)
+		die_perror("open stat");
+
+	rd = fread(buf, 1, STAT_BUFSIZE, fd);
+	fclose(fd);
+
+	if (rd < STAT_BUFSIZE)
+		buf[rd] = 0;
+
+	/* we want the 7th field */
+	i = 6;
+	while (i--) {
+		base = index(base, ' ');
+		if (!base)
+			die_msg("error finding X terminal");
+		base++;
+	}
+
+	/* make sure the field wasn't truncated */
+	next = index(base, ' ');
+	if (!next)
+		die_msg("error parsing terminal");
+
+	*next = 0;
+	r = atoi(base);
+	
+	if (major(r) != 4)
+		die_msg("X not running on a tty?");
+
+	free(buf);
+	dbg("X is running on tty%d", minor(r));
+	return minor(r);
+}
+
+/* open a ConsoleKit session */
+static void init_ck(void)
+{
+	DBusError error;
+	dbus_bool_t ret;
+	dbus_int32_t uid;
+	const char *display = X_DISPLAY;
+	char device[11];
+	char *device_ptr = device;
+	dbus_bool_t is_local = TRUE;
+	int r;
+	struct passwd *pwd = getpwnam(OLPC_USER);
+	if (!pwd)
+		die_perror("getpwnam");
+
+	ckc = ck_connector_new();
+	if (!ckc)
+		die();
+
+	uid = pwd->pw_uid;
+	r = snprintf(device, sizeof(device), "/dev/tty%d", get_server_tty());
+	if (r >= sizeof(device))
+		die();
+
+	dbus_error_init(&error);
+	ret = ck_connector_open_session_with_parameters (ckc, &error,
+		"unix-user", &uid,
+		"x11-display", &display,
+		"x11-display-device", &device_ptr,
+		"is-local", &is_local,
+		NULL);
+	if (!ret)
+		die();
+
+	dbg("CK session opened");
+	ck_cookie = ck_connector_get_cookie(ckc);
+	if (!ck_cookie)
+		die_msg("couldn't get ConsoleKit cookie");
+
+	/* copy it, just to be sure that it's safe to access after a fork */
+	ck_cookie = strdup(ck_cookie);
+	if (!ck_cookie)
+		die();
+}
+
+/* close ConsoleKit session */
+static void deinit_ck(void)
+{
+	DBusError error;
+
+	if (!ck_cookie || !ckc)
+		return;
+
+	dbg("deinit ck");
+	free((void *) ck_cookie);
+	dbus_error_init(&error);
+	if (!ck_connector_close_session(ckc, &error))
+		fprintf(stderr, "olpc-dm: ck_connector_close_session() failed\n");
+}
+
+static void setenv_chk(const char *name, const char *value)
+{
+	if (setenv(name, value, 1))
+		die();
+}
+
+/* setup execution environment ready for executing something as the target user:
+ * correct environment, privs dropped, etc. */
+static void setup_client_env(void)
+{
+	struct passwd *pwd = getpwnam(OLPC_USER);
+	if (!pwd)
+		die_perror("getpwnam");
+
+	if (setpgid(0, getpid()))
+		die_perror("setpgid");
+
+	if (chdir(pwd->pw_dir))
+		die_perror("chdir");
+
+	clearenv();
+	setenv_chk("HOME", pwd->pw_dir);
+	setenv_chk("LOGNAME", pwd->pw_name);
+	setenv_chk("USERNAME", pwd->pw_name);
+	setenv_chk("USER", pwd->pw_name);
+	setenv_chk("SHELL", pwd->pw_shell);
+	setenv_chk("PATH", _PATH_DEFPATH);
+	setenv_chk("DISPLAY", X_DISPLAY);
+	setenv_chk("XAUTHORITY", XAUTHORITY);
+	setenv_chk("XSERVERAUTH", XSERVERAUTH);
+	setenv_chk("ICEAUTHORITY", ICEAUTHORITY);
+	if (ck_cookie)
+		setenv_chk("XDG_SESSION_COOKIE", ck_cookie);
+
+	/* Drop privs */
+	if (initgroups(pwd->pw_name, pwd->pw_gid))
+		die_perror("initgroups");
+
+	if (setresgid(pwd->pw_gid, pwd->pw_gid, pwd->pw_gid))
+		die_perror("setresgid");
+
+	if (setresuid(pwd->pw_uid, pwd->pw_uid, pwd->pw_uid))
+		die_perror("setresuid");
+}
+
+/* start X11 client as the leader of a process group, with privileges dropped
+ * to olpc user. */
+static void start_client(void)
+{
+	pid_t pid = vfork();
+	if (pid < 0)
+		die();
+
+	if (pid != 0) {
+		/* parent */
+		dbg("client pid is %d", pid);
+		client_pid = pid;
+		return;
+	}
+
+	/* child */
+	setup_client_env();
+
+	dbg("launch client now");
+#ifndef DEBUG
+	freopen("/dev/null", "r", stdin);
+	freopen("/tmp/olpc-dm-client.log", "w", stdout);
+	freopen("/tmp/olpc-dm-client.error.log", "w", stderr);
+#endif
+	execl(X_SESSION,  X_SESSION, NULL);
+	die_perror("exec client");
+}
+
+static void signal_catcher(int signo)
+{
+	dbg("caught signal %d", signo);
+	if (signo == SIGUSR1)
+		got_usr1++;
+	else
+		signal_caught = signo;
+}
+
+static void setup_signals(void)
+{
+	struct sigaction sa;
+	memset(&sa, 0, sizeof sa);
+	sa.sa_handler = signal_catcher;
+	sigemptyset(&sa.sa_mask);
+
+	/* These signals can interrupt the wait() loop */
+	sigaction(SIGTERM, &sa, NULL);
+	sigaction(SIGQUIT, &sa, NULL);
+	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGHUP, &sa, NULL);
+	sigaction(SIGPIPE, &sa, NULL);
+
+	/* we wait for this signal from the X server to indicate readiness */
+	sigaction(SIGUSR1, &sa, NULL);
+
+	/* Don't hang on read/write to tty */
+	signal(SIGTTIN, SIG_IGN);
+	signal(SIGTTOU, SIG_IGN);
+}
+
+static void wait_for_exit(void)
+{
+	pid_t pid = -1;
+	dbg("wait for child");
+	while (pid != client_pid && pid != server_pid && !signal_caught) {
+		pid = wait(NULL);
+		dbg("wait() returned %d", pid);
+	}
+}
+
+/* wait until X server has gone away */
+static int wait_for_server_shutdown(int timeout)
+{
+	while (timeout-- > 0) {
+		pid_t r;
+		dbg("wait for server shutdown (pid %d), timeout %d", server_pid,
+			timeout);
+		r = waitpid(server_pid, NULL, WNOHANG);
+		dbg("waitpid ret %d", r);
+		if (r == server_pid) {
+			dbg("server has shut down");
+			return 0;
+		}
+		sleep(1);
+	}
+
+	return 1;
+}
+
+/* kill server by a gentle SIGTERM, followed by a SIGKILL if it doesn't comply.
+ * doesn't return until the process has definitely gone away. */
+static void kill_server(void)
+{
+	dbg("send SIGTERM to server");
+	if (killpg(server_pid, SIGTERM)) {
+		if (errno == ESRCH)
+			return;
+		die_perror("Can't kill X server");
+	}
+
+	if (wait_for_server_shutdown(10) == 0)
+		return;
+
+	fprintf(stderr, "Server not shutting down, sending SIGKILL\n");
+	if (killpg(server_pid, SIGKILL))
+		if (errno == ESRCH)
+			return;
+
+	if (wait_for_server_shutdown(3))
+		die_msg("Can't kill server");
+}
+
+/* kill server and client */
+static void shutdown(void)
+{
+	signal(SIGTERM, SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
+	signal(SIGINT, SIG_IGN);
+	signal(SIGHUP, SIG_IGN);
+	signal(SIGPIPE, SIG_IGN);
+
+	if (signal_caught)
+		fprintf(stderr, "olpc-dm: Unexpected signal %d.\n", signal_caught);
+
+	if (client_pid > 0) {
+		dbg("send SIGHUP to client process group");
+		if (killpg(client_pid, SIGHUP))
+			if (errno != ESRCH)
+				perror("killpg client");
+	}
+
+	if (server_pid > 0)
+		kill_server();
+
+	if (server_pid < 0)
+		die_msg("Server error");
+
+	if (client_pid < 0)
+		die_msg("Client error");
+}
+
+/* create MIT cookie for xauth. result must be freed after use */
+static char *generate_xauth_cookie(void)
+{
+#define MIT_COOKIE_LENGTH 32
+	char *cookie = malloc(MIT_COOKIE_LENGTH + 1);
+	int num_hex = 0;
+	int r;
+	int i;
+
+	if (!cookie)
+		die();
+
+	/* use 2 as the size value for snprintf, because it doesn't seem to
+	 * only want to write 1 character, also that means we end up naturally
+	 * being NULL-terminated */
+
+	srand(time(NULL));
+	for (i = 0; i < MIT_COOKIE_LENGTH - 1; i++) {
+		r = rand() % 16;
+		snprintf(cookie + i, 2, "%x", r);
+		if (r >= 10)
+			num_hex++;
+    }
+
+	/* must have an even number of digits vs hex characters */
+	if (num_hex % 2 == 0)
+		r = rand() % 10;
+	else
+		r = 10 + (rand() % 5);
+	snprintf(&cookie[MIT_COOKIE_LENGTH - 1], 2, "%x", r);
+
+	dbg("generated cookie %s", cookie);
+	return cookie;
+}
+
+static void generate_xauth(void)
+{
+	char *cookie;
+
+	pid_t pid = vfork();
+	if (pid < 0)
+		die();
+
+	if (pid != 0) {
+		/* parent */
+		int status = 0;
+
+		dbg("xauth maker pid %d", pid);
+		if (waitpid(pid, &status, 0) < 0)
+			die_perror("waitpid xauth maker");
+		if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
+			return;
+		die_msg("xauth maker failed, code %d", status);
+	}
+
+	/* child */
+	setup_client_env();
+	cookie = generate_xauth_cookie();
+
+	/* Create directory for the .Xauthority files (dlo trac #317), and
+	 * remove any stale data file from there. */
+	/* intentionally ignore retval; we are confident that xauth will correctly
+	 * report any truly fatal errors. */
+	mkdir(AUTH_HOME, 0700);
+	unlink(XAUTHORITY);
+
+	/* invoke xauth program to create the file */
+	execl("/usr/bin/xauth", "xauth", "-q", "-f", XAUTHORITY, "add", X_DISPLAY, ".", cookie, NULL);
+	die_perror("exec xauth");
+}
+
+int main(int argc, char *argv[])
+{
+	generate_xauth();
+	setup_signals();
+	start_server();
+	init_ck();
+	start_client();
+	wait_for_exit();
+	shutdown();
+	deinit_ck();
+	_exit(0);
+}
+

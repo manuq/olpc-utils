@@ -7,13 +7,11 @@ WARNFLAGS = \
         -Wextra -Wstrict-aliasing=2 \
         -Wunsafe-loop-optimizations
 
+CK_CONNECTOR_CFLAGS = $(shell pkg-config --cflags --libs ck-connector)
 
 # files
 
-OLPC_DM_OBJS = src/olpc-dm.o
-
 BINARIES = usr/sbin/olpc-dm
-OBJS = $(OLPC_DM_OBJS)
 OVERLAYS = etc usr
 BUILT_DIRS= usr/sbin
 
@@ -23,17 +21,11 @@ BUILT_DIRS= usr/sbin
 all: $(BINARIES)
 
 
-# objects
-
-%.o: %.c
-	$(CC) $(WARNFLAGS) -c -o $@ $<
-
-
 # built works
 
-usr/sbin/olpc-dm: $(OLPC_DM_OBJS)
+usr/sbin/olpc-dm: src/olpc-dm.c
 	mkdir -p $(dir $@)
-	$(CC) -lpam_misc -lpam -o $@ $(filter %.o,$^)
+	$(CC) $(CFLAGS) $(CK_CONNECTOR_CFLAGS) -o $@ $^
 
 
 # install targets
