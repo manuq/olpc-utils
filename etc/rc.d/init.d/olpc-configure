@@ -47,14 +47,11 @@ read_config() {
 	XKB_LAYOUT="us"
 	SYS_LANG="en_US.UTF-8"
 
-	if X -version 2>&1 | grep -q 'Version 1.3'; then
-		XVER='-1.3'
-	fi
-	XORG_CONF=xorg-emu${XVER}.conf
+	XORG_CONF=xorg-emu.conf
 
 	if grep -q Geode /proc/cpuinfo; then
 		# TODO: put this all in a hal callout or something similar
-		XORG_CONF=xorg-dcon${XVER}.conf
+		XORG_CONF=xorg-dcon.conf
 
 		if [ -f $MFG_DATA/KL ]; then
 			XKB_MODEL="`mfgtag KM`"
