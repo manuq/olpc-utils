@@ -64,14 +64,18 @@ read_config() {
 
 	if [ "${XO_VERSION}" != "0" ]; then
 		# TODO: put this all in a hal callout or something similar
-		XORG_CONF=xorg-dcon.conf
+		if [ "${XO_VERSION}" == "1.5" ]; then
+			XORG_CONF=xorg-xo1.5-dcon.conf
+		else
+			XORG_CONF=xorg-dcon.conf
+		fi
 
 		if [ -f $MFG_DATA/KL ]; then
 			XKB_MODEL="`mfgtag KM`"
 			XKB_LAYOUT="`mfgtag_stripspaces KL`"
 			XKB_VARIANT="`mfgtag KV`"
 			SYS_LANG="`mfgtag LO`"
-		elif [ "`cut -c 7-8 /ofw/openprom/model 2>/dev/null`" = "Q2" ] ; then
+		elif [ "${XO_VERSION}" == "1" ] ; then
 			KB_HEADER=`read_nvram 0x44 2`
 			if [ "x$KB_HEADER" = "xKB" ] ; then
 				KB_CODE=`read_nvram 0x46 10`
