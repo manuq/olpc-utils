@@ -10,11 +10,10 @@ WARNFLAGS = \
 
 # files
 
-SETOLPCKEYS_OBJS = src/setolpckeys.o
 OLPC_DM_OBJS = src/olpc-dm.o
 
-BINARIES = usr/sbin/setolpckeys usr/sbin/olpc-dm
-OBJS = $(SETOLPCKEYS_OBJS) $(OLPC_DM_OBJS)
+BINARIES = usr/sbin/olpc-dm
+OBJS = $(OLPC_DM_OBJS)
 OVERLAYS = etc usr
 BUILT_DIRS= usr/sbin
 
@@ -31,10 +30,6 @@ all: $(BINARIES)
 
 
 # built works
-
-usr/sbin/setolpckeys: $(SETOLPCKEYS_OBJS)
-	mkdir -p $(dir $@)
-	$(CC) -o $@ $(filter %.o,$^)
 
 usr/sbin/olpc-dm: $(OLPC_DM_OBJS)
 	mkdir -p $(dir $@)
