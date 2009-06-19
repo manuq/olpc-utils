@@ -1,8 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 #
-# Copyright (C) 2007  OLPC
+# Copyright (C) 2007-2009  OLPC
 # Author: Bernardo Innocenti <bernie@codewiz.org>
 # Author: John (J5) Palmieri <johnp@redhat.com>
+# Author: Daniel Drake <dsd@laptop.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +18,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
+# must be done early
+eval $(dbus-launch --sh-syntax --exit-with-session)
 
 # provide some defaults
 LANG="en_US.UTF-8"
@@ -33,9 +37,9 @@ export LANG
 # In reality, the Compose tables get loaded if the locale is set 
 # appropriately, so we use the LANG variable below
 if [ "$LANG" = "am_ET.UTF-8" ]; then
-  GTK_IM_MODULE="xim"
+	GTK_IM_MODULE="xim"
 else
-  GTK_IM_MODULE="gtk-im-context-simple"
+	GTK_IM_MODULE="gtk-im-context-simple"
 fi
 
 # load keyboard settings
@@ -43,9 +47,15 @@ fi
 [ -f "$HOME/.kbd" ] && . "$HOME/.kbd"
 export GTK_IM_MODULE
 
-# set mouse & keyboard speed
-xset m 7/4 0
-xset r rate 500 30
+if [ -e "/ofw/banner-name" ]; then
+	banner=$(</ofw/banner-name)
+	# FIXME: is this a reliable way to check for XO-1 vs 1.5?
+	if [ "${banner:0:6}" == "OLPC C" ]; then
+		# XO-1 only: set mouse & keyboard speed
+		xset m 7/4 0
+		xset r rate 500 30
+	fi
+fi
 
 [ -n "$XKB_OPTION" ] && XKB_OPTION=`echo "$XKB_OPTION" | sed -e 's/\b/-option /g'`
 
@@ -67,6 +77,18 @@ xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 79 -r \
 	223 -r 224 -r 225 -r 194 -r 195 -r 196 -r 226 -r 227 -r 228 -r 229 -r 197 -r \
 	198 -r 199 -r 156 -r 235
 
+
+export SUGAR_SCALING=xo
+
+# Desktop selection
+desktop=sugar
+if [ -e "$HOME/.olpc-active-desktop" ]; then
+	active=$(<$HOME/.olpc-active-desktop)
+	if [ "${active}" == "gnome" ]; then
+		desktop=gnome-session
+	fi
+fi
+
 # source custom user session, if present
 [ -f "$HOME/.xsession" ] && . "$HOME/.xsession"
 
@@ -74,5 +96,5 @@ xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 79 -r \
 mv $HOME/.boot_time $HOME/.boot_time.prev 2>/dev/null
 cat /proc/uptime >$HOME/.boot_time
 
-# finally, run sugar
-exec /usr/bin/ck-xinit-session /usr/bin/sugar
+exec $desktop
+
