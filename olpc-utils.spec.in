@@ -18,6 +18,9 @@ Requires:   /usr/bin/find
 # for olpc-test-devkey
 Requires:   olpcupdate >= 2.10
 
+# for olpc-session
+Requires:      /usr/share/sugar/data
+
 %description
 
 Tools for starting an X session, mapping keys on the OLPC keyboards,
@@ -67,6 +70,7 @@ rm -rf %{buildroot}
 %{_bindir}/olpc-clean-previews
 %{_bindir}/olpc-audit
 %{_bindir}/olpc-test-devkey
+%attr(0644, -, -) %{_datadir}/sugar/data/sugar-xo.gtkrc
 %{_sysconfdir}/profile.d/zzz_olpc.sh
 %{_sysconfdir}/cron.d/olpc-pwr-prof.cron
 %{_sysconfdir}/rc.d/init.d/olpc-configure
