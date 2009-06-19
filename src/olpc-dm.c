@@ -53,6 +53,8 @@ static pid_t server_pid = -1;
 static volatile int signal_caught = 0;
 static volatile int got_usr1 = 0;
 
+static void shutdown(void);
+
 #define die() _die(__LINE__, NULL)
 #define die_msg(fmt...) _die(__LINE__, fmt)
 #define die_perror(msg) _die_perror(__LINE__, msg)
@@ -155,8 +157,12 @@ static void start_server(void)
 	alarm(0);
 	sigprocmask(SIG_SETMASK, &old, NULL);
 
-	if (!got_usr1)
-		die_msg("Timeout waiting for server to become ready");
+	if (got_usr1)
+		return;
+
+	fprintf(stderr, "olpc-dm: Timeout waiting for server to become ready\n");
+	shutdown();
+	die();
 }
 
 /* get the tty number that the X server is using from the 7th field in
@@ -353,7 +359,7 @@ static void signal_catcher(int signo)
 	dbg("caught signal %d", signo);
 	if (signo == SIGUSR1)
 		got_usr1++;
-	else
+	else if (signo != SIGALRM)
 		signal_caught = signo;
 }
 
@@ -373,6 +379,9 @@ static void setup_signals(void)
 
 	/* we wait for this signal from the X server to indicate readiness */
 	sigaction(SIGUSR1, &sa, NULL);
+
+	/* we listen but silently handle this without acting on it */
+	sigaction(SIGALRM, &sa, NULL);
 
 	/* Don't hang on read/write to tty */
 	signal(SIGTTIN, SIG_IGN);
@@ -452,12 +461,6 @@ static void shutdown(void)
 
 	if (server_pid > 0)
 		kill_server();
-
-	if (server_pid < 0)
-		die_msg("Server error");
-
-	if (client_pid < 0)
-		die_msg("Client error");
 }
 
 /* create MIT cookie for xauth. result must be freed after use */
@@ -539,8 +542,8 @@ int main(int argc, char *argv[])
 	init_ck();
 	start_client();
 	wait_for_exit();
-	shutdown();
 	deinit_ck();
+	shutdown();
 	_exit(0);
 }
 
