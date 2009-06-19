@@ -15,9 +15,6 @@ Requires:	/usr/bin/xauth
 # for olpc-configure
 Requires:   /usr/bin/find
 
-# for become_root
-Requires:   /bin/su
-
 # for olpc-test-devkey
 Requires:   olpcupdate >= 2.10
 
@@ -75,16 +72,13 @@ rm -rf %{buildroot}
 %{_sysconfdir}/rc.d/init.d/olpc-configure
 %{_sysconfdir}/rc.d/init.d/diskspacecheck
 %{_sysconfdir}/rc.d/init.d/diskspacerecover
-%config(noreplace) %{_sysconfdir}/hal/fdi/policy/x11-input.fdi
 %config(noreplace) %{_sysconfdir}/hal/fdi/information/30-keymap-olpc.fdi
 %config(noreplace) %{_sysconfdir}/motd.olpc
 %config(noreplace) %{_sysconfdir}/event.d/ttyS0
 %config(noreplace) %{_sysconfdir}/X11/xorg-dcon.conf
 %config(noreplace) %{_sysconfdir}/X11/xorg-emu.conf
 %config(noreplace) %{_sysconfdir}/X11/xorg-vmware.conf
-%config(noreplace) %{_sysconfdir}/pam.d/olpc-login
 %config(noreplace) %{_sysconfdir}/skel/.xsession-example
-%config(noreplace) %{_sysconfdir}/ConsoleKit/run-session.d/pam-foreground-compat.ck
 
 %changelog
 * Mon Sep 29 2008 Michael Stone <michael@laptop.org> 0.88-1
