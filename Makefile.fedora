@@ -79,7 +79,7 @@ $(SRCDIR)/%: %
 	cp -r $< $@
 
 $(TARBALL): $(SRCDIR) $(foreach src,$(SOURCES),$(SRCDIR)/$(src))
-	tar cjf $(TARBALL) -C $(BUILDDIR) $(NV)
+	git archive --format=tar --prefix=$(NV)/ HEAD | bzip2 > $(TARBALL)
 
 $(SRPM): $(SPEC) $(TARBALL)
 	$(RPMBUILD) --nodeps -bs $(BUILDDIR)/$(PKGNAME).spec
