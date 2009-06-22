@@ -8,7 +8,7 @@
 
 # Bump this version each time compatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=8
+OLPC_CONFIGURE_VERSION=9
 
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
@@ -237,6 +237,9 @@ XKB_VARIANT="$XKB_VARIANT"
 __EOF__
 	# Keyboard is being loaded early in rc.sysint, reset it now
 	loadkeys "$KERN_KEYTABLE"
+
+	# set olpc-dm as desktop manager
+	echo "DISPLAYMANAGER=/usr/sbin/olpc-dm" > /etc/sysconfig/desktop
 
 	# Update library index
 	rebuild_library_index
