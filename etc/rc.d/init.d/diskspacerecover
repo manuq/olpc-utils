@@ -11,7 +11,7 @@
 
 import os, sys, statvfs, subprocess, shutil, fcntl
 
-THRESHOLD = 1024 * 600  # 20MB
+THRESHOLD = 1024 * 20  # 20MB
 DATASTORE_PATH = "/home/olpc/.sugar/default/datastore/store/*-*"
 ACTIVITY_PATH  = "/home/olpc/Activities/*"
 

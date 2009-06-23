@@ -21,7 +21,7 @@ freekbytes = freebytes / 1024
 
 # If we have enough disk space, exit.
 if freekbytes > THRESHOLD:
-    exit
+    sys.exit()
 
 # Disable pretty-boot.
 if os.path.exists("/usr/sbin/boot-anim-running") and os.system("/usr/sbin/boot-anim-running") == 0:
