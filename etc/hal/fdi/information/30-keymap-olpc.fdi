@@ -2,13 +2,10 @@
 
 <deviceinfo version="0.2">
   <device>
-<!-- FIXME: Usual OLPC detection based on
-     /org/freedesktop/Hal/devices/computer:system.hardware.vendor doesn't work,
-     see http://dev.laptop.org/ticket/9348
--->
-    <match key="info.parent" string="/org/freedesktop/Hal/devices/platform_i8042_i8042_KBD_port">
 
-      <match key="@input.originating_device:info.linux.driver" string="atkbd">
+    <match key="@input.originating_device:info.linux.driver" string="atkbd">
+      <match key="/org/freedesktop/Hal/devices/computer:system.hardware.vendor" string="OLPC">
+      <match key="/org/freedesktop/Hal/devices/computer:system.hardware.product" string="XO">
         <append key="input.keymap.data" type="strlist">59:fn</append>
         <append key="input.keymap.data" type="strlist">e001:fn_esc</append>
 
@@ -87,6 +84,7 @@
 
         <append key="info.capabilities" type="strlist">input.keymap</append>
 
+      </match>
       </match>
 
     </match>
