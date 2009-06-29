@@ -43,8 +43,9 @@ configure_hw_1_5() {
 }
 
 configure_hw() {
-	echo "olpc-configure: configuring hardware..."
+	[ "${XO_VERSION}" == "0" ] && return
 
+	echo "olpc-configure: configuring hardware..."
 	if [ "${XO_VERSION}" == "1.5" ] ; then
 		configure_hw_1_5
 	else
@@ -75,46 +76,46 @@ read_config() {
 
 	XORG_CONF=xorg-emu.conf
 
-	if [ "${XO_VERSION}" != "0" ]; then
-		# TODO: put this all in a hal callout or something similar
-		if [ "${XO_VERSION}" == "1.5" ]; then
-			XORG_CONF=xorg-xo1.5-dcon.conf
-		else
-			XORG_CONF=xorg-dcon.conf
-		fi
+	[ "${XO_VERSION}" == "0" ] && return
 
-		if [ -f $MFG_DATA/KL ]; then
-			XKB_MODEL="`mfgtag KM`"
-			XKB_LAYOUT="`mfgtag_stripspaces KL`"
-			XKB_VARIANT="`mfgtag KV`"
-			SYS_LANG="`mfgtag LO`"
-		elif [ "${XO_VERSION}" == "1" ] ; then
-			KB_HEADER=`read_nvram 0x44 2`
-			if [ "x$KB_HEADER" = "xKB" ] ; then
-				KB_CODE=`read_nvram 0x46 10`
-				if [ "x$KB_CODE" = "xus_INTL" ] ; then
-					XKB_LAYOUT="us"
-				elif [ "x$KB_CODE" = "xes" ] ; then
-					XKB_LAYOUT="es"
-					SYS_LANG="es_AR.UTF-8"
-				elif [ "x$KB_CODE" = "xpt_BR" ] ; then
-					XKB_LAYOUT="br"
-					SYS_LANG="pt_BR.UTF-8"
-				elif [ "x$KB_CODE" = "xara" ] ; then
-					XKB_LAYOUT="us(olpc2),ara(olpc)"
-					SYS_LANG="ar_LY.UTF-8"
-				elif [ "x$KB_CODE" = "xth" ] ; then
-					XKB_LAYOUT="us(olpc2),th(olpc)"
-					SYS_LANG="th_TH.UTF-8"
-				elif [ "x$KB_CODE" = "xng" ] ; then
-					XKB_LAYOUT="ng(olpc)"
-				elif [ "x$KB_CODE" = "xpk" ] ; then
-					XKB_LAYOUT="us(olpc2),ur(olpc)"
-					SYS_LANG="ur_PK.UTF-8"
-				elif [ "x$KB_CODE" = "xet" ] ; then
-					XKB_LAYOUT="us(olpc2),et"
-					SYS_LANG="am_ET.UTF-8"
-				fi
+	# TODO: put this all in a hal callout or something similar
+	if [ "${XO_VERSION}" == "1.5" ]; then
+		XORG_CONF=xorg-xo1.5-dcon.conf
+	else
+		XORG_CONF=xorg-dcon.conf
+	fi
+
+	if [ -f $MFG_DATA/KL ]; then
+		XKB_MODEL="`mfgtag KM`"
+		XKB_LAYOUT="`mfgtag_stripspaces KL`"
+		XKB_VARIANT="`mfgtag KV`"
+		SYS_LANG="`mfgtag LO`"
+	elif [ "${XO_VERSION}" == "1" ] ; then
+		KB_HEADER=`read_nvram 0x44 2`
+		if [ "x$KB_HEADER" = "xKB" ] ; then
+			KB_CODE=`read_nvram 0x46 10`
+			if [ "x$KB_CODE" = "xus_INTL" ] ; then
+				XKB_LAYOUT="us"
+			elif [ "x$KB_CODE" = "xes" ] ; then
+				XKB_LAYOUT="es"
+				SYS_LANG="es_AR.UTF-8"
+			elif [ "x$KB_CODE" = "xpt_BR" ] ; then
+				XKB_LAYOUT="br"
+				SYS_LANG="pt_BR.UTF-8"
+			elif [ "x$KB_CODE" = "xara" ] ; then
+				XKB_LAYOUT="us(olpc2),ara(olpc)"
+				SYS_LANG="ar_LY.UTF-8"
+			elif [ "x$KB_CODE" = "xth" ] ; then
+				XKB_LAYOUT="us(olpc2),th(olpc)"
+				SYS_LANG="th_TH.UTF-8"
+			elif [ "x$KB_CODE" = "xng" ] ; then
+				XKB_LAYOUT="ng(olpc)"
+			elif [ "x$KB_CODE" = "xpk" ] ; then
+				XKB_LAYOUT="us(olpc2),ur(olpc)"
+				SYS_LANG="ur_PK.UTF-8"
+			elif [ "x$KB_CODE" = "xet" ] ; then
+				XKB_LAYOUT="us(olpc2),et"
+				SYS_LANG="am_ET.UTF-8"
 			fi
 		fi
 	fi
