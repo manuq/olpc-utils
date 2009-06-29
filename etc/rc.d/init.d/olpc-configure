@@ -26,16 +26,29 @@ get_xo_version() {
 	fi
 }
 
-configure_hw() {
-	echo "olpc-configure: configuring hardware..."
-
+configure_hw_1_0() {
 	# load alsa configuration here since doing it at module load time wasn't working
 	/usr/sbin/alsactl restore
 
-	if [ "${XO_VERSION}" == "1" ] ; then
-		# Libertas Marvell LED configuration
-		# map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
-		/sbin/iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
+	# Libertas Marvell LED configuration
+	# map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
+	/sbin/iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
+}
+
+configure_hw_1_5() {
+	amixer -q sset Master -- "-13.0dB"
+	amixer -q sset PCM "100%"
+	amixer -q sset "Mic 1" "100%" cap
+	amixer -q sset "Digital" "50%"
+}
+
+configure_hw() {
+	echo "olpc-configure: configuring hardware..."
+
+	if [ "${XO_VERSION}" == "1.5" ] ; then
+		configure_hw_1_5
+	else
+		configure_hw_1_0
 	fi
 }
 
