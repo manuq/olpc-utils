@@ -19,16 +19,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# must be done early
-eval $(dbus-launch --sh-syntax --exit-with-session)
+# equivalent of /etc/X11/xinit/xinitrc-common without xmodmap or xrdb nonsense
+[ -r /etc/profile.d/lang.sh ] && . /etc/profile.d/lang.sh
+for file in /etc/X11/xinit/xinitrc.d/* ; do
+	. $file
+done
 
 # provide some defaults
-LANG="en_US.UTF-8"
-XKB_LAYOUT="us"
-
-# enable internationalization
-[ -f "$HOME/.i18n" ] && . "$HOME/.i18n"
-export LANG
+LANG=${LANG:-en_US.UTF-8}
+XKB_LAYOUT=${XKB_LAYOUT:-us}
 
 # We need to stop loading of certain GTK Input Modules (d.l.o #6945)
 # Normally we would load the "gtk-im-context-simple" module, but 
@@ -80,12 +79,23 @@ xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 79 -r \
 
 export SUGAR_SCALING=xo
 
+# put Switch-to-sugar icon in place
+install_switch_desktop_icon()
+{
+	local desktopdir=$(xdg-user-dir DESKTOP)
+	[ ! -e "/usr/share/applications/olpc-switch-to-sugar.desktop" ] || \
+		[ -e "${desktopdir}/olpc-switch-to-sugar.desktop" ] && return
+	cp -f /usr/share/applications/olpc-switch-to-sugar.desktop "${desktopdir}"
+	chmod 755 "${desktopdir}"/olpc-switch-to-sugar.desktop
+}
+
 # Desktop selection
 desktop=sugar
 if [ -e "$HOME/.olpc-active-desktop" ]; then
 	active=$(<$HOME/.olpc-active-desktop)
 	if [ "${active}" == "gnome" ]; then
 		desktop=gnome-session
+		install_switch_desktop_icon
 	fi
 fi
 
