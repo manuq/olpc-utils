@@ -29,9 +29,13 @@ if os.path.exists("/usr/sbin/boot-anim-running") and os.system("/usr/sbin/boot-a
     os.system("/etc/init.d/z-boot-anim-stop start")
     os.system("chvt 2")
 
-# Don't think there's anything useful I can do if this write fails.
-dcon = open('/sys/class/backlight/dcon-bl/device/freeze', 'w')
-dcon.write('0')
-dcon.close()
+try:
+	dcon = open('/sys/class/backlight/dcon-bl/device/freeze', 'w')
+	dcon.write('0')
+	dcon.close()
+except IOError:
+	# Don't think there's anything useful I can do if this write fails.
+	pass
+
 os.system("/sbin/setsysfont")
 os.system("/bin/unicode_start sun12x22")
