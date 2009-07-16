@@ -38,8 +38,6 @@ configure_hw_1_0() {
 configure_hw_1_5() {
 	amixer -q sset Master -- "-13.0dB"
 	amixer -q sset PCM "100%"
-	amixer -q sset "Mic 1" "100%" cap
-	amixer -q sset "Digital" "50%"
 }
 
 configure_hw() {
