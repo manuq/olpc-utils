@@ -40,7 +40,7 @@ if [ $LANG = "am_ET.UTF-8" ]; then
 	export GTK_IM_MODULE
 elif [ $LANG = "zh_CN.UTF-8" ]; then
 	GTK_IM_MODULE="scim"
-	XMODIFIERS="@im=scim"
+	XMODIFIERS="@im=SCIM"
 	XIM_PROGRAM="scim -d"
 	USE_XOPENIM=t
 	export GTK_IM_MODULE
