@@ -236,16 +236,6 @@ configure_root() {
 	rm -f xorg.conf
 	ln -sf $XORG_CONF xorg.conf
 
-	cat >/etc/sysconfig/i18n <<__EOF__
-# LANG=C considerably speeds up boot (measured 5sec) -- bernie
-LANG=C
-SYSFONT=sun12x22
-__EOF__
-	# udev has already processed this config file, so apply the changes now
-	for i in $(seq 0 5); do
-		setfont -C /dev/tty${i} sun12x22
-	done
-
 	# We keep keyboard settings here to avoid users from messing around
 	# with them in their home and maybe shut themselves out
 	cat >/etc/sysconfig/keyboard <<__EOF__
