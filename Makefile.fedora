@@ -87,6 +87,7 @@ $(SRPM): $(SPEC) $(TARBALL)
 build: $(SRPM)
 	$(MOCK) -r $(BUILDROOT) --uniqueext=`whoami` --resultdir=$(BUILDDIR) --rebuild $(SRPM)
 
+tarball: $(TARBALL)
 
 # Tags, Signatures, Lint, and Clean
 
@@ -118,7 +119,7 @@ snapshot-deploy: VERSION=$(COMPLETION).$(OLDBUILDNO).$(SNAPSHOT)
 
 snapshot-lint release-lint: lint
 
-snapshot release: incr-build clean build lint
+snapshot release: incr-build clean tarball
 
 .PHONY: clean sign tag incr-build snapshot release snapshot-deploy release-deploy snapshot-lint release-lint
 
