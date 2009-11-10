@@ -41,6 +41,8 @@ configure_hw_1_0() {
 configure_hw_1_5() {
 	amixer -q sset Master -- "-13.0dB"
 	amixer -q sset PCM "100%"
+	amixer -q sset "DC Input Bias" Off
+	amixer -q sset "DC Mode Enable" mute
 }
 
 configure_hw() {
