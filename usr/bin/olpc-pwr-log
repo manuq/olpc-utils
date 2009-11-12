@@ -1,39 +1,85 @@
 #!/bin/sh
 # Copyright One Laptop Per Child
-# Power loging script
+# Power loging script 
 # Released under GPLv3
 
-VERSION="1.9"
+VERSION="1.16"
 FDATE=`date "+%y%m%d-%H%M%S"`
 HOST=`hostname -s`
 B_INFO=/sys/class/power_supply/olpc-battery
 
-# This is the (approx) delay inbetween reading
-DELAY=10
+# This is the delay in the wallclock_delay.  Its the minimum sample time for the
+# system date.
+WALL_PERIOD=5 
+
+# This is the (approx) delay inbetween readings.
+# This delay should be some where in the middle of integer mutiples of WALL_PERIOD
+# delays that bound the desired delay.
+# That way if our timer and system date are out of phase you don't end up having to wait a whole
+# new WALL_PERIOD for the RTC check to expire.
+# DELAY=12
+
+# As of ver 1.14 I've switched back to using sleep rather than my wallclock_delay.
+# I the previous issues I had with using sleep were never resolved.  
+# I'm going to try to resolve them this time if I see them since they are considered
+# a bug.
+
+# A delay of 10 seconds seems to be too low.
+DELAY=20
+
+if [ -e /sys/class/dmi/id/product_version ]
+then
+        XO_VERSION=$(< /sys/class/dmi/id/product_version )
+else
+        XO_VERSION="1"
+fi
 
 echo "Checking/waiting for a battery"
 
-until [ $(< $B_INFO/present ) = 1 ]
-do
+until [ $(< $B_INFO/present ) = 1 ] 
+do 
 	sleep 1
 done
 
-echo "Yah! Found one."
+# If we just inserted a battery the EC needs time to
+# read all the info.
 
-# Now that we wait for a battery we can use the batter serial number in the filename
+echo "Found one."
+echo "Pausing to let the EC think"
+
+sleep 3
+
+# Now that we wait for a battery we can use the battery serial number in the filename
 DS_SERNUM=$(< $B_INFO/serial_number )
 LOGFILE="pwr-$FDATE-$DS_SERNUM.csv"
+
+ACR_PROP="charge_counter"
+
+if [ ! -e $B_INFO/$ACR_PROP ]
+then
+	ACR_PROP="accum_current"
+fi
+
+if [ -e /boot/boot/olpc_build ]
+then
+	BUILD=$(< /boot/boot/olpc_build )
+fi
+
+if [ -e /boot/olpc_build ]
+then
+	BUILD=$(< /boot/olpc_build )
+fi
 
 if [ -e $B_INFO/eeprom ]
 then
 # Skip 64 bytes and read 5 bytes; display without an address and in single byte mode
 # I don't use od directly since the -j skip does not do a real fseek.
 	echo "Reading eeprom data."
-	MFG_SER=`dd if=$B_INFO/eeprom bs=1 skip=64 count=5 2> /dev/null | od -A n -t x1`
-	CHGCNT=`dd if=$B_INFO/eeprom bs=1 skip=74 count=2 2> /dev/null| od -A n -t x1 `
-	CHGSOC=`dd if=$B_INFO/eeprom bs=1 skip=76 count=1 2> /dev/null| od -A n -t x1 `
-	DISCNT=`dd if=$B_INFO/eeprom bs=1 skip=77 count=2 2> /dev/null| od -A n -t x1 `
-	DISSOC=`dd if=$B_INFO/eeprom bs=1 skip=79 count=1 2> /dev/null| od -A n -t x1 `
+	MFG_SER=`dd if=$B_INFO/eeprom bs=1 skip=64 count=5 2> /dev/null | od -A n -t x1` 
+	CHGCNT=`dd if=$B_INFO/eeprom bs=1 skip=74 count=2 2> /dev/null| od -A n -t x1 ` 
+	CHGSOC=`dd if=$B_INFO/eeprom bs=1 skip=76 count=1 2> /dev/null| od -A n -t x1 ` 
+	DISCNT=`dd if=$B_INFO/eeprom bs=1 skip=77 count=2 2> /dev/null| od -A n -t x1 ` 
+	DISSOC=`dd if=$B_INFO/eeprom bs=1 skip=79 count=1 2> /dev/null| od -A n -t x1 ` 
 else
 	echo "Can't read the eeprom data because your kernel dosen't support eeprom dump"
 	MFG_SER="NA"
@@ -47,24 +93,26 @@ echo "Starting log $LOGFILE"
 echo
 
 echo "pwr_log Ver: $VERSION" > $LOGFILE
-echo -n "HOST: " >> $LOGFILE
-echo $HOST >> $LOGFILE
-echo -n "DATE: " >> $LOGFILE
+echo -n "HOST: " >> $LOGFILE 
+echo $HOST  >> $LOGFILE 
+echo -n "DATE: " >> $LOGFILE 
 echo `date` >> $LOGFILE
-echo -n "ECVER: " >> $LOGFILE
+echo -n "ECVER: " >> $LOGFILE 
 echo `cat /ofw/ec-name` >> $LOGFILE
-echo -n "OFWVER: " >> $LOGFILE
+echo -n "OFWVER: " >> $LOGFILE 
 echo `cat /ofw/openprom/model` >> $LOGFILE
-echo -n "MODEL: " >> $LOGFILE
+echo -n "MODEL: " >> $LOGFILE 
 echo `cat /ofw/model` >> $LOGFILE
-echo -n "BATTECH: " >> $LOGFILE
+echo -n "SERNUM: " >> $LOGFILE
+echo `cat /ofw/serial-number` >> $LOGFILE
+echo -n "BATTECH: " >> $LOGFILE 
 echo `cat $B_INFO/technology` >> $LOGFILE
-echo -n "BATMFG: " >> $LOGFILE
+echo -n "BATMFG: " >> $LOGFILE 
 echo `cat $B_INFO/manufacturer` >> $LOGFILE
-echo -n "BATSER: " >> $LOGFILE
+echo -n "BATSER: " >> $LOGFILE 
 echo $DS_SERNUM >> $LOGFILE
-echo -n "BUILD: " >> $LOGFILE
-echo `cat /boot/olpc_build` >> $LOGFILE
+echo -n "BUILD: " >> $LOGFILE 
+echo $BUILD >> $LOGFILE
 echo -n "MFGSER: " >> $LOGFILE
 echo $MFG_SER >> $LOGFILE
 echo -n "CHGCNT: " >> $LOGFILE
@@ -75,19 +123,25 @@ echo -n "DISCNT: " >> $LOGFILE
 echo $DISCNT >> $LOGFILE
 echo -n "DISSOC: " >> $LOGFILE
 echo $DISSOC >> $LOGFILE
-
+echo -n "WALL_PERIOD: " >> $LOGFILE
+echo $WALL_PERIOD: >> $LOGFILE
+echo -n "DELAY: " >> $LOGFILE
+echo $DELAY: >> $LOGFILE
+echo -n "XOVER: " >> $LOGFILE
+echo $XO_VERSION >> $LOGFILE
 # Allow the addition of some descriptive text from the cmd line
+echo -n "COMMENT: " >> $LOGFILE
 echo $1 >> $LOGFILE
 echo "<StartData>" >> $LOGFILE
 
 # feed this the wall clock time in seconds you wish to delay
-# It will spin until that time has passed. If the system is suspeneded
+# It will spin until that time has passed.  If the system is suspeneded
 # it may sleep more.
 function wallclock_delay {
 	DATE1=`date +%s`
 	EXPIRE=$((DATE1+$1))
-	while [ `date +%s` -lt $EXPIRE ]; do
-		sleep 2
+        while [ `date +%s` -lt $EXPIRE ]; do
+        	sleep $WALL_PERIOD	 
 	done
 }
 
@@ -106,7 +160,7 @@ function conv_2s_comp {
 
 	if [ $1 -gt 32767 ]
 	then
-		echo $(( 0 - (65535-$1+1) ))
+		echo $(( 0 - (65535-$1+1) )) 
 		return
 	fi
 
@@ -119,21 +173,38 @@ then
 	CAPACITY=capacity
 fi
 
-ACR_TEMP=`cat $B_INFO/accum_current`
-START_ACR=$(conv_2s_comp ${ACR_TEMP-0})
+function get_acr {
+
+	if [ XO_VERSION == "1.5" ]
+	then
+		ACR_TEMP=$(< $B_INFO/$ACR_PROP )
+		echo ${ACR_TEMP-0} 
+	else
+		ACR_TEMP=$(< $B_INFO/$ACR_PROP )
+		echo $(conv_2s_comp ${ACR_TEMP-0})
+	fi
+}
+
+START_ACR=$(get_acr)
 
 while true
-do
+do 
 	CAPLEVEL=$(< $B_INFO/$CAPACITY )
-	VOLT=`cat $B_INFO/voltage_avg`
-	CURR=`cat $B_INFO/current_avg`
-	TEMP=`cat $B_INFO/temp`
-	ACR_TEMP=`cat $B_INFO/accum_current`
-	ACR=$(conv_2s_comp ${ACR_TEMP-0})
-	STAT=`cat $B_INFO/status`
+	VOLT=$(< $B_INFO/voltage_avg)
+	CURR=$(< $B_INFO/current_avg)
+	TEMP=$(< $B_INFO/temp)
+	STAT=$(< $B_INFO/status)
+
+	ACR=$(get_acr)
 	ACR_DIFF=$(( ${ACR-0}-${START_ACR-0} ))
-	PWR=$(( $ACR_DIFF * 625 / 1500 ))
-	echo `date +%s`",$CAPLEVEL,$VOLT,$CURR,$TEMP,$ACR,$STAT,$PWR" | tee -a $LOGFILE
+	if [ XO_VERSION == "1" ]
+	then
+		MAh=$(( $ACR_DIFF * 625 / 1500 ))
+	else
+		MAh=$ACR_DIFF
+	fi
+	echo `date +%s`",$CAPLEVEL,$VOLT,$CURR,$TEMP,$ACR,$STAT,$MAh" | tee -a $LOGFILE
 	sync
-	wallclock_delay $DELAY
-done
+#	wallclock_delay $DELAY
+	sleep $DELAY
+done	
