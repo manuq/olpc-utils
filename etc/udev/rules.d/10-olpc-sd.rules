@@ -1,0 +1,17 @@
+# udev rules to assign persistent names to OLPC XO-1.5 SD cards and their
+# partitions
+#
+# mmcblkXpY names cannot be used to reliably identify internal vs external
+# cards. If you unplug the internal card, the external card (on mmc1) which
+# usually has name mmcblk1 drops to mmcblk0 :(
+
+SUBSYSTEM!="block", GOTO="olpc_sd_end"
+
+KERNEL=="mmcblk?", KERNELS=="mmc0", SYMLINK+="disk/olpc/int"
+KERNEL=="mmcblk?p?", KERNELS=="mmc0", SYMLINK+="disk/olpc/intp%n"
+
+KERNEL=="mmcblk?", KERNELS=="mmc1", SYMLINK+="disk/olpc/ext"
+KERNEL=="mmcblk?p?", KERNELS=="mmc1", SYMLINK+="disk/olpc/extp%n"
+
+LABEL="olpc_sd_end"
+
