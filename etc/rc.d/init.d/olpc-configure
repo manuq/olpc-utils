@@ -45,6 +45,22 @@ configure_hw_1_5() {
 	amixer -q sset "DC Mode Enable" mute
 }
 
+# Dynamically determine the boot device and mount it
+mount_boot() {
+	local bootpath=$(</ofw/chosen/bootpath)
+	local bootdev
+	case $bootpath in
+	/pci/sd@c/disk@1:*) # XO-1.5 internal SD
+		bootdev="/dev/disk/olpc/intp1"
+		;;
+	/pci/sd@c/disk@2:*) # XO-1.5 external SD
+		bootdev="/dev/disk/olpc/extp1"
+		;;
+	esac
+	[[ -n "$bootdev" && -d "/bootpart" && -e "$bootdev" ]] || return
+	mount -o noatime "$bootdev" /bootpart
+}
+
 configure_hw() {
 	[ "${XO_VERSION}" == "0" ] && return
 
@@ -54,6 +70,8 @@ configure_hw() {
 	else
 		configure_hw_1_0
 	fi
+
+	mount_boot
 }
 
 # Read a manufacturing data tag and strip the leading NUL
