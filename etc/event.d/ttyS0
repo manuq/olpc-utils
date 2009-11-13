@@ -10,5 +10,5 @@ stop on runlevel 1
 stop on runlevel 6
 
 respawn
-exec agetty -l /bin/bash -w -n ttyS0 115200 vt100
+exec agetty -L -l /bin/bash -w -n ttyS0 115200 vt100
 
