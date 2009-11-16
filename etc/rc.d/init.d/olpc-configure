@@ -49,12 +49,14 @@ configure_hw_1_5() {
 mount_boot() {
 	local bootpath=$(</ofw/chosen/bootpath)
 	local bootdev
+	local tmp
+
 	case $bootpath in
-	/pci/sd@c/disk@1:*) # XO-1.5 internal SD
-		bootdev="/dev/disk/olpc/intp1"
-		;;
-	/pci/sd@c/disk@2:*) # XO-1.5 external SD
-		bootdev="/dev/disk/olpc/extp1"
+	/pci/sd@c/disk@?:*) # XO-1.5 SD
+		tmp=${bootpath#/pci/sd@c/disk@}
+		tmp=${tmp%%:*}
+		((tmp--))
+		bootdev="/dev/disk/mmc/mmc${tmp}p1"
 		;;
 	esac
 	[[ -n "$bootdev" && -d "/bootpart" && -e "$bootdev" ]] || return
