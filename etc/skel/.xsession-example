@@ -4,16 +4,7 @@
 # Check the master copy in /etc/skel/.xsession-example for updates
 #
 
-# Uncomment the following lines to turn on many sugar debugging
-# log files and features
-#export LM_DEBUG=net
-#export GABBLE_DEBUG=all
-#export GABBLE_LOGFILE=+/home/olpc/.sugar/default/logs/telepathy-gabble.log
-#export SALUT_DEBUG=all
-#export SALUT_LOGFILE=+/home/olpc/.sugar/default/logs/telepathy-salut.log
-#export GIBBER_DEBUG=all
-#export PRESENCESERVICE_DEBUG=1
-#export SUGAR_LOGGER_LEVEL=debug
+# To turn on debugging for Sugar components, see ~/.sugar/debug
 
 # Uncomment the following line to enable core dumps
 #ulimit -c unlimited
