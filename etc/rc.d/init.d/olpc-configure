@@ -29,6 +29,21 @@ get_xo_version() {
 	fi
 }
 
+# based on code from OLPC's NM-0.6
+set_hostname() {
+	[ -e "/sys/class/net/eth0/address" ] || return
+	local addr=$(</sys/class/net/eth0/address)
+	[ "${#addr}" == 17 ] || return
+	addr=${addr:9}
+	local hname=xo-${addr//:/-}
+	hostname ${hname}.localdomain
+
+	# check if we have to rewrite hosts
+	grep --silent "127\.0\.0\.1.*${hname}" /etc/hosts && return
+	sed -i "1i\
+127.0.0.1 ${hname}.localdomain ${hname} localhost" /etc/hosts
+}
+
 configure_hw_1_0() {
 	# load alsa configuration here since doing it at module load time wasn't working
 	/usr/sbin/alsactl restore
@@ -300,6 +315,8 @@ case "$1" in
 	get_xo_version
 	olpc_home_version="`cat $OLPC_HOME/.olpc-configured 2>/dev/null`"
 	olpc_root_version="`cat /.olpc-configured 2>/dev/null`"
+
+	set_hostname
 
 	# unconditionally configure the hardware
 	configure_hw
