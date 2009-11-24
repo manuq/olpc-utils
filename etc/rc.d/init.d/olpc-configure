@@ -203,8 +203,12 @@ __EOF__
 	# can't live in $OLPC_HOME because activities can't read this dir.
 	SERNUM="`mfgtag SN`"
 	UUID="`mfgtag U#`"
-	sed -e "s/REPLACE_WITH_SERIALNUMBER/$SERNUM/" \
-	    -e "s/REPLACE_WITH_UUID/$UUID/" > /home/.devkey.html <<__EOF__
+	if [ -e /etc/olpc-configure/devkey.html ];then
+	    sed -e "s/REPLACE_WITH_SERIALNUMBER/$SERNUM/" \
+		-e "s/REPLACE_WITH_UUID/$UUID/" > /home/.devkey.html.tmp < /etc/olpc-configure/devkey.html
+	else;
+	    sed -e "s/REPLACE_WITH_SERIALNUMBER/$SERNUM/" \
+		-e "s/REPLACE_WITH_UUID/$UUID/" > /home/.devkey.html.tmp <<__EOF__
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
@@ -227,7 +231,9 @@ __EOF__
 </body>
 </html>
 __EOF__
-	chmod a+r,a-w /home/.devkey.html
+	fi
+	chmod a+r,a-w /home/.devkey.html.tmp
+	mv /home/.devkey.html.tmp /home/.devkey.html
 
 	rebuild_library_index
 }
