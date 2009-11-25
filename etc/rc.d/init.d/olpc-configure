@@ -238,7 +238,7 @@ __EOF__
 	rebuild_library_index
 }
 
-update_home_permissions() {
+update_home_permissions_to_v6() {
 	echo "olpc-configure: fixing permissions on home (dlo#4928, dlo#5626)..."
 
 	# Our first attempt at fixing dlo#4928 assumed that home was totally
@@ -248,7 +248,9 @@ update_home_permissions() {
 	# However, we must be careful not to mess with the rainbow isolation
 	# scheme which is intentionally 770.
 	find $OLPC_HOME -type d -perm 770 -name isolation -prune -o -print0 | xargs -0 chmod a+rX,u+w,go-w
+}
 
+set_home_permissions() {
 	# Home must be world aXessible so that activities installed
 	# in ~/Activities can reach their bundles
 	# We make the home also listable because we expect that confidential
@@ -304,9 +306,6 @@ __EOF__
 		/usr/sbin/rainbow-replay-spool
 	fi
 
-	# trigger activity upgrade (dlo trac #7495)
-	touch "$OLPC_HOME/.sugar-update"
-
 	# developer customizations.
 	if /usr/bin/olpc-test-devkey -q ; then
 		install_customization_packages
@@ -332,16 +331,25 @@ case "$1" in
 
 	# check whether /home configuration is necessary.
 	if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
+	    set_home_permissions
+	    if [ -z "$olpc_home_version" ]; then
+		###
+		### upgrades only
+		###
+	        ## trigger activity upgrade (dlo trac #7495 #9747)
+		touch "$OLPC_HOME/.sugar-update"
 		if [ "0$olpc_home_version" -le "6" ]; then
-			update_home_permissions
+		    update_home_permissions_to_v6
 		fi
-		if [ "0$olpc_home_version" -le "7" ] && [ "0$olpc_home_version" -gt "0" ]; then
-			clean_previews
+		if [ "0$olpc_home_version" -le "7" ]; then
+		    clean_previews
 		fi
-		read_config
-		configure_home
-		echo "$OLPC_CONFIGURE_VERSION" >$OLPC_HOME/.olpc-configured
+	    fi
+	    read_config
+	    configure_home
+	    echo "$OLPC_CONFIGURE_VERSION" >$OLPC_HOME/.olpc-configured
 	fi
+
 
 	# check whether / configuration is necessary.
 	if [ "$olpc_root_version" != "$OLPC_CONFIGURE_VERSION" ]; then
