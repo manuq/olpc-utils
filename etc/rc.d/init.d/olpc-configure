@@ -206,7 +206,7 @@ __EOF__
 	if [ -e /etc/olpc-configure/devkey.html ];then
 	    sed -e "s/REPLACE_WITH_SERIALNUMBER/$SERNUM/" \
 		-e "s/REPLACE_WITH_UUID/$UUID/" > /home/.devkey.html.tmp < /etc/olpc-configure/devkey.html
-	else;
+	else
 	    sed -e "s/REPLACE_WITH_SERIALNUMBER/$SERNUM/" \
 		-e "s/REPLACE_WITH_UUID/$UUID/" > /home/.devkey.html.tmp <<__EOF__
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
