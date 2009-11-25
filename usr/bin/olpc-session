@@ -38,7 +38,7 @@ XKB_LAYOUT=${XKB_LAYOUT:-us}
 # to use the "xim" module
 # In reality, the Compose tables get loaded if the locale is set 
 # appropriately, so we use the LANG variable below
-if [ $LANG = "am_ET.UTF-8" ]; then
+if [ $LANG = "am_ET.UTF-8" -o $LANG = "ne_NP.UTF-8" ]; then
 	GTK_IM_MODULE="xim"
 	export GTK_IM_MODULE
 elif [ $LANG = "zh_CN.UTF-8" ]; then
