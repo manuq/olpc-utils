@@ -338,20 +338,21 @@ case "$1" in
 
 	# check whether /home configuration is necessary.
 	if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
-	    set_home_permissions
-	    if [ -z "$olpc_home_version" ]; then
+	    if [ -n "$olpc_home_version" ]; then
 		###
 		### upgrades only
 		###
 	        ## trigger activity upgrade (dlo trac #7495 #9747)
 		touch "$OLPC_HOME/.sugar-update"
 		if [ "0$olpc_home_version" -le "6" ]; then
+		    # run it *before* set_home_permissions
 		    update_home_permissions_to_v6
 		fi
 		if [ "0$olpc_home_version" -le "7" ]; then
 		    clean_previews
 		fi
 	    fi
+	    set_home_permissions
 	    read_config
 	    configure_home
 	    echo "$OLPC_CONFIGURE_VERSION" >$OLPC_HOME/.olpc-configured
