@@ -131,6 +131,13 @@ read_config() {
 		XKB_LAYOUT="`mfgtag_stripspaces KL`"
 		XKB_VARIANT="`mfgtag KV`"
 		SYS_LANG="`mfgtag LO`"
+		if [ "$SYS_LANG" = "es_MX.UTF-8" ] && [ "$XKB_LAYOUT" = "us" ] ; then
+			# We have some machines in Peru with US(Intl) keyboards and
+			# they need some modifications to the standard layout
+			# See http://dev.laptop.org/ticket/9126
+			XKB_LAYOUT="es"
+			XKB_VARIANT="olpc2"
+		fi
 	elif [ "${XO_VERSION}" == "1" ] ; then
 		KB_HEADER=`read_nvram 0x44 2`
 		if [ "x$KB_HEADER" = "xKB" ] ; then
