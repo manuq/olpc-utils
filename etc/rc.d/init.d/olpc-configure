@@ -61,6 +61,7 @@ configure_hw_1_5() {
 	amixer -q sset PCM "100%"
 	amixer -q sset "DC Input Bias" Off
 	amixer -q sset "DC Mode Enable" mute
+	amixer -q sset 'Analog Mic Boost' '30dB'
 }
 
 # Dynamically determine the boot device and mount it
