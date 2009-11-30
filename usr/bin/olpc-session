@@ -122,5 +122,12 @@ fi
 mv $HOME/.boot_time $HOME/.boot_time.prev 2>/dev/null
 cat /proc/uptime >$HOME/.boot_time
 
+# unfreeze the DCON for non-sugar environments
+# (sugar unfreezes the dcon itself at an appropriate time)
+# note: --print-reply should not be necessary, but works around a long-term bug
+# where dbus-send can occasionally lose messages:
+# http://marc.info/?l=freedesktop-dbus&m=120662577224073&w=2
+[ "$desktop" != "sugar" ] && dbus-send --print-reply --system --dest=org.freedesktop.ohm /org/freedesktop/ohm/Keystore org.freedesktop.ohm.Keystore.SetKey string:display.dcon_freeze int32:0 &
+
 exec $desktop
 
