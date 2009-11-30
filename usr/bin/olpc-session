@@ -67,7 +67,7 @@ if [ -e "/ofw/banner-name" ]; then
 	version=$(</sys/class/dmi/id/product_version)
 	if [ "${name}-${version}" == "XO-1" ]; then
 		# XO-1 only: set mouse & keyboard speed
-		xset m 7/4 0
+		xset m 7/4 1
 		xset r rate 500 30
 	fi
 fi
