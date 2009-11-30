@@ -63,9 +63,9 @@ fi
 
 
 if [ -e "/ofw/banner-name" ]; then
-	banner=$(</ofw/banner-name)
-	# FIXME: is this a reliable way to check for XO-1 vs 1.5?
-	if [ "${banner:0:6}" == "OLPC C" ]; then
+	name=$(</sys/class/dmi/id/product_name)
+	version=$(</sys/class/dmi/id/product_version)
+	if [ "${name}-${version}" == "XO-1" ]; then
 		# XO-1 only: set mouse & keyboard speed
 		xset m 7/4 0
 		xset r rate 500 30
