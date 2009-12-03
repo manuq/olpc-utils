@@ -62,6 +62,9 @@ configure_hw_1_5() {
 	amixer -q sset "DC Input Bias" Off
 	amixer -q sset "DC Mode Enable" mute
 	amixer -q sset 'Analog Mic Boost' '30dB'
+
+	# force camera driver to load (#9795)
+	modprobe via-camera &>/dev/null &
 }
 
 # Dynamically determine the boot device and mount it
