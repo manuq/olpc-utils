@@ -24,7 +24,7 @@
 
 # enable python optimized bytecode if the files are present (#8431)
 # do this early too, so that the environment is set up for the dbus session
-if ls -U --color=none /usr/lib/python2.*/*.pyo &>/dev/null; then
+if [ -e /usr/lib/python2.?/subprocess.pyo ]; then
 	export PYTHONOPTIMIZE=2
 fi
 
