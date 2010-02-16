@@ -16,16 +16,24 @@ XO_VERSION=0
 
 get_xo_version() {
 	# This requires an OFW that runs setup-smbios at boot.
-	[ -e "/sys/class/dmi/id/product_name" ] || return
-
-	name=$(</sys/class/dmi/id/product_name)
-	version=$(</sys/class/dmi/id/product_version)
-	if [ "${name}" == "XO" ]; then
-		if [ "${version}" == "1" ]; then
-			XO_VERSION="1"
-		elif [ "${version}" == "1.5" ]; then
-			XO_VERSION="1.5"
+	if [ -e "/sys/class/dmi/id/product_name" ]; then
+		local name=$(</sys/class/dmi/id/product_name)
+		local version=$(</sys/class/dmi/id/product_version)
+		if [ "${name}" == "XO" ]; then
+			if [ "${version}" == "1" ]; then
+				XO_VERSION="1"
+			elif [ "${version}" == "1.5" ]; then
+				XO_VERSION="1.5"
+			fi
 		fi
+	# This fallback detection method is necessary even if we ship an updated
+	# OpenFirmware which enables SMBIOS within the signed OS image because
+	# a laptop may use the previous firmware until it is plugged to AC
+	# during boot, thus misconfiguring the keyboard.
+	elif [ -e "/ofw/banner-name" ]; then
+		case "$(</ofw/banner-name)" in
+			OLPC\ B*|OLPC\ C*) XO_VERSION="1" ;;
+		esac
 	fi
 }
 
