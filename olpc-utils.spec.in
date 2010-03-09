@@ -72,7 +72,6 @@ rm -rf %{buildroot}
 %{_bindir}/olpc-test-devkey
 %attr(0644, -, -) %{_datadir}/sugar/data/sugar-xo.gtkrc
 %{_sysconfdir}/profile.d/zzz_olpc.sh
-%{_sysconfdir}/cron.d/olpc-pwr-prof.cron
 %{_sysconfdir}/rc.d/init.d/olpc-configure
 %{_sysconfdir}/rc.d/init.d/diskspacecheck
 %{_sysconfdir}/rc.d/init.d/diskspacerecover
