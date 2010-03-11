@@ -65,6 +65,11 @@ configure_hw_1_5() {
 
 	# force camera driver to load (#9795)
 	modprobe via-camera &>/dev/null &
+
+	if [ -x /sbin/rfkill -a -e /home/olpc/.rfkill_block_wifi ]
+	then
+	    /sbin/rfkill block wifi
+	fi
 }
 
 # Dynamically determine the boot device and mount it
