@@ -1,9 +1,9 @@
 # ttyS0
 
-start on stopped rc2
-start on stopped rc3
-start on stopped rc4
-start on started prefdm
+start on started rc2
+start on started rc3
+start on started rc4
+start on started rc5
 
 stop on runlevel 0
 stop on runlevel 1
