@@ -1,14 +1,8 @@
 # ttyS0
 
-start on started rc2
-start on started rc3
-start on started rc4
-start on started rc5
-
-stop on runlevel 0
-stop on runlevel 1
-stop on runlevel 6
+start on startup
 
 respawn
 exec agetty -L -l /bin/bash -w -n ttyS0 115200 vt100
+
 
