@@ -67,6 +67,7 @@ rm -rf %{buildroot}
 %{_bindir}/olpc-logbat
 %{_bindir}/olpc-session
 %{_bindir}/olpc-pwr-log
+%{_bindir}/olpc-solar-log
 %{_bindir}/olpc-clean-previews
 %{_bindir}/olpc-audit
 %{_bindir}/olpc-test-devkey
