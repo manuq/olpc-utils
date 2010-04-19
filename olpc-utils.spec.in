@@ -66,6 +66,7 @@ rm -rf %{buildroot}
 %{_sysconfdir}/rc.d/init.d/olpc-configure
 %{_sysconfdir}/rc.d/init.d/diskspacecheck
 %{_sysconfdir}/rc.d/init.d/diskspacerecover
+%{_sysconfdir}/modprobe.d/olpc-psmouse.conf
 %config(noreplace) %{_sysconfdir}/hal/fdi/information/30-keymap-olpc.fdi
 %config(noreplace) %{_sysconfdir}/motd.olpc
 %config(noreplace) %{_sysconfdir}/event.d/ttyS0
