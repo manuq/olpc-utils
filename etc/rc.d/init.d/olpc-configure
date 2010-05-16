@@ -304,6 +304,11 @@ configure_root() {
 	# First X layout used also as kernel keytable
 	KERN_KEYTABLE=`echo "$XKB_LAYOUT" |  cut -d , -f 1`
 
+	# Some keyboards come with a special OLPC variant for the console
+	if [ -f /lib/kbd/keymaps/i386/olpc/$KERN_KEYTABLE-olpc.map.gz ]; then
+		KERN_KEYTABLE=$KERN_KEYTABLE-olpc
+	fi
+
 	cd /etc/X11
 	rm -f xorg.conf
 	ln -sf $XORG_CONF xorg.conf
