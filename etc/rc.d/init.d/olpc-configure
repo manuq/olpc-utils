@@ -52,6 +52,22 @@ set_hostname() {
 127.0.0.1 ${hname}.localdomain ${hname} localhost" /etc/hosts
 }
 
+initialize_ptmode()
+{
+	PTMODE=/sys/devices/platform/i8042/serio1/ptmode 
+	if [ -e $PTMODE ]
+	then
+	    chmod a+rw $PTMODE
+	    if [ -e /home/olpc/.olpc-pentablet-mode ]
+	    then
+		echo 1 > $PTMODE
+	    else
+		echo 0 > $PTMODE
+	    fi
+
+	fi
+}
+
 configure_hw_1_0() {
 	# load alsa configuration here since doing it at module load time wasn't working
 	/usr/sbin/alsactl restore
@@ -62,6 +78,8 @@ configure_hw_1_0() {
 	# Libertas Marvell LED configuration
 	# map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
 	/sbin/iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
+
+	initialize_ptmode
 }
 
 configure_hw_1_5() {
@@ -78,6 +96,8 @@ configure_hw_1_5() {
 	then
 	    /sbin/rfkill block wifi
 	fi
+
+	initialize_ptmode
 }
 
 # Dynamically determine the boot device and mount it
