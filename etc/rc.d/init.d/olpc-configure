@@ -57,14 +57,13 @@ initialize_ptmode()
 	PTMODE=/sys/devices/platform/i8042/serio1/ptmode 
 	if [ -e $PTMODE ]
 	then
-	    chmod a+rw $PTMODE
-	    if [ -e /home/olpc/.olpc-pentablet-mode ]
-	    then
-		echo 1 > $PTMODE
-	    else
-		echo 0 > $PTMODE
-	    fi
-
+		chmod a+rw $PTMODE
+		if [ -e $OLPC_HOME/.olpc-pentablet-mode ]
+		then
+			echo 1 > $PTMODE
+		else
+			echo 0 > $PTMODE
+		fi
 	fi
 }
 
@@ -92,7 +91,7 @@ configure_hw_1_5() {
 	# force camera driver to load (#9795)
 	modprobe via-camera &>/dev/null &
 
-	if [ -x /sbin/rfkill -a -e /home/olpc/.rfkill_block_wifi ]
+	if [ -x /sbin/rfkill -a -e $OLPC_HOME/.rfkill_block_wifi ]
 	then
 	    /sbin/rfkill block wifi
 	fi
@@ -220,7 +219,7 @@ rebuild_library_index() {
 install_customization_packages () {
 	# we'd like to look on USB/SD here, but udev/sugar hasn't mounted
 	# them yet =(
-	for pkgdir in /home/olpc/.custom/rpms ; do # other paths?
+	for pkgdir in $OLPC_HOME/.custom/rpms ; do # other paths?
 		if [ ! -d "$pkgdir" ]; then continue; fi
 		pkgs=$(find "$pkgdir" -name '*.rpm' -a ! -name '*.src.rpm' )
 		if [ -n "$pkgs" ]; then
