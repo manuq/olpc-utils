@@ -203,6 +203,13 @@ read_config() {
 			fi
 		fi
 	fi
+	if locale -a | grep -q "$SYS_LANG"; then
+	    :  # our locale is supported
+	else
+	    echo "olpc-configure: Locale $SYS_LANG is not supported;"
+	    SYS_LANG="en_US.UTF-8"  # better fallback than "C"
+	    echo "                falling back to locale $SYS_LANG"
+	fi
 }
 
 rebuild_library_index() {
