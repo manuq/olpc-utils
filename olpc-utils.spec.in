@@ -72,6 +72,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/event.d/ttyS0
 %config(noreplace) %{_sysconfdir}/udev/rules.d/10-olpc-sd.rules
 %config(noreplace) %{_sysconfdir}/udev/rules.d/20-olpc-rfkill.rules
+%config(noreplace) %{_sysconfdir}/udev/rules.d/30-olpc-wedo.rules
 %config(noreplace) %{_sysconfdir}/X11/xorg-dcon.conf
 %config(noreplace) %{_sysconfdir}/X11/xorg-xo1.5-dcon.conf
 %config(noreplace) %{_sysconfdir}/X11/xorg-emu.conf
