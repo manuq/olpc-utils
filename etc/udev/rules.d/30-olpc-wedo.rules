@@ -1,0 +1,2 @@
+# Lego WeDo
+SYSFS{idVendor}=="0694", SYSFS{idProduct}=="0003", GROUP="dialout", MODE="0660"
