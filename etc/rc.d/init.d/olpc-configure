@@ -146,16 +146,7 @@ read_config() {
 	XKB_LAYOUT="us"
 	SYS_LANG="en_US.UTF-8"
 
-	XORG_CONF=xorg-emu.conf
-
 	[ "${XO_VERSION}" == "0" ] && return
-
-	# TODO: put this all in a hal callout or something similar
-	if [ "${XO_VERSION}" == "1.5" ]; then
-		XORG_CONF=xorg-xo1.5-dcon.conf
-	else
-		XORG_CONF=xorg-dcon.conf
-	fi
 
 	if [ -f $MFG_DATA/KL ]; then
 		XKB_MODEL="`mfgtag KM`"
@@ -319,6 +310,28 @@ clean_previews() {
 	/usr/bin/olpc-clean-previews
 }
 
+# xorg needs to be configured for each boot
+# to setup xinerama for ext monitor / projector
+configure_xorg() {
+	# TODO: put this all in a hal callout or something similar
+	XORG_CONF=xorg-emu.conf
+	if [ "${XO_VERSION}" == "1.5" ]; then
+	    if [ -e /dev/sisusbvga0 ]; then
+	        XORG_CONF='xorg-xo1.5-dcon-extmon.conf'
+	    else
+	        XORG_CONF=xorg-xo1.5-dcon.conf
+	    fi
+	elif [ "${XO_VERSION}" == "1" ]; then
+	    XORG_CONF=xorg-dcon.conf
+	fi
+
+	#  Only fixup when needed
+	CURLINK=`readlink -f /etc/X11/xorg.conf | xargs basename`
+	if [ "$CURLINK" != "$XORG_CONF" ];then
+	    ln -sf -T "$XORG_CONF" /etc/X11/xorg.conf
+	fi
+}
+
 # configurations which happen in the root fs 
 # these need to be repeated when we upgrade.
 configure_root() {
@@ -331,10 +344,6 @@ configure_root() {
 	if [ -f /lib/kbd/keymaps/i386/olpc/$KERN_KEYTABLE-olpc.map.gz ]; then
 		KERN_KEYTABLE=$KERN_KEYTABLE-olpc
 	fi
-
-	cd /etc/X11
-	rm -f xorg.conf
-	ln -sf $XORG_CONF xorg.conf
 
 	# We keep keyboard settings here to avoid users from messing around
 	# with them in their home and maybe shut themselves out
@@ -381,6 +390,10 @@ case "$1" in
 	# unconditionally configure the hardware
 	configure_hw
 
+	# unconditionally configure xorg
+	# for USB2VGA
+        configure_xorg
+	
 	# check whether /home configuration is necessary.
 	if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
 	    if [ -n "$olpc_home_version" ]; then

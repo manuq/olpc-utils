@@ -4,6 +4,7 @@
 # Author: Bernardo Innocenti <bernie@codewiz.org>
 # Author: John (J5) Palmieri <johnp@redhat.com>
 # Author: Daniel Drake <dsd@laptop.org>
+# Author: Martin Langhoff <martin@laptop.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +29,31 @@ export SUGAR_SCALING=100
 # do this early too, so that the environment is set up for the dbus session
 if [ -e /usr/lib/python2.?/subprocess.pyo ]; then
 	export PYTHONOPTIMIZE=2
+fi
+
+# Run Xephyr before keyboard setup
+# so that it loads in the Xephyr server
+if [ -e /dev/sisusbvga0 ]; then
+
+    # Give the root X server a bit of time
+    # to come up.
+    # Avoids screen/cursor corruption discussed
+    # in dlo#10210
+    sleep 1
+    
+    # We have a USB2VGA external display - use 
+    # Xephyr to "shrink" our desktop.
+    # -noxv makes sure video is visible over sisusbvga
+    #       devices which don't support it
+    # -dpi 133 gives reasonable font sizing
+    /usr/bin/Xephyr :1 -screen 1024x768 -keybd ephyr,,,xkbmodel=evdev -noxv -dpi 133 &
+    DISPLAY=:1
+    USING_XEPHYR=Yes
+
+    # Prevent idle suspend, it switches off
+    # power to USB2VGA connector.
+    touch /var/run/powerd-inhibit-suspend/$$
+
 fi
 
 # equivalent of /etc/X11/xinit/xinitrc-common without xmodmap or xrdb nonsense
@@ -96,7 +122,17 @@ setxkbmap \
 	${XKB_MODEL:+ -model $XKB_MODEL} \
 	${XKB_LAYOUT:+ -layout $XKB_LAYOUT} \
 	${XKB_VARIANT:+ -variant $XKB_VARIANT} \
+	$XKB_OPTION -display :0
+
+if [ "$USING_XEPHYR" = "Yes" ]; then
+    setxkbmap \
+	${XKB_MODEL:+ -model $XKB_MODEL} \
+	${XKB_LAYOUT:+ -layout $XKB_LAYOUT} \
+	${XKB_VARIANT:+ -variant $XKB_VARIANT} \
+	-keycodes evdev -display :1 \
 	$XKB_OPTION
+    
+fi
 
 # disable repeat on several keys
 xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 79 -r \
@@ -151,5 +187,4 @@ then
 	string:display.dcon_freeze int32:0 &
 fi
 
-exec $desktop
-
+exec $desktop 

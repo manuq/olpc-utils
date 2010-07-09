@@ -22,6 +22,10 @@ Requires:   /usr/bin/find
 # for modprobe.d
 Requires:	module-init-tools
 
+# for SiSUSB2VGA
+Requires:    xorg-x11-server-Xephyr
+Requires:    xorg-x11-drv-sisusb
+
 %description
 
 Tools for starting an X session, mapping keys on the OLPC keyboards,
@@ -77,6 +81,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/udev/rules.d/30-olpc-wedo.rules
 %config(noreplace) %{_sysconfdir}/X11/xorg-dcon.conf
 %config(noreplace) %{_sysconfdir}/X11/xorg-xo1.5-dcon.conf
+%config(noreplace) %{_sysconfdir}/X11/xorg-xo1.5-dcon-extmon.conf
 %config(noreplace) %{_sysconfdir}/X11/xorg-emu.conf
 %config(noreplace) %{_sysconfdir}/X11/xorg-vmware.conf
 %config(noreplace) %{_sysconfdir}/skel/.xsession-example
