@@ -78,9 +78,18 @@ if [ -e "/ofw/banner-name" ]; then
 	fi
 fi
 
-[ -n "$XKB_OPTION" ] && XKB_OPTION=`echo "$XKB_OPTION" | sed -e 's/\b/-option /g'`
+[ -n "$XKB_OPTION" ] && XKB_OPTION=`echo "$XKB_OPTION" |
+	sed -e 's/\b/-option /g'`
 
 # set keyboard layout
+if [ "$XKB_MODEL" = "olpc2" ]   # no such model value
+then
+	# early mfg units of 1.5HS were programmed with KM and KV
+	# both set to "olpc2".  they should have been "olpcm"/"olpc"
+	XKB_MODEL="olpcm"
+	test "$XKB_VARIANT" = "olpc2" && XKB_VARIANT="olpc"
+fi
+
 setxkbmap \
 	${XKB_MODEL:+ -model $XKB_MODEL} \
 	${XKB_LAYOUT:+ -layout $XKB_LAYOUT} \
@@ -105,8 +114,34 @@ install_switch_desktop_icon()
 	local desktopdir=$(xdg-user-dir DESKTOP)
 	[ ! -e "/usr/share/applications/olpc-switch-to-sugar.desktop" ] || \
 		[ -e "${desktopdir}/olpc-switch-to-sugar.desktop" ] && return
-	cp -f /usr/share/applications/olpc-switch-to-sugar.desktop "${desktopdir}"
+	cp -f /usr/share/applications/olpc-switch-to-sugar.desktop \
+		"${desktopdir}"
 	chmod 755 "${desktopdir}"/olpc-switch-to-sugar.desktop
+}
+
+setup_brightness_volume_keys()
+{
+	# use $desktop and the keyboard model to configure the
+	# olpc-kbdshim's binding of the unmodified
+	# brightness/volume keys.  under sugar, we want those
+	# keys to behave similarly to the sugar zoom keys (i.e.,
+	# unmodified) regardless of keyboard, and they should
+	# always act unmodified on membrane keyboards, regardless
+	# of $desktop.  echo "F9" to enable the unmodified
+	# binding, or "f9" to disable it.
+
+	kbdshim=/var/run/olpc-kbdshim_command
+	test -p $kbdshim || return
+
+	case $desktop-$XKB_MODEL in
+	sugar-*)    echo F9 > $kbdshim ;;  # sugar with any keyboard
+	*-olpc[2m]) echo f9 > $kbdshim ;;  # non-sugar on mechanical keyboard
+	*)          echo F9 > $kbdshim ;;  # non-sugar on membrane keyboard
+	esac
+
+	# (NOTE:  the Fn-modified version can be similarly
+	# controlled with FBV/fbv, in case you don't want olpc-kbdshim to
+	# capture those keys at all.)
 }
 
 # Desktop selection
@@ -131,7 +166,14 @@ cat /proc/uptime >$HOME/.boot_time
 # note: --print-reply should not be necessary, but works around a long-term bug
 # where dbus-send can occasionally lose messages:
 # http://marc.info/?l=freedesktop-dbus&m=120662577224073&w=2
-[ "$desktop" != "sugar" ] && dbus-send --print-reply --system --dest=org.freedesktop.ohm /org/freedesktop/ohm/Keystore org.freedesktop.ohm.Keystore.SetKey string:display.dcon_freeze int32:0 &
+if [ "$desktop" != "sugar" ]
+then
+    dbus-send --print-reply --system --dest=org.freedesktop.ohm \
+    	/org/freedesktop/ohm/Keystore org.freedesktop.ohm.Keystore.SetKey \
+	string:display.dcon_freeze int32:0 &
+fi
+
+setup_brightness_volume_keys
 
 exec $desktop
 
