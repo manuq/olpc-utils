@@ -13,18 +13,28 @@
         <!-- FN-CAMERA is 'Mic', KEY_SOUND is as close as I see. -->
         <append key="input.keymap.data" type="strlist">e078:sound</append>
 
-        <append key="input.keymap.data" type="strlist">e03b:fn_f1</append>
-        <append key="input.keymap.data" type="strlist">e03c:fn_f2</append>
-        <append key="input.keymap.data" type="strlist">e03d:fn_f3</append>
-        <append key="input.keymap.data" type="strlist">e03e:fn_f4</append>
-        <append key="input.keymap.data" type="strlist">e03f:fn_f5</append>
-        <append key="input.keymap.data" type="strlist">e040:fn_f6</append>
-        <append key="input.keymap.data" type="strlist">e041:fn_f7</append>
-        <append key="input.keymap.data" type="strlist">e042:fn_f8</append>
-        <append key="input.keymap.data" type="strlist">e043:fn_f9</append>
-        <append key="input.keymap.data" type="strlist">e044:fn_f10</append>
-        <append key="input.keymap.data" type="strlist">e057:fn_f11</append>
-        <append key="input.keymap.data" type="strlist">e058:fn_f12</append>
+        <!-- these are the Fn-Fkeys.  we double map them, for compatibility
+	  between the membrane and non-membrane keyboards.  see:
+	  http://lists.laptop.org/pipermail/devel/2010-July/029348.html  -->
+        <append key="input.keymap.data" type="strlist">e03b:f1</append>
+        <append key="input.keymap.data" type="strlist">e03c:f2</append>
+        <append key="input.keymap.data" type="strlist">e03d:f3</append>
+        <append key="input.keymap.data" type="strlist">e03e:f4</append>
+        <append key="input.keymap.data" type="strlist">e03f:f5</append>
+        <append key="input.keymap.data" type="strlist">e040:f6</append>
+        <append key="input.keymap.data" type="strlist">e041:f7</append>
+        <append key="input.keymap.data" type="strlist">e042:f8</append>
+        <append key="input.keymap.data" type="strlist">e043:f9</append>
+        <append key="input.keymap.data" type="strlist">e044:f10</append>
+        <append key="input.keymap.data" type="strlist">e057:f11</append>
+        <append key="input.keymap.data" type="strlist">e058:f12</append>
+
+        <!-- unmodified F9-F12 are brightness and volume keys -->
+        <append key="input.keymap.data" type="strlist">43:brightnessdown</append>
+        <append key="input.keymap.data" type="strlist">44:brightnessup</append>
+        <append key="input.keymap.data" type="strlist">57:volumedown</append>
+        <append key="input.keymap.data" type="strlist">58:volumeup</append>
+
 
         <!-- Using KEY_F13-KEY_F21 for the .5 F keys right now. -->
         <append key="input.keymap.data" type="strlist">e077:fn_f13</append>
