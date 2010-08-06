@@ -54,17 +54,12 @@ set_hostname() {
 
 initialize_ptmode()
 {
+	# the hgpk driver for the "old" ALPS touchpads has a
+	# means of switching between capacitive "finger" mode and
+	# stylus-only tablet mode.  make it possible for the user
+	# to switch it back and forth.
 	PTMODE=/sys/devices/platform/i8042/serio1/ptmode 
-	if [ -e $PTMODE ]
-	then
-		chmod a+rw $PTMODE
-		if [ -e $OLPC_HOME/.olpc-pentablet-mode ]
-		then
-			echo 1 > $PTMODE
-		else
-			echo 0 > $PTMODE
-		fi
-	fi
+	test -e $PTMODE && chmod a+rw $PTMODE
 }
 
 configure_hw_1_0() {
