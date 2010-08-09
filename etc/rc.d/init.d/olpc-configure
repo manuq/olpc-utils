@@ -279,6 +279,10 @@ __EOF__
 	mv /home/.devkey.html.tmp /home/.devkey.html
 
 	rebuild_library_index
+
+	# ensure /home/root exists (#6700)
+	mkdir -p /home/root
+	chmod 750 /home/root
 }
 
 update_home_permissions_to_v6() {
