@@ -4,6 +4,8 @@
 # mmcblkXpY names cannot be used to reliably identify internal vs external
 # cards, because the "X" component is generated incrementally, regardless of
 # backing MMC bus number.
+#
+# Note that this file needs to present in both olpc-utils and the initramfs.
 
 SUBSYSTEM=="block", KERNEL=="mmcblk?", KERNELS=="mmc0", SYMLINK+="disk/mmc/mmc0"
 SUBSYSTEM=="block", KERNEL=="mmcblk?p?", KERNELS=="mmc0", SYMLINK+="disk/mmc/mmc0p%n"
