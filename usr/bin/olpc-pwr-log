@@ -3,7 +3,7 @@
 # Power loging script 
 # Released under GPLv3
 
-VERSION="1.16"
+VERSION="0.2.0"
 FDATE=`date "+%y%m%d-%H%M%S"`
 HOST=`hostname -s`
 B_INFO=/sys/class/power_supply/olpc-battery
@@ -34,6 +34,14 @@ else
         XO_VERSION="1"
 fi
 
+KERNVER=`uname -r | cut -c 1-6 | sed 's/\.//g'`
+
+if [[ $KERNVER -gt 2625 ]]; then
+	KERNAPI=2
+else
+	KERNAPI=1
+fi
+
 echo "Checking/waiting for a battery"
 
 until [ $(< $B_INFO/present ) = 1 ] 
@@ -60,9 +68,9 @@ then
 	ACR_PROP="accum_current"
 fi
 
-if [ -e /boot/boot/olpc_build ]
+if [ -e /bootpart/boot/olpc_build ]
 then
-	BUILD=$(< /boot/boot/olpc_build )
+	BUILD=$(< /bootpart/boot/olpc_build )
 fi
 
 if [ -e /boot/olpc_build ]
@@ -93,42 +101,47 @@ echo "Starting log $LOGFILE"
 echo
 
 echo "pwr_log Ver: $VERSION" > $LOGFILE
-echo -n "HOST: " >> $LOGFILE 
-echo $HOST  >> $LOGFILE 
-echo -n "DATE: " >> $LOGFILE 
-echo `date` >> $LOGFILE
-echo -n "ECVER: " >> $LOGFILE 
+echo -n "HOST: "	>> $LOGFILE 
+echo $HOST  		>> $LOGFILE 
+echo -n "DATE: " 	>> $LOGFILE 
+echo `date` 		>> $LOGFILE
+echo -n "ECVER: " 	>> $LOGFILE 
 echo `cat /ofw/ec-name` >> $LOGFILE
-echo -n "OFWVER: " >> $LOGFILE 
-echo `cat /ofw/openprom/model` >> $LOGFILE
-echo -n "MODEL: " >> $LOGFILE 
-echo `cat /ofw/model` >> $LOGFILE
-echo -n "SERNUM: " >> $LOGFILE
-echo `cat /ofw/serial-number` >> $LOGFILE
-echo -n "BATTECH: " >> $LOGFILE 
-echo `cat $B_INFO/technology` >> $LOGFILE
-echo -n "BATMFG: " >> $LOGFILE 
+echo -n "OFWVER: " 	>> $LOGFILE 
+echo `cat /ofw/openprom/model` 	>> $LOGFILE
+echo -n "MODEL: " 	>> $LOGFILE 
+echo `cat /ofw/model` 	>> $LOGFILE
+echo -n "SERNUM: " 	>> $LOGFILE
+echo `cat /ofw/serial-number` 	>> $LOGFILE
+echo -n "BATTECH: " 	>> $LOGFILE 
+echo `cat $B_INFO/technology` 	>> $LOGFILE
+echo -n "BATMFG: " 	>> $LOGFILE 
 echo `cat $B_INFO/manufacturer` >> $LOGFILE
-echo -n "BATSER: " >> $LOGFILE 
-echo $DS_SERNUM >> $LOGFILE
-echo -n "BUILD: " >> $LOGFILE 
-echo $BUILD >> $LOGFILE
-echo -n "MFGSER: " >> $LOGFILE
-echo $MFG_SER >> $LOGFILE
-echo -n "CHGCNT: " >> $LOGFILE
-echo $CHGCNT >> $LOGFILE
-echo -n "CHGSOC: " >> $LOGFILE
-echo $CHGSOC >> $LOGFILE
-echo -n "DISCNT: " >> $LOGFILE
-echo $DISCNT >> $LOGFILE
-echo -n "DISSOC: " >> $LOGFILE
-echo $DISSOC >> $LOGFILE
-echo -n "WALL_PERIOD: " >> $LOGFILE
-echo $WALL_PERIOD: >> $LOGFILE
-echo -n "DELAY: " >> $LOGFILE
-echo $DELAY: >> $LOGFILE
-echo -n "XOVER: " >> $LOGFILE
-echo $XO_VERSION >> $LOGFILE
+echo -n "BATSER: " 	>> $LOGFILE 
+echo $DS_SERNUM 	>> $LOGFILE
+echo -n "BUILD: " 	>> $LOGFILE 
+echo $BUILD 		>> $LOGFILE
+echo -n "MFGSER: " 	>> $LOGFILE
+echo $MFG_SER 		>> $LOGFILE
+echo -n "CHGCNT: " 	>> $LOGFILE
+echo $CHGCNT 		>> $LOGFILE
+echo -n "CHGSOC: " 	>> $LOGFILE
+echo $CHGSOC 		>> $LOGFILE
+echo -n "DISCNT: " 	>> $LOGFILE
+echo $DISCNT 		>> $LOGFILE
+echo -n "DISSOC: " 	>> $LOGFILE
+echo $DISSOC 		>> $LOGFILE
+echo -n "WALL_PERIOD: "	>> $LOGFILE
+echo $WALL_PERIOD: 	>> $LOGFILE
+echo -n "DELAY: " 	>> $LOGFILE
+echo $DELAY: 		>> $LOGFILE
+echo -n "XOVER: " 	>> $LOGFILE
+echo $XO_VERSION 	>> $LOGFILE
+echo -n "KERNVER: " 	>> $LOGFILE
+echo $KERNVER 		>> $LOGFILE
+echo -n "KERNAPI: " 	>> $LOGFILE
+echo $KERNAPI 		>> $LOGFILE
+
 # Allow the addition of some descriptive text from the cmd line
 echo -n "COMMENT: " >> $LOGFILE
 echo $1 >> $LOGFILE
@@ -167,22 +180,19 @@ function conv_2s_comp {
 	echo $1
 }
 
-CAPACITY=capacity_level
-if [ -n $B_INFO/$CAPACITY ]
+CAPACITY=capacity
+if [ ! -f $B_INFO/$CAPACITY ]
 then
-	CAPACITY=capacity
+	CAPACITY=capacity_level
 fi
 
 function get_acr {
 
-	if [ XO_VERSION == "1.5" ]
-	then
-		ACR_TEMP=$(< $B_INFO/$ACR_PROP )
-		echo ${ACR_TEMP-0} 
-	else
-		ACR_TEMP=$(< $B_INFO/$ACR_PROP )
-		echo $(conv_2s_comp ${ACR_TEMP-0})
-	fi
+    local acr_temp
+
+    acr_temp=$(< $B_INFO/$ACR_PROP )
+    test $KERNAPI -eq 1 && acr_temp=$(conv_2s_comp ${acr_temp:-0})
+    echo ${acr_temp:-0}
 }
 
 START_ACR=$(get_acr)
@@ -197,7 +207,7 @@ do
 
 	ACR=$(get_acr)
 	ACR_DIFF=$(( ${ACR-0}-${START_ACR-0} ))
-	if [ XO_VERSION == "1" ]
+	if [ $KERNAPI -eq 1 ]
 	then
 		MAh=$(( $ACR_DIFF * 625 / 1500 ))
 	else
@@ -207,4 +217,4 @@ do
 	sync
 #	wallclock_delay $DELAY
 	sleep $DELAY
-done	
+done
