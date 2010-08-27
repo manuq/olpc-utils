@@ -19,6 +19,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+export SUGAR_SCALING=100
+
 # We need to read this early (dlo #9543)
 [ -f "$HOME/.sugar/debug" ] && . "$HOME/.sugar/debug"
 
