@@ -1,0 +1,15 @@
+# Run olpc-configure early during boot
+
+[Unit]
+Description=OLPC Configuration
+DefaultDependencies=no
+After=sysinit.target local-fs.target
+Before=basic.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/olpc-configure
+
+[Install]
+WantedBy=basic.target
+
