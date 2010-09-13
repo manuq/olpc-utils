@@ -38,6 +38,7 @@
 
 //#define DEBUG
 #define X_DISPLAY ":0"
+#define X_VT "vt01"
 #define X_SESSION "/usr/bin/olpc-session"
 #define OLPC_USER "olpc"
 
@@ -142,7 +143,8 @@ static void start_server(void)
 		freopen("/var/log/olpc-dm-X.log", "w", stdout);
 		freopen("/var/log/olpc-dm-X.error.log", "w", stderr);
 #endif
-		execl("/usr/bin/X", "X", X_DISPLAY, "-wr", "-auth", XSERVERAUTH, NULL);
+		execl("/usr/bin/X", "X", X_DISPLAY, X_VT, "-wr", "-auth", XSERVERAUTH,
+			NULL);
 		die_perror("exec X");
 	}
 
