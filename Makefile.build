@@ -12,7 +12,7 @@ CK_CONNECTOR_CFLAGS = $(shell pkg-config --cflags --libs ck-connector)
 # files
 
 BINARIES = usr/sbin/olpc-dm
-OVERLAYS = etc usr lib
+OVERLAYS = etc usr
 BUILT_DIRS= usr/sbin
 
 
@@ -40,9 +40,6 @@ $(DESTDIR)/etc/ConsoleKit/run-session.d/%: etc/ConsoleKit/run-session.d/%
 	install -D -m 755 $< $@
 
 $(DESTDIR)/etc/%: etc/%
-	install -D -m 644 $< $@
-
-$(DESTDIR)/lib/%: lib/%
 	install -D -m 644 $< $@
 
 $(foreach d,$(shell find $(OVERLAYS) -type d),$(DESTDIR)/$d):
