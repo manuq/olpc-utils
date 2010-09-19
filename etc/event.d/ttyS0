@@ -1,0 +1,8 @@
+# ttyS0
+
+start on startup
+
+respawn
+exec agetty -L -l /bin/bash -w -n ttyS0 115200 vt100
+
+
