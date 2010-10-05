@@ -73,6 +73,11 @@ configure_hw_1_0() {
 	# map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
 	/sbin/iwpriv eth0 ledgpio 1 1 2 12 3 16 > /dev/null
 
+	if [ -x /sbin/rfkill -a -e $OLPC_HOME/.rfkill_block_wifi ]
+	then
+	    /sbin/rfkill block wifi
+	fi
+
 	initialize_ptmode
 }
 
