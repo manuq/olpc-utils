@@ -320,14 +320,12 @@ clean_previews() {
 configure_xorg() {
 	# TODO: put this all in a hal callout or something similar
 	XORG_CONF=xorg-emu.conf
-	if [ "${XO_VERSION}" == "1.5" ]; then
-	    if [ -e /dev/sisusbvga0 ]; then
-	        XORG_CONF='xorg-xo1.5-dcon-extmon.conf'
-	    else
-	        XORG_CONF=xorg-xo1.5-dcon.conf
-	    fi
-	elif [ "${XO_VERSION}" == "1" ]; then
-	    XORG_CONF=xorg-dcon.conf
+	XORG_VARIANT=""
+	if [ -e /dev/sisusbvga0 ]; then
+	    XORG_VARIANT="-extmon"
+	fi
+	if [ "${XO_VERSION}" -gt "0" ]; then
+	    XORG_CONF="xorg-xo$XO_VERSION-dcon$XORG_VARIANT.conf"
 	fi
 
 	#  Only fixup when needed
