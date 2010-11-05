@@ -31,6 +31,9 @@ if [ -e /usr/lib/python2.?/subprocess.pyo ]; then
 	export PYTHONOPTIMIZE=2
 fi
 
+# reset touchpad rotation -- which may be set after an X server respawn
+olpc-rotate -r
+
 # Run Xephyr before keyboard setup
 # so that it loads in the Xephyr server
 if [ -e /dev/sisusbvga0 ]; then
