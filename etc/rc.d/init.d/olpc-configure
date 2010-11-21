@@ -8,7 +8,7 @@
 
 # Bump this version each time compatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=9
+OLPC_CONFIGURE_VERSION=10
 
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
@@ -315,23 +315,15 @@ clean_previews() {
 	/usr/bin/olpc-clean-previews
 }
 
-# xorg needs to be configured for each boot
-# to setup xinerama for ext monitor / projector
+# determine presence of USB-VGA adapter on boot to setup xinerama for
+# ext monitor / projector
 configure_xorg() {
 	# TODO: put this all in a hal callout or something similar
-	XORG_CONF=xorg-emu.conf
-	XORG_VARIANT=""
 	if [ -e /dev/sisusbvga0 ]; then
-	    XORG_VARIANT="-extmon"
-	fi
-	if [ "${XO_VERSION}" -gt "0" ]; then
-	    XORG_CONF="xorg-xo$XO_VERSION-dcon$XORG_VARIANT.conf"
-	fi
-
-	#  Only fixup when needed
-	CURLINK=`readlink -f /etc/X11/xorg.conf | xargs basename`
-	if [ "$CURLINK" != "$XORG_CONF" ];then
-	    ln -sf -T "$XORG_CONF" /etc/X11/xorg.conf
+		ln /usr/share/olpc-utils/xorg.conf.d/sisusb.conf \
+			/etc/X11/xorg.conf.d/
+	else
+		rm -f /etc/X11/xorg.conf.d/sisusb.conf
 	fi
 }
 
@@ -374,6 +366,11 @@ __EOF__
 	if /usr/bin/olpc-test-devkey -q ; then
 		install_customization_packages
 	fi
+
+	# version 10: use xorg.conf.d instead of xorg.conf
+	rm -f /etc/X11/xorg.conf
+	ln /usr/share/olpc-utils/xorg.conf.d/xo$XO_VERSION.conf \
+		/etc/X11/xorg.conf.d/
 }
 
 #
