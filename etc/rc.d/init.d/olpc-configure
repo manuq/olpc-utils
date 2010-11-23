@@ -328,15 +328,18 @@ clean_previews() {
 	/usr/bin/olpc-clean-previews
 }
 
-# determine presence of USB-VGA adapter on boot to setup xinerama for
-# ext monitor / projector
+# determine presence of USB-VGA adapter on boot, switch Xorg config
+# appropriately
 configure_xorg() {
 	# TODO: put this all in a hal callout or something similar
 	if [ -e /dev/sisusbvga0 ]; then
 		ln /usr/share/olpc-utils/xorg.conf.d/sisusb.conf \
 			/etc/X11/xorg.conf.d/
+		rm -f /etc/X11/xorg.conf.d/xo$XO_VERSION.conf
 	else
 		rm -f /etc/X11/xorg.conf.d/sisusb.conf
+		[ -e /etc/X11/xorg.conf.d/xo$XO_VERSION.conf ] || \
+			ln /usr/share/olpc-utils/xorg.conf.d/xo$XO_VERSION.conf /etc/X11/xorg.conf.d/
 	fi
 }
 
@@ -382,8 +385,6 @@ __EOF__
 
 	# version 10: use xorg.conf.d instead of xorg.conf
 	rm -f /etc/X11/xorg.conf
-	ln /usr/share/olpc-utils/xorg.conf.d/xo$XO_VERSION.conf \
-		/etc/X11/xorg.conf.d/
 }
 
 #
@@ -403,9 +404,8 @@ case "$1" in
 	# unconditionally configure the hardware
 	configure_hw
 
-	# unconditionally configure xorg
-	# for USB2VGA
-        configure_xorg
+	# unconditionally configure xorg for USB2VGA
+	configure_xorg
 	
 	# check whether /home configuration is necessary.
 	if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then

@@ -34,29 +34,10 @@ fi
 # reset touchpad rotation -- which may be set after an X server respawn
 olpc-rotate -r
 
-# Run Xephyr before keyboard setup
-# so that it loads in the Xephyr server
 if [ -e /dev/sisusbvga0 ]; then
-
-    # Give the root X server a bit of time
-    # to come up.
-    # Avoids screen/cursor corruption discussed
-    # in dlo#10210
-    sleep 1
-    
-    # We have a USB2VGA external display - use 
-    # Xephyr to "shrink" our desktop.
-    # -noxv makes sure video is visible over sisusbvga
-    #       devices which don't support it
-    # -dpi 133 gives reasonable font sizing
-    /usr/bin/Xephyr :1 -screen 1024x768 -keybd ephyr,,,xkbmodel=evdev -noxv -dpi 133 &
-    DISPLAY=:1
-    USING_XEPHYR=Yes
-
     # Prevent idle suspend, it switches off
     # power to USB2VGA connector.
     touch /var/run/powerd-inhibit-suspend/$$
-
 fi
 
 # equivalent of /etc/X11/xinit/xinitrc-common without xmodmap or xrdb nonsense
@@ -126,16 +107,6 @@ setxkbmap \
 	${XKB_LAYOUT:+ -layout $XKB_LAYOUT} \
 	${XKB_VARIANT:+ -variant $XKB_VARIANT} \
 	$XKB_OPTION -display :0
-
-if [ "$USING_XEPHYR" = "Yes" ]; then
-    setxkbmap \
-	${XKB_MODEL:+ -model $XKB_MODEL} \
-	${XKB_LAYOUT:+ -layout $XKB_LAYOUT} \
-	${XKB_VARIANT:+ -variant $XKB_VARIANT} \
-	-keycodes evdev -display :1 \
-	$XKB_OPTION
-    
-fi
 
 # disable repeat on several keys
 xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 79 -r \
