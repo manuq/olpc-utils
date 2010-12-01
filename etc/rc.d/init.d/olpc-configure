@@ -8,7 +8,7 @@
 
 # Bump this version each time compatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=10
+OLPC_CONFIGURE_VERSION=11
 
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
@@ -289,6 +289,9 @@ __EOF__
 	# ensure /home/root exists (#6700)
 	mkdir -p /home/root
 	chmod 750 /home/root
+
+	# version 11: switch from batterymon to batti (#10436)
+	rm -f /home/olpc/.config/autostart/batterymon.desktop
 }
 
 update_home_permissions_to_v6() {
