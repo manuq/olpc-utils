@@ -20,6 +20,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+cchmod()
+{
+	# conservative chmod
+	# stats to save a write
+	# (chmod internally does stat too but does not skip the write)
+	# Usage: cchmod $OCTALMODE $PATH
+	local M=$1
+	local P=$2
+	[ `stat -c '%a' "$P"` -ne $M ] && chmod $M "$P"
+}
+
 export SUGAR_SCALING=100
 
 # We need to read this early (dlo #9543)
@@ -149,15 +160,26 @@ fi
 mv $HOME/.boot_time $HOME/.boot_time.prev 2>/dev/null
 cat /proc/uptime >$HOME/.boot_time
 
-# unfreeze the DCON for non-sugar environments
-# (sugar unfreezes the dcon itself at an appropriate time)
-# note: --print-reply should not be necessary, but works around a long-term bug
-# where dbus-send can occasionally lose messages:
-# http://marc.info/?l=freedesktop-dbus&m=120662577224073&w=2
-if [ "$desktop" != "sugar" ]
+if [ "$desktop" = "sugar" ]
 then
-    dbus-send --print-reply --system --dest=org.freedesktop.ohm \
-    	/org/freedesktop/ohm/Keystore org.freedesktop.ohm.Keystore.SetKey \
+	## Sugar
+	# prep ~/Activities
+	cchmod 0755 $HOME/Activities
+else
+	## Non-Sugar Desktop
+	# protect ~/Activities
+	cchmod 0000 $HOME/Activities
+	# hide some dir entries
+	for DENT in 'Activities' 'power-logs'; do
+		grep -q $DENT $HOME/.hidden || echo $DENT >> $HOME/.hidden
+	done
+	# unfreeze the DCON for non-sugar environments
+	# (sugar unfreezes the dcon itself at an appropriate time)
+	# note: --print-reply should not be necessary, but works around a long-term
+	# bug where dbus-send can occasionally lose messages:
+	# http://marc.info/?l=freedesktop-dbus&m=120662577224073&w=2
+	dbus-send --print-reply --system --dest=org.freedesktop.ohm \
+		/org/freedesktop/ohm/Keystore org.freedesktop.ohm.Keystore.SetKey \
 	string:display.dcon_freeze int32:0 &
 fi
 
