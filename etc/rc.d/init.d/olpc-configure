@@ -68,6 +68,7 @@ configure_hw_1_0() {
 
 	# workaround activities lowering PCM level
 	amixer -q sset PCM "90%" unmute
+	amixer -q sset 'Capture' '100%'
 
 	# Libertas Marvell LED configuration
 	# map LED1 to GPIO1, LED2 to GPIO12, LED3 to GPIO16
@@ -87,6 +88,7 @@ configure_hw_1_5() {
 	amixer -q sset "DC Input Bias" Off
 	amixer -q sset "DC Mode Enable" mute
 	amixer -q sset 'Analog Mic Boost' '30dB'
+	amixer -q sset 'Capture' '100%'
 
 	# force camera driver to load (#9795)
 	modprobe via-camera &>/dev/null &
