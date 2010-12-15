@@ -31,6 +31,44 @@ cchmod()
 	[ `stat -c '%a' "$P"` -ne $M ] && chmod $M "$P"
 }
 
+maybe_fix_gnome_panel()
+{
+	# Reset gnome panels if we are missing systray (battery monitor,
+	# nm-applet), window_list or the default menu_bar. It is safe to move
+	# them around.
+	local req_value
+	for req_value in "applet_id_list systray" "applet_id_list window_list" "object_id_list menu_bar"; do
+		set -- $req_value
+		local gconf_key="/apps/panel/general/"$1
+		local gconf_value=$2
+		if ! /usr/bin/gconftool-2 -g $gconf_key | grep -q $gconf_value; then
+			/usr/bin/gconftool-2 --recursive-unset /apps/panel
+			break
+		fi
+	done
+}
+
+maybe_fix_gnome_fonts()
+{
+	# Reset font sizes if they have been mangled so much that they cannot be
+	# set back straight
+	local KEY V FSIZE FNAME
+	local regex="(.*) ([0-9]+)"
+	local KEYS="/apps/nautilus/preferences/desktop_font
+/apps/metacity/general/titlebar_font
+/desktop/gnome/interface/document_font_name
+/desktop/gnome/interface/font_name
+/desktop/gnome/interface/monospace_font_name
+"
+	for KEY in $KEYS; do
+		V=`/usr/bin/gconftool-2 -g "$KEY"`
+		[[ "$V" =~ $regex ]] || continue
+		FNAME=${BASH_REMATCH[1]}
+		FSIZE=${BASH_REMATCH[2]}
+		[ $FSIZE -gt 20 -o $FSIZE -lt 4 ] && /usr/bin/gconftool-2 -u "$KEY"
+	done
+}
+
 export SUGAR_SCALING=100
 
 # We need to read this early (dlo #9543)
@@ -173,6 +211,10 @@ else
 	for DENT in 'Activities' 'power-logs'; do
 		grep -q $DENT $HOME/.hidden || echo $DENT >> $HOME/.hidden
 	done
+
+	maybe_fix_gnome_panel
+	maybe_fix_gnome_fonts
+
 	# unfreeze the DCON for non-sugar environments
 	# (sugar unfreezes the dcon itself at an appropriate time)
 	# note: --print-reply should not be necessary, but works around a long-term
