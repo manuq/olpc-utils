@@ -201,10 +201,27 @@ cat /proc/uptime >$HOME/.boot_time
 if [ "$desktop" = "sugar" ]
 then
 	## Sugar
+
+	## If .rfkill_block_wifi exists, ensure it is blocked
+	## (we may have unblocked it for gnome) #10532
+	[ -e $HOME/.rfkill_block_wifi ] && /sbin/rfkill block wifi
+
 	# prep ~/Activities
 	cchmod 0755 $HOME/Activities
 else
 	## Non-Sugar Desktop
+
+	## GNOME should be able to switch on wifi #10532
+	if [ -e $HOME/.rfkill_block_wifi ]; then
+		# tell NM wifi should be down
+		/bin/dbus-send --system --print-reply \
+			--dest='org.freedesktop.NetworkManager' /org/freedesktop/NetworkManager \
+			org.freedesktop.DBus.Properties.Set string:org.freedesktop.NetworkManager \
+			string:WirelessEnabled variant:boolean:false
+		# unblock wifi so NM can bring it up
+		/sbin/rfkill unblock wifi
+	fi
+
 	# protect ~/Activities
 	cchmod 0000 $HOME/Activities
 	# hide some dir entries
