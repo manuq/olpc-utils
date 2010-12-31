@@ -8,7 +8,7 @@
 
 # Bump this version each time compatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=12
+OLPC_CONFIGURE_VERSION=13
 
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
@@ -310,6 +310,15 @@ lock-timeout=0
 EOF
 		mv /home/olpc/.gnome2/keyrings/default.keyring{.tmp,}
 		chown -R olpc:olpc /home/olpc/.gnome2/keyrings
+	fi
+
+	# version 13: get rid of old ~/Activities/.groups from gg-802-1 (#10582)
+	# activity group changed for XO-1, and this is now specified in /etc
+	if [ -e /home/olpc/Activities/.groups ]; then
+		ACTGROUPS=$(</home/olpc/Activities/.groups)
+		if [ "$ACTGROUPS" = "http://wiki.laptop.org/go/Activities/G1G1" ]; then
+			rm -f /home/olpc/Activities/.groups
+		fi
 	fi
 }
 
