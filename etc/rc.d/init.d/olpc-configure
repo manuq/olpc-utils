@@ -170,6 +170,10 @@ read_config() {
 		XKB_LAYOUT="`mfgtag_stripspaces KL`"
 		XKB_VARIANT="`mfgtag KV`"
 		SYS_LANG="`mfgtag LO`"
+		if [ "$XKB_LAYOUT" = "en" ] ; then
+			# Some units have invalid KL 'en' tags (e.g. SKU104, #10711)
+			XKB_LAYOUT="us"
+		fi
 		if [ "$SYS_LANG" = "es_MX.UTF-8" \
                      -a "$XKB_LAYOUT" = "us" \
                      -a "XKV_VARIANT" = "olpc" ] ; then
