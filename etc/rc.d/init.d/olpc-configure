@@ -367,13 +367,13 @@ clean_previews() {
 configure_xorg() {
 	# TODO: put this all in a hal callout or something similar
 	if [ -e /dev/sisusbvga0 ]; then
-		ln /usr/share/olpc-utils/xorg.conf.d/sisusb.conf \
+		ln -s /usr/share/olpc-utils/xorg.conf.d/sisusb.conf \
 			/etc/X11/xorg.conf.d/
 		rm -f /etc/X11/xorg.conf.d/xo$XO_VERSION.conf
 	else
 		rm -f /etc/X11/xorg.conf.d/sisusb.conf
 		[ -e /etc/X11/xorg.conf.d/xo$XO_VERSION.conf ] || \
-			ln /usr/share/olpc-utils/xorg.conf.d/xo$XO_VERSION.conf /etc/X11/xorg.conf.d/
+			ln -s /usr/share/olpc-utils/xorg.conf.d/xo$XO_VERSION.conf /etc/X11/xorg.conf.d/
 	fi
 }
 
