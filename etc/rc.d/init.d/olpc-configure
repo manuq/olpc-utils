@@ -176,7 +176,7 @@ read_config() {
 		fi
 		if [ "$SYS_LANG" = "es_MX.UTF-8" \
                      -a "$XKB_LAYOUT" = "us" \
-                     -a "XKV_VARIANT" = "olpc" ] ; then
+                     -a "$XKB_VARIANT" = "olpc" ] ; then
 			# We have some XO-1 machines in Peru with US(Intl) membrane keyboards
 			# and they need some modifications to the standard layout
 			# See http://dev.laptop.org/ticket/9126
