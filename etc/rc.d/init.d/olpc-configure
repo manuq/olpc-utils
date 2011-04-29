@@ -14,6 +14,10 @@ OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
 XO_VERSION=0
 
+# control variable so that we only generate the library homepage a maximum of
+# 1 time per boot
+LIBRARY_INDEX_BUILT=0
+
 get_xo_version() {
 	# This requires an OFW that runs setup-smbios at boot.
 	if [ -e "/sys/class/dmi/id/product_name" ]; then
@@ -219,6 +223,8 @@ read_config() {
 }
 
 rebuild_library_index() {
+	[ "$LIBRARY_INDEX_BUILT" = "1" ] && return 0
+	LIBRARY_INDEX_BUILT=1
 	if [ -x /usr/share/library-common/make_index.py ]; then
 		echo '* olpc-configure: Rebuilding the library index.'
 		rm -rf $OLPC_HOME/.library_pages
