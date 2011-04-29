@@ -48,8 +48,7 @@ set_hostname() {
 
 	# check if we have to rewrite hosts
 	grep --silent "127\.0\.0\.1.*${hname}" /etc/hosts && return
-	sed -i "1i\
-127.0.0.1 ${hname}.localdomain ${hname} localhost" /etc/hosts
+	sed -i "s/^127\.0\.0\.1.*/127.0.0.1 ${hname}.localdomain ${hname} localhost/g" /etc/hosts
 }
 
 initialize_ptmode()
