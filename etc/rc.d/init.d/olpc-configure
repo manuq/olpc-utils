@@ -93,9 +93,6 @@ configure_hw_1_5() {
 	amixer -q sset 'Analog Mic Boost' '30dB'
 	amixer -q sset 'Capture' '100%' cap
 
-	# force camera driver to load (#9795)
-	modprobe via-camera &>/dev/null &
-
 	if [ -x /sbin/rfkill -a -e $OLPC_HOME/.rfkill_block_wifi ]
 	then
 	    /sbin/rfkill block wifi
