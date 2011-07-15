@@ -8,7 +8,7 @@
 
 # Bump this version each time compatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=14
+OLPC_CONFIGURE_VERSION=15
 
 OLPC_HOME=/home/olpc
 MFG_DATA=/ofw/mfg-data
@@ -408,14 +408,18 @@ __EOF__
 	# version 10: use xorg.conf.d instead of xorg.conf
 	rm -f /etc/X11/xorg.conf
 
-	# version 14: set hostname via /etc/hosts and /etc/sysconfig/network
+	# version 15: set hostname via /etc/hosts and /etc/sysconfig/network
 	if [ -e "/sys/class/net/eth0/address" ]; then
 		local addr=$(</sys/class/net/eth0/address)
 		if [ "${#addr}" == 17 ]; then
 			addr=${addr:9}
 			local hname=xo-${addr//:/-}
-			sed -c -i -e "s/HOSTNAME=.*/HOSTNAME=${hname}.localdomain/" \
-				/etc/sysconfig/network
+			cat <<EOF >/etc/sysconfig/network
+NETWORKING=yes
+NETWORKING_IPV6=no
+HOSTNAME=$hname.localdomain
+NM_IGNORE_HOSTNAME_LOCALHOST=yes
+EOF
 			hostname ${hname}.localdomain
 			sed -c -i -e "s/^127\.0\.0\.1.*/127.0.0.1 ${hname}.localdomain ${hname} localhost/g" /etc/hosts
 		fi
