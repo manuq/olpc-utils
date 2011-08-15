@@ -20,6 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+source /usr/share/olpc-utils/olpc-utils-functions
+
 cchmod()
 {
 	# conservative chmod
@@ -128,15 +130,11 @@ fi
 [ -f "/etc/sysconfig/keyboard" ] && . "/etc/sysconfig/keyboard"
 [ -f "$HOME/.kbd" ] && . "$HOME/.kbd"
 
-
-if [ -e "/ofw/banner-name" ]; then
-	name=$(</sys/class/dmi/id/product_name)
-	version=$(</sys/class/dmi/id/product_version)
-	if [ "${name}-${version}" == "XO-1" ]; then
-		# XO-1 only: set mouse & keyboard speed
-		xset m 7/4 1
-		xset r rate 500 30
-	fi
+XO_VERSION=$(get_xo_version)
+if [ "$XO_VERSION" == "1" ]; then
+	# XO-1 only: set mouse & keyboard speed
+	xset m 7/4 1
+	xset r rate 500 30
 fi
 
 [ -n "$XKB_OPTION" ] && XKB_OPTION=`echo "$XKB_OPTION" |

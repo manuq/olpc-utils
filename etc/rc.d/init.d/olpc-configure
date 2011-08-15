@@ -11,35 +11,13 @@
 OLPC_CONFIGURE_VERSION=15
 
 OLPC_HOME=/home/olpc
-MFG_DATA=/ofw/mfg-data
 XO_VERSION=0
 
 # control variable so that we only generate the library homepage a maximum of
 # 1 time per boot
 LIBRARY_INDEX_BUILT=0
 
-get_xo_version() {
-	# This requires an OFW that runs setup-smbios at boot.
-	if [ -e "/sys/class/dmi/id/product_name" ]; then
-		local name=$(</sys/class/dmi/id/product_name)
-		local version=$(</sys/class/dmi/id/product_version)
-		if [ "${name}" == "XO" ]; then
-			if [ "${version}" == "1" ]; then
-				XO_VERSION="1"
-			elif [ "${version}" == "1.5" ]; then
-				XO_VERSION="1.5"
-			fi
-		fi
-	# This fallback detection method is necessary even if we ship an updated
-	# OpenFirmware which enables SMBIOS within the signed OS image because
-	# a laptop may use the previous firmware until it is plugged to AC
-	# during boot, thus misconfiguring the keyboard.
-	elif [ -e "/ofw/banner-name" ]; then
-		case "$(</ofw/banner-name)" in
-			OLPC\ B*|OLPC\ C*) XO_VERSION="1" ;;
-		esac
-	fi
-}
+source /usr/share/olpc-utils/olpc-utils-functions
 
 initialize_ptmode()
 {
@@ -89,7 +67,7 @@ configure_hw_1_5() {
 
 # Dynamically determine the boot device and mount it
 mount_boot_1_5() {
-	local bootpath=$(</ofw/chosen/bootpath)
+	local bootpath=$(get_ofw_file /chosen/bootpath)
 	local bootdev
 	local tmp
 
@@ -128,20 +106,9 @@ configure_hw() {
 	fi
 }
 
-# Read a manufacturing data tag and strip the leading NUL
-mfgtag () {
-	cat $MFG_DATA/$1 | tr -d '\000' 2>/dev/null
-}
-
 read_nvram() {
 	dd if=/dev/nvram bs=1 skip=$(($1)) count=$2 2>/dev/null
 }
-
-# Work around for typo in Ethiopian mfg-data 
-# http://dev.laptop.org/ticket/6945#comment:16
-mfgtag_stripspaces() {
-	cat $MFG_DATA/$1 | tr -d [:space:] | tr -d '\000' 2>/dev/null
-} 
 
 read_config() {
 	# Some defaults
@@ -151,11 +118,13 @@ read_config() {
 
 	[ "${XO_VERSION}" == "0" ] && return
 
-	if [ -f $MFG_DATA/KL ]; then
-		XKB_MODEL="`mfgtag KM`"
-		XKB_LAYOUT="`mfgtag_stripspaces KL`"
-		XKB_VARIANT="`mfgtag KV`"
-		SYS_LANG="`mfgtag LO`"
+	# test if we can get mfg data reading it
+	local KM=`get_xo_mfg_tag KM`
+	if [ -n "$KM" ]; then
+		XKB_MODEL="$KM"
+		XKB_LAYOUT="`get_xo_mfg_tag_stripspaces KL`"
+		XKB_VARIANT="`get_xo_mfg_tag KV`"
+		SYS_LANG="`get_xo_mfg_tag LO`"
 		if [ "$XKB_LAYOUT" = "en" ] ; then
 			# Some units have invalid KL 'en' tags (e.g. SKU104, #10711)
 			XKB_LAYOUT="us"
@@ -246,8 +215,8 @@ __EOF__
 	chown olpc:olpc $OLPC_HOME/.i18n
 
 	# can't live in $OLPC_HOME because activities can't read this dir.
-	SERNUM="`mfgtag SN`"
-	UUID="`mfgtag U#`"
+	SERNUM="`get_xo_mfg_tag SN`"
+	UUID="`get_xo_mfg_tag U#`"
 	if [ -e /etc/olpc-configure/devkey.html ];then
 	    sed -e "s/REPLACE_WITH_SERIALNUMBER/$SERNUM/" \
 		-e "s/REPLACE_WITH_UUID/$UUID/" > /home/.devkey.html.tmp < /etc/olpc-configure/devkey.html
@@ -435,7 +404,7 @@ EOF
 #
 case "$1" in
   start|restart)
-	get_xo_version
+	XO_VERSION=$(get_xo_version)
 	olpc_home_version="`cat $OLPC_HOME/.olpc-configured 2>/dev/null`"
 	olpc_root_version="`cat /.olpc-configured 2>/dev/null`"
 

@@ -13,14 +13,20 @@ import os, os.path, sys
 
 def exists_ofw(dev_path):
     """Returns true if the OFW device tree node exists.  Else returns false."""
-    return os.path.exists(os.path.join('/ofw', dev_path))
+    for base_path in ('/proc/device-tree', '/ofw'):
+        fpath = os.path.join(base_path,dev_path)
+        if os.path.exists(fpath):
+            True
+    return False
 
 def read_ofw(dev_path):
     """Read a node in the OFW device tree.  Return None if node not present."""
-    real_path = os.path.join('/ofw',dev_path)
-    if not os.path.exists(real_path): return None
-    with open(real_path) as f:
-        return f.read().rstrip('\n\0') # trac #2085
+    for base_path in ('/proc/device-tree', '/ofw'):
+        fpath = os.path.join(base_path,dev_path)
+        if os.path.exists(fpath):
+            with open(fpath) as f:
+                return f.read().rstrip('\n\0') # trac #2085
+    return None
 
 def test_devkey(report):
     sn = read_ofw('mfg-data/SN')

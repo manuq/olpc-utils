@@ -27,19 +27,23 @@ WALL_PERIOD=5
 # A delay of 10 seconds seems to be too low.
 DELAY=20
 
-if [ -e /sys/class/dmi/id/product_version ]
-then
-        XO_VERSION=$(< /sys/class/dmi/id/product_version )
+source /usr/share/olpc-utils/olpc-utils-functions
+
+XO_VERSION=$(get_xo_version)
+
+# we have to handle 2.6.dd which yield 2600 and 3.0.0 which yields 300
+# all of this will fail on anything earlier than 2.6.9
+KERNVER=`uname -r | cut -c 1-6 | sed 's/[\._]//g'`
+
+KERNAPI=1
+if [[ $KERNVER -gt 2600 ]]; then
+	# of the 2.6 series, 25 or later
+	if [[ $KERNVER -gt 2625 ]]; then
+		KERNAPI=2
+	fi
 else
-        XO_VERSION="1"
-fi
-
-KERNVER=`uname -r | cut -c 1-6 | sed 's/\.//g'`
-
-if [[ $KERNVER -gt 2625 ]]; then
+	# 3.0.0 
 	KERNAPI=2
-else
-	KERNAPI=1
 fi
 
 echo "Checking/waiting for a battery"
@@ -106,13 +110,13 @@ echo $HOST  		>> $LOGFILE
 echo -n "DATE: " 	>> $LOGFILE 
 echo `date` 		>> $LOGFILE
 echo -n "ECVER: " 	>> $LOGFILE 
-echo `cat /ofw/ec-name` >> $LOGFILE
+echo `get_ofw_file /ec-name` >> $LOGFILE
 echo -n "OFWVER: " 	>> $LOGFILE 
-echo `cat /ofw/openprom/model` 	>> $LOGFILE
+echo `get_ofw_file /openprom/model` 	>> $LOGFILE
 echo -n "MODEL: " 	>> $LOGFILE 
-echo `cat /ofw/model` 	>> $LOGFILE
+echo `get_ofw_file /model` 	>> $LOGFILE
 echo -n "SERNUM: " 	>> $LOGFILE
-echo `cat /ofw/serial-number` 	>> $LOGFILE
+echo `get_ofw_file /serial-number` 	>> $LOGFILE
 echo -n "BATTECH: " 	>> $LOGFILE 
 echo `cat $B_INFO/technology` 	>> $LOGFILE
 echo -n "BATMFG: " 	>> $LOGFILE 

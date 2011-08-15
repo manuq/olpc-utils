@@ -24,12 +24,9 @@ WALL_PERIOD=2.5
 # new WALL_PERIOD for the RTC check to expire.
 DELAY=60
 
-if [ -e /sys/class/dmi/id/product_version ]
-then
-        XO_VERSION=$(< /sys/class/dmi/id/product_version )
-else
-        XO_VERSION="1"
-fi
+source /usr/share/olpc-utils/olpc-utils-functions
+
+XO_VERSION=$(get_xo_version)
 
 if [[ $(< $B_INFO/present ) = 0 ]]
 then
@@ -101,13 +98,13 @@ echo `date` >> $LOGFILE
 echo -n "DATESEC: " >> $LOGFILE
 echo `date +%s` >> $LOGFILE
 echo -n "ECVER: " >> $LOGFILE 
-echo `cat /ofw/ec-name` >> $LOGFILE
+echo `get_ofw_file /ec-name` >> $LOGFILE
 echo -n "OFWVER: " >> $LOGFILE 
-echo `cat /ofw/openprom/model` >> $LOGFILE
+echo `get_ofw_file /openprom/model` >> $LOGFILE
 echo -n "MODEL: " >> $LOGFILE 
-echo `cat /ofw/model` >> $LOGFILE
+echo `get_ofw_file /model` >> $LOGFILE
 echo -n "SERNUM: " >> $LOGFILE
-echo `cat /ofw/serial-number` >> $LOGFILE
+echo `get_ofw_file /serial-number` >> $LOGFILE
 echo -n "BATTECH: " >> $LOGFILE 
 echo `cat $B_INFO/technology` >> $LOGFILE
 echo -n "BATMFG: " >> $LOGFILE 
