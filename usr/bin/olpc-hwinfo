@@ -22,15 +22,15 @@ model)
 	echo ''
         ;;
 serial*)
-        get_xo_mfg_tag SN
+        get_xo_mfg_tag SN || exit 1
 	echo ''
         ;;
 uuid)
-        get_xo_mfg_tag "U#"
+        get_xo_mfg_tag "U#" || exit 1
 	echo ''
         ;;
 mfg-tag)
-        get_xo_mfg_tag "$2"
+        get_xo_mfg_tag "$2" || exit 1
 	echo ''
         ;;
 *)

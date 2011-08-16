@@ -50,7 +50,11 @@ get_xo_mfg_tag()
         elif [ -d /ofw/mfg-data ]
         then
                 mfgdata=/ofw/mfg-data
+        else
+                return 1
         fi
+
+	test -e $mfgdata/$tag || return 1
 
  	# do we need to strip leading nulls here?
 	# ie: cat $mfgdata/$tag | tr -d '\000' 2>/dev/null	
