@@ -8,9 +8,9 @@
 source /usr/share/olpc-utils/olpc-utils-functions
 usage()
 {
-        exec >&2
-        echo "usage: $me {model|serialnum|uuid|mfg-tag <tagname>}"
-        exit 1
+	exec >&2
+	echo "usage: $me {model|serialnum|uuid|mfg-tag <tagname>}"
+	exit 1
 }
 
 me=${0##*/}
@@ -18,21 +18,21 @@ which=$1
 
 case $which in
 model)
-        get_xo_version
+	get_xo_version
 	echo ''
-        ;;
+	;;
 serial*)
-        get_xo_mfg_tag SN || exit 1
+	get_xo_mfg_tag SN || exit 1
 	echo ''
-        ;;
+	;;
 uuid)
-        get_xo_mfg_tag "U#" || exit 1
+	get_xo_mfg_tag "U#" || exit 1
 	echo ''
-        ;;
+	;;
 mfg-tag)
-        get_xo_mfg_tag "$2" || exit 1
+	get_xo_mfg_tag "$2" || exit 1
 	echo ''
-        ;;
+	;;
 *)
 	usage;
 	;;
