@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # olpc-hwinfo
 # centralize retrieval of XO modelname, serial number, etc, since
@@ -19,19 +19,15 @@ which=$1
 case $which in
 model)
 	get_xo_version
-	echo ''
 	;;
 serial*)
 	get_xo_mfg_tag SN || exit 1
-	echo ''
 	;;
 uuid)
 	get_xo_mfg_tag "U#" || exit 1
-	echo ''
 	;;
 mfg-tag)
 	get_xo_mfg_tag "$2" || exit 1
-	echo ''
 	;;
 *)
 	usage;
