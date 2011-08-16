@@ -1,0 +1,17 @@
+# Set model specific hotkey keycodes.
+#
+# Key map overrides can be specified by either giving scancode/keyname pairs
+# directly as keymap arguments (if there are just one or two to change), or as
+# a file name (in /lib/udev/keymaps), which has to contain scancode/keyname
+# pairs.
+
+ACTION=="remove", GOTO="olpckeyboard_end"
+KERNEL!="event*", GOTO="olpckeyboard_end"
+ENV{ID_INPUT_KEY}=="", GOTO="olpckeyboard_end"
+SUBSYSTEMS=="bluetooth", GOTO="olpckeyboard_end"
+SUBSYSTEMS=="usb", GOTO="olpckeyboard_end"
+
+IMPORT{command}="device-tree-val DEVTREE_COMPAT compatible"
+ENV{DEVTREE_COMPAT}=="olpc,xo-1*", RUN+="keymap $name olpc-xo"
+
+LABEL="olpckeyboard_end"
