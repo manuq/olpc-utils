@@ -12,7 +12,7 @@ CK_CONNECTOR_CFLAGS = $(shell pkg-config --cflags --libs ck-connector)
 # files
 
 BINARIES = usr/sbin/olpc-dm
-OVERLAYS = etc usr
+OVERLAYS = etc usr lib
 BUILT_DIRS= usr/sbin
 
 
@@ -42,6 +42,16 @@ $(DESTDIR)/etc/ConsoleKit/run-session.d/%: etc/ConsoleKit/run-session.d/%
 $(DESTDIR)/etc/%: etc/%
 	install -D -m 644 $< $@
 
+$(DESTDIR)/lib/udev/%: lib/udev/%
+	install -D -m 755 $< $@
+
+$(DESTDIR)/lib/udev/keymaps/%: lib/udev/keymaps/%
+	install -D -m 644 $< $@
+
+$(DESTDIR)/lib/udev/rules.d/%: lib/udev/rules.d/%
+	install -D -m 644 $< $@
+
+# the above rules install files.  this expansion installs the directories.
 $(foreach d,$(shell find $(OVERLAYS) -type d),$(DESTDIR)/$d):
 	install -D -d $@
 
