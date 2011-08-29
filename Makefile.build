@@ -45,9 +45,6 @@ $(DESTDIR)/etc/%: etc/%
 $(DESTDIR)/lib/udev/%: lib/udev/%
 	install -D -m 755 $< $@
 
-$(DESTDIR)/lib/udev/keymaps/%: lib/udev/keymaps/%
-	install -D -m 644 $< $@
-
 $(DESTDIR)/lib/udev/rules.d/%: lib/udev/rules.d/%
 	install -D -m 644 $< $@
 
