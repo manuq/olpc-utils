@@ -100,7 +100,7 @@ mount_boot_1_0() {
 
 	# If using UBIFS root, assume JFFS2 boot
 	if [ "$link" = "ubi0_0" ]; then
-		mount -t jffs2 -o noatime /dev/mtdblock2 /bootpart
+		mount -t jffs2 -o noatime mtd2 /bootpart
 	fi
 }
 
