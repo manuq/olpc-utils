@@ -108,6 +108,14 @@ configure_hw() {
 	[ "${XO_VERSION}" == "0" ] && return
 
 	echo "olpc-configure: configuring hardware..."
+
+	# disable tap-to-click and extra scrolling areas on AVC touchpads
+	if [ -e /sys/bus/serio/drivers/psmouse/serio*/vscroll ]; then
+		echo -n 0 > /sys/bus/serio/drivers/psmouse/serio*/vscroll
+		echo -n 0 > /sys/bus/serio/drivers/psmouse/serio*/hscroll
+		echo -n c > /sys/bus/serio/drivers/psmouse/serio*/flags
+	fi
+
 	if [ "${XO_VERSION}" == "1.5" ] ; then
 		configure_hw_1_5
 		mount_boot
