@@ -48,6 +48,9 @@ $(DESTDIR)/lib/udev/%: lib/udev/%
 $(DESTDIR)/lib/udev/rules.d/%: lib/udev/rules.d/%
 	install -D -m 644 $< $@
 
+$(DESTDIR)/lib/systemd/system/%: lib/systemd/system/%
+	install -D -m 644 $< $@
+
 # the above rules install files.  this expansion installs the directories.
 $(foreach d,$(shell find $(OVERLAYS) -type d),$(DESTDIR)/$d):
 	install -D -d $@
