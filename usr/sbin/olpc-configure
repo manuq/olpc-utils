@@ -436,21 +436,6 @@ case "$1" in
 	# unconditionally configure xorg for USB2VGA
 	configure_xorg
 
-	# create directories needed by screen, lockdev and minicom (#11078)
-	# temporary until we move to F15+ where this is solved already
-	if ! [ -e /var/lock/lockdev ]; then
-		mkdir -p /var/lock/lockdev
-		chmod 775 /var/lock/lockdev
-		chgrp lock /var/lock/lockdev
-	fi
-	if ! [ -e /var/run/screen ]; then
-		mkdir -p /var/run/screen
-		chmod 775 /var/run/screen
-		# screen group only exists after installing screen, so this chgrp
-		# call may (harmlessly) fail
-		chgrp screen /var/run/screen 2>/dev/null || :
-	fi
-
 	# check whether /home configuration is necessary.
 	if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
 	    if [ -n "$olpc_home_version" ]; then
