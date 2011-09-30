@@ -1,0 +1,21 @@
+[org.gnome.desktop.interface]
+cursor-size=48
+
+# GNOME hardcodes DPI to 96, so we multiply the default scaling by 2.1 to
+# hit our DPI (201) and get appropriately sized fonts.
+# Cantarell appears to scale badly in comparison to other fonts, deviating
+# largely from the point scale. So switch the default font from Cantarell
+# to Sans to match the rest of the desktop.
+text-scaling-factor=2.1
+font-name='Sans 7'
+
+[org.gnome.desktop.lockdown]
+disable-lock-screen=true
+disable-user-switching=true
+
+[org.gnome.desktop.session]
+session-name="gnome-fallback"
+
+[org.gnome.desktop.screensaver]
+lock-enabled=false
+
