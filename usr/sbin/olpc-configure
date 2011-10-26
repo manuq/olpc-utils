@@ -459,7 +459,7 @@ case "$1" in
 	fi
 
 	# check whether / configuration is necessary.
-	if [ "$olpc_root_version" != "$OLPC_CONFIGURE_VERSION" ]; the
+	if [ "$olpc_root_version" != "$OLPC_CONFIGURE_VERSION" ]; then
 		[ -n "$XKB_MODEL" ] || read_config
 		configure_root
 		echo "$OLPC_CONFIGURE_VERSION" >/.olpc-configured
