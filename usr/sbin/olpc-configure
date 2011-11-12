@@ -19,14 +19,33 @@ LIBRARY_INDEX_BUILT=0
 
 source /usr/share/olpc-utils/olpc-utils-functions
 
-initialize_ptmode()
+configure_mouse()
 {
+	local PTMODE INPUTNAME PROTO name
+
 	# the hgpk driver for the "old" ALPS touchpads has a
 	# means of switching between capacitive "finger" mode and
 	# stylus-only tablet mode.  make it possible for the user
 	# to switch it back and forth.
 	PTMODE=/sys/devices/platform/i8042/serio1/hgpk_mode
 	test -e $PTMODE && chmod a+rw $PTMODE
+
+	# disable tap-to-click and extra scrolling areas on AVC touchpads
+	if [ -e /sys/bus/serio/drivers/psmouse/serio*/vscroll ]; then
+		echo -n 0 > /sys/bus/serio/drivers/psmouse/serio*/vscroll
+		echo -n 0 > /sys/bus/serio/drivers/psmouse/serio*/hscroll
+		echo -n c > /sys/bus/serio/drivers/psmouse/serio*/flags
+	fi
+
+	# force Synaptics touchpad into Relative mode using the synaptics
+	# kernel driver, which provides tap-to-click control, and disables
+	# tap-to-click by default.
+	INPUTNAME=/sys/bus/serio/drivers/psmouse/serio*/input/input*/name
+	PROTO=/sys/bus/serio/drivers/psmouse/serio*/protocol
+	if [ -r $INPUTNAME ]; then
+		name=$(<$INPUTNAME)
+		[[ $name == *Synaptics* ]] && echo -n "SynRelPS/2" > $PROTO &
+	fi
 }
 
 configure_hw_1_0() {
@@ -45,8 +64,6 @@ configure_hw_1_0() {
 	then
 	    /sbin/rfkill block wifi
 	fi
-
-	initialize_ptmode
 }
 
 configure_hw_1_5() {
@@ -61,8 +78,6 @@ configure_hw_1_5() {
 	then
 	    /sbin/rfkill block wifi
 	fi
-
-	initialize_ptmode
 }
 
 configure_hw_1_75() {
@@ -108,13 +123,7 @@ configure_hw() {
 	[ "${XO_VERSION}" == "0" ] && return
 
 	echo "olpc-configure: configuring hardware..."
-
-	# disable tap-to-click and extra scrolling areas on AVC touchpads
-	if [ -e /sys/bus/serio/drivers/psmouse/serio*/vscroll ]; then
-		echo -n 0 > /sys/bus/serio/drivers/psmouse/serio*/vscroll
-		echo -n 0 > /sys/bus/serio/drivers/psmouse/serio*/hscroll
-		echo -n c > /sys/bus/serio/drivers/psmouse/serio*/flags
-	fi
+	configure_mouse
 
 	if [ "${XO_VERSION}" == "1.5" ] ; then
 		configure_hw_1_5
