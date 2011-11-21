@@ -1,0 +1,8 @@
+# Attempt to set the battery-backed RTC as rtc0
+# and the cpu-wakeup-able RTC as rtc1
+SUBSYSTEM=="rtc" DRIVERS=="mmp-rtc" SYMLINK+="rtcalarm" 
+
+SUBSYSTEM=="rtc" DRIVERS=="rtc_idt1338" SYMLINK+="rtc" 
+
+
+
