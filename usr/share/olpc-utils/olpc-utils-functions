@@ -17,6 +17,9 @@ get_xo_version()
 			OLPC\ 1[ABC][0-9])
 				XO_VERSION="1.75"
 				;;
+			OLPC\ 2[ABC][0-9])
+				XO_VERSION="3"
+				;;
 		esac
 	elif [ -e "/sys/class/dmi/id/product_name" ]
 	then
