@@ -99,24 +99,32 @@ configure_hw_1_75() {
 
 }
 
+configure_hw_3() {
+	# FIXME - nothing to do yet
+	echo XO-3
+}
+
 # Dynamically determine the boot device and mount it
 mount_boot() {
 	local bootpath=$(get_ofw_file /chosen/bootpath)
 	local bootdev
 	local tmp
 
-	case $bootpath in
-	/pci/sd@c/disk@?:*) # XO-1.5 SD
+	case $XO_VERSION-$bootpath in
+	1.5-/pci/sd@c/disk@?:*) # XO-1.5 SD
 		tmp=${bootpath#/pci/sd@c/disk@}
 		tmp=${tmp%%:*}
 		((tmp--))
 		bootdev="/dev/disk/mmc/mmc${tmp}p1"
 		;;
-	/sd@d4280000/disk@?:*) # XO-1.75
+	1.75-/sd@d4280000/disk@?:*) # XO-1.75
 		tmp=${bootpath#/sd@d4280000/disk@}
 		tmp=${tmp%%:*}
 		((tmp--))
 		bootdev="/dev/disk/mmc/mmc${tmp}p1"
+		;;
+	3-/sd@d4280000/disk@?:*) # XO-3
+		bootdev="/dev/disk/mmc/mmc1p1"
 		;;
 	esac
 	[[ -n "$bootdev" && -d "/bootpart" && -e "$bootdev" ]] || return
@@ -144,6 +152,9 @@ configure_hw() {
 		mount_boot
         elif  [ "${XO_VERSION}" == "1.75" ] ; then
 		configure_hw_1_75
+		mount_boot
+        elif  [ "${XO_VERSION}" == "3" ] ; then
+		configure_hw_3
 		mount_boot
 	else
 		configure_hw_1_0
