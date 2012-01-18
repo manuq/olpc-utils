@@ -138,6 +138,9 @@ static void start_server(void)
 		if (setpgid(0, getpid()))
 			die_perror("setpgid server");
 
+		/* Boost the nice value of the X server for better responsiveness */
+		setpriority(PRIO_PROCESS, 0, -10);
+
 #ifndef DEBUG
 		freopen("/dev/null", "r", stdin);
 		freopen("/var/log/olpc-dm-X.log", "w", stdout);
