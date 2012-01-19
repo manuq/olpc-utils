@@ -30,21 +30,35 @@ configure_mouse()
 	PTMODE=/sys/devices/platform/i8042/serio1/hgpk_mode
 	test -e $PTMODE && chmod a+rw $PTMODE
 
-	# disable tap-to-click and extra scrolling areas on AVC touchpads
-	if [ -e /sys/bus/serio/drivers/psmouse/serio*/vscroll ]; then
-		echo -n 0 > /sys/bus/serio/drivers/psmouse/serio*/vscroll
-		echo -n 0 > /sys/bus/serio/drivers/psmouse/serio*/hscroll
-		echo -n c > /sys/bus/serio/drivers/psmouse/serio*/flags
+	# where's the AVC Sentelic FSP?
+	FSP=$(grep -l 'FSPPS/2' /sys/bus/serio/drivers/psmouse/serio*/protocol | head -n1 | xargs dirname)
+	if [ -n $FSP ]; then
+		# disable tap-to-click and extra scrolling areas
+		if [ -e $FSP/vscroll ]; then
+			echo -n 0 > $FSP/vscroll
+			echo -n 0 > $FSP/hscroll
+			echo -n c > $FSP/flags
+		fi
+		# Set hardware parameters to config "4F"
+		echo -n 0x45 0xc1 > $FSP/setreg
+		echo -n 0x15 0x64 > $FSP/setreg
+		echo -n 0x17 0x99 > $FSP/setreg
+		echo -n 0x1b 0x6f > $FSP/setreg
+		echo -n 0x30 0xa0 > $FSP/setreg
+		echo -n 0x42 0xe7 > $FSP/setreg
+		echo -n 0x64 0x63 > $FSP/setreg
+		echo -n 0x65 0x63 > $FSP/setreg
+		echo -n 0x6c 0xa8 > $FSP/setreg
+		echo -n 0x6d 0x8a > $FSP/setreg
 	fi
+
 
 	# force Synaptics touchpad into Relative mode using the synaptics
 	# kernel driver, which provides tap-to-click control, and disables
 	# tap-to-click by default.
-	INPUTNAME=/sys/bus/serio/drivers/psmouse/serio*/input/input*/name
-	PROTO=/sys/bus/serio/drivers/psmouse/serio*/protocol
-	if [ -r $INPUTNAME ]; then
-		name=$(<$INPUTNAME)
-		[[ $name == *Synaptics* ]] && echo -n "SynRelPS/2" > $PROTO &
+	SYN=$(grep -l 'Synaptics' /sys/bus/serio/drivers/psmouse/serio*/name | head -n1 | xargs dirname)
+	if [ -n "$SYN" ]; then
+		echo -n "SynRelPS/2" > $SYN/protocol
 	fi
 }
 
@@ -123,7 +137,7 @@ configure_hw() {
 	[ "${XO_VERSION}" == "0" ] && return
 
 	echo "olpc-configure: configuring hardware..."
-	configure_mouse
+	configure_mouse & 
 
 	if [ "${XO_VERSION}" == "1.5" ] ; then
 		configure_hw_1_5
