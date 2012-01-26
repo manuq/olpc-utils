@@ -39,17 +39,7 @@ configure_mouse()
 			echo -n 0 > $FSP/hscroll
 			echo -n c > $FSP/flags
 		fi
-		# Set hardware parameters to config "4F"
-		echo -n 0x45 0xc1 > $FSP/setreg
-		echo -n 0x15 0x64 > $FSP/setreg
-		echo -n 0x17 0x99 > $FSP/setreg
-		echo -n 0x1b 0x6f > $FSP/setreg
-		echo -n 0x30 0xa0 > $FSP/setreg
-		echo -n 0x42 0xe7 > $FSP/setreg
-		echo -n 0x64 0x63 > $FSP/setreg
-		echo -n 0x65 0x63 > $FSP/setreg
-		echo -n 0x6c 0xa8 > $FSP/setreg
-		echo -n 0x6d 0x8a > $FSP/setreg
+		/usr/bin/olpc-fsp-regs set
 	fi
 
 

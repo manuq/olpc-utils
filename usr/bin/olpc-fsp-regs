@@ -1,0 +1,79 @@
+#!/bin/bash
+# Copyright 2011-2012 Sentelic Corporation
+# Copyright 2011-2012 One Laptop per Child Association
+#
+# Finger-sensing Pad init script for OLPC - to be called during
+# system init, or cmdline for diagnostics and debugging
+#
+# License: GPLv3
+
+set -e
+
+verify_register() {
+	regoff=$1;
+	shift
+	regval=$1;
+	echo 0x${regoff} > $FSP/getreg
+	val=$(<$FSP/getreg)
+	if [ $val != "${regoff}${regval}" ]; then
+		echo "unexpected readback for ${regoff}: $val" >&2
+	fi
+}
+
+write_register() {
+	regoff=$1;
+	shift
+	regval=$1;
+	echo -n 0x${regoff} 0x${regval}> $FSP/setreg
+}
+
+# where's the AVC Sentelic FSP?
+FSP=$(grep -l 'FSPPS/2' /sys/bus/serio/drivers/psmouse/serio*/protocol | head -n1 | xargs --no-run-if-empty dirname)
+
+if [ -e $FSP ]; then
+	echo "Error: No FSP found" >&2
+	exit 1
+fi
+
+###
+### Registers to set
+###
+# 3F - Fix jitter in ebook mode
+REG[0]="45 c1"
+REG[1]="15 64"
+REG[2]="17 99"
+REG[3]="1b 6f"
+REG[4]="30 a0"
+REG[5]="42 e7"
+
+# 4F - Fix finger rolling causes cursor position jumps
+REG[6]="64 63"
+REG[7]="65 63"
+REG[8]="6c a8"
+REG[9]="6d 8a"
+
+case "$1" in
+	verify)
+		# switch to correct page
+		echo -n 0x82 > $FSP/page  
+		# verify all values without writing them
+		for R in "${REG[@]}"; do
+			verify_register $R
+		done
+		exit 0
+		;;
+	set)
+		# switch to correct page
+		echo -n 0x82 > $FSP/page  
+		# verify all values without writing them
+		for R in "${REG[@]}"; do
+			write_register $R
+		done
+		exit 0
+
+		;;
+	*)
+		echo "Unknown or missing parameter $1" >&2
+		exit 1
+		;;
+esac
