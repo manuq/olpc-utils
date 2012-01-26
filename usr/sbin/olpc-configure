@@ -85,8 +85,18 @@ configure_hw_1_5() {
 }
 
 configure_hw_1_75() {
-	# FIXME - nothing to do yet
-	echo XO-1.75
+
+	# open permissions on the OLS 'ceiling' node, so activities
+	# that want to get light sensor readings can raise it.
+	# of course, after raising it, it would be really nice if
+	# activities would then lower it to 0 again when they're done.
+	# it's not critical -- mainly it just keeps the storage LED from
+	# working properly while the ceiling is raised.
+	ols_device=$(grep -l 'OLPC OLS notify' /sys/class/input/input*/name)
+	ols_device=${ols_device%/name}
+	ceiling=$ols_device/device/ceiling
+	chmod a+w $ceiling
+
 }
 
 # Dynamically determine the boot device and mount it
