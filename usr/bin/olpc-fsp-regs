@@ -20,6 +20,14 @@ verify_register() {
 	fi
 }
 
+read_register() {
+	regoff=$1;
+	shift
+	echo 0x${regoff} > $FSP/getreg
+	val=$(<$FSP/getreg)
+	echo -n ${val:2}
+}
+
 write_register() {
 	regoff=$1;
 	shift
@@ -30,7 +38,7 @@ write_register() {
 # where's the AVC Sentelic FSP?
 FSP=$(grep -l 'FSPPS/2' /sys/bus/serio/drivers/psmouse/serio*/protocol | head -n1 | xargs --no-run-if-empty dirname)
 
-if [ -e $FSP ]; then
+if [ -z "$FSP" ]; then
 	echo "Error: No FSP found" >&2
 	exit 1
 fi
@@ -38,21 +46,34 @@ fi
 ###
 ### Registers to set
 ###
-# 3F - Fix jitter in ebook mode
-REG[0]="45 c1"
-REG[1]="15 64"
-REG[2]="17 99"
-REG[3]="1b 6f"
-REG[4]="30 a0"
-REG[5]="42 e7"
+# 5F - Fix finger rolling, undo ebook jitter fix
+#      applies to 2F, 3F and 4F
+CONFIG_VERSION=5 # 5F
+REG[0]="45 21"
+REG[1]="64 63"
+REG[2]="65 63"
+REG[3]="6c a8"
+REG[4]="6d 8a"
+REG[5]="30 a0"
+REG[6]="42 e7"
 
-# 4F - Fix finger rolling causes cursor position jumps
-REG[6]="64 63"
-REG[7]="65 63"
-REG[8]="6c a8"
-REG[9]="6d 8a"
+# This register identifies the config version burned
+# into the FSP at mfg.
+#
+# Configs earlier than 5F report 0x01.
+VERSION_REG="04"
 
 case "$1" in
+	version)
+		# switch to correct page
+		echo -n 0x82 > $FSP/page  
+		# The version is reported in octal
+		VERSION_IN_DEV=$(read_register $VERSION_REG)
+		VERSION_IN_DEV=$(printf '%d' \0x$VERSION_IN_DEV)
+		echo Version preloaded on FSP: $VERSION_IN_DEV
+		echo Version in $0: $CONFIG_VERSION
+		exit 0
+		;;
 	verify)
 		# switch to correct page
 		echo -n 0x82 > $FSP/page  
@@ -64,14 +85,19 @@ case "$1" in
 		;;
 	set)
 		# switch to correct page
-		echo -n 0x82 > $FSP/page  
-		# verify all values without writing them
-		for R in "${REG[@]}"; do
-			write_register $R
-		done
+		echo -n 0x82 > $FSP/page
+		# The version is reported in octal
+		# but bash comparisons are int.
+		VERSION_IN_DEV=$(read_register $VERSION_REG)
+		VERSION_IN_DEV=$(printf '%d' \0x$VERSION_IN_DEV)
+		if [ $CONFIG_VERSION -gt $VERSION_IN_DEV ]; then
+			for R in "${REG[@]}"; do
+				write_register $R
+			done
+		fi
 		exit 0
-
 		;;
+
 	*)
 		echo "Unknown or missing parameter $1" >&2
 		exit 1
