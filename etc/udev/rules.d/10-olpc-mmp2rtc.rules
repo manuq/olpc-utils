@@ -1,8 +1,4 @@
-# Attempt to set the battery-backed RTC as rtc0
-# and the cpu-wakeup-able RTC as rtc1
+# Link the RTC that can wake up the CPU as rtcalarm
 SUBSYSTEM=="rtc" DRIVERS=="mmp-rtc" SYMLINK+="rtcalarm" 
-
-SUBSYSTEM=="rtc" DRIVERS=="rtc_idt1338" SYMLINK+="rtc" 
-
-
-
+## On F17 and later we find the rtc link set properly
+# SUBSYSTEM=="rtc" DRIVERS=="rtc_idt1338" SYMLINK+="rtc" 

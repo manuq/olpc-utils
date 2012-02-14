@@ -30,21 +30,25 @@ configure_mouse()
 	PTMODE=/sys/devices/platform/i8042/serio1/hgpk_mode
 	test -e $PTMODE && chmod a+rw $PTMODE
 
-	# disable tap-to-click and extra scrolling areas on AVC touchpads
-	if [ -e /sys/bus/serio/drivers/psmouse/serio*/vscroll ]; then
-		echo -n 0 > /sys/bus/serio/drivers/psmouse/serio*/vscroll
-		echo -n 0 > /sys/bus/serio/drivers/psmouse/serio*/hscroll
-		echo -n c > /sys/bus/serio/drivers/psmouse/serio*/flags
+	# where's the AVC Sentelic FSP?
+	FSP=$(grep -l 'FSPPS/2' /sys/bus/serio/drivers/psmouse/serio*/protocol | head -n1 | xargs dirname)
+	if [ -n $FSP ]; then
+		# disable tap-to-click and extra scrolling areas
+		if [ -e $FSP/vscroll ]; then
+			echo -n 0 > $FSP/vscroll
+			echo -n 0 > $FSP/hscroll
+			echo -n c > $FSP/flags
+		fi
+		/usr/bin/olpc-fsp-regs set
 	fi
+
 
 	# force Synaptics touchpad into Relative mode using the synaptics
 	# kernel driver, which provides tap-to-click control, and disables
 	# tap-to-click by default.
-	INPUTNAME=/sys/bus/serio/drivers/psmouse/serio*/input/input*/name
-	PROTO=/sys/bus/serio/drivers/psmouse/serio*/protocol
-	if [ -r $INPUTNAME ]; then
-		name=$(<$INPUTNAME)
-		[[ $name == *Synaptics* ]] && echo -n "SynRelPS/2" > $PROTO &
+	SYN=$(grep -l 'Synaptics' /sys/bus/serio/drivers/psmouse/serio*/name | head -n1 | xargs dirname)
+	if [ -n "$SYN" ]; then
+		echo -n "SynRelPS/2" > $SYN/protocol
 	fi
 }
 
@@ -81,8 +85,23 @@ configure_hw_1_5() {
 }
 
 configure_hw_1_75() {
+
+	# open permissions on the OLS 'ceiling' node, so activities
+	# that want to get light sensor readings can raise it.
+	# of course, after raising it, it would be really nice if
+	# activities would then lower it to 0 again when they're done.
+	# it's not critical -- mainly it just keeps the storage LED from
+	# working properly while the ceiling is raised.
+	ols_device=$(grep -l 'OLPC OLS notify' /sys/class/input/input*/name)
+	ols_device=${ols_device%/name}
+	ceiling=$ols_device/device/ceiling
+	chmod a+w $ceiling
+
+}
+
+configure_hw_3() {
 	# FIXME - nothing to do yet
-	echo XO-1.75
+	echo XO-3
 }
 
 # Dynamically determine the boot device and mount it
@@ -91,18 +110,21 @@ mount_boot() {
 	local bootdev
 	local tmp
 
-	case $bootpath in
-	/pci/sd@c/disk@?:*) # XO-1.5 SD
+	case $XO_VERSION-$bootpath in
+	1.5-/pci/sd@c/disk@?:*) # XO-1.5 SD
 		tmp=${bootpath#/pci/sd@c/disk@}
 		tmp=${tmp%%:*}
 		((tmp--))
 		bootdev="/dev/disk/mmc/mmc${tmp}p1"
 		;;
-	/sd@d4280000/disk@?:*) # XO-1.75
+	1.75-/sd@d4280000/disk@?:*) # XO-1.75
 		tmp=${bootpath#/sd@d4280000/disk@}
 		tmp=${tmp%%:*}
 		((tmp--))
 		bootdev="/dev/disk/mmc/mmc${tmp}p1"
+		;;
+	3-/sd@d4280000/disk@?:*) # XO-3
+		bootdev="/dev/disk/mmc/mmc1p1"
 		;;
 	esac
 	[[ -n "$bootdev" && -d "/bootpart" && -e "$bootdev" ]] || return
@@ -123,13 +145,16 @@ configure_hw() {
 	[ "${XO_VERSION}" == "0" ] && return
 
 	echo "olpc-configure: configuring hardware..."
-	configure_mouse
+	configure_mouse & 
 
 	if [ "${XO_VERSION}" == "1.5" ] ; then
 		configure_hw_1_5
 		mount_boot
         elif  [ "${XO_VERSION}" == "1.75" ] ; then
 		configure_hw_1_75
+		mount_boot
+        elif  [ "${XO_VERSION}" == "3" ] ; then
+		configure_hw_3
 		mount_boot
 	else
 		configure_hw_1_0
