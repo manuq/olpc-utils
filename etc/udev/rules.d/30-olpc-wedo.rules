@@ -1,2 +1,5 @@
 # Lego WeDo
-SYSFS{idVendor}=="0694", SYSFS{idProduct}=="0003", GROUP="dialout", MODE="0660"
+# was: SYSFS{idVendor}=="0694", SYSFS{idProduct}=="0003", GROUP="dialout", MODE="0660"
+# allow give access to all Lego products
+SYSFS{idVendor}=="0694", GROUP="dialout", MODE="0660"
+
