@@ -48,7 +48,7 @@ fi
 ###
 # 5F - Fix finger rolling, undo ebook jitter fix
 #      applies to 2F, 3F and 4F
-CONFIG_VERSION=5 # 5F
+CONFIG_VERSION=6 # 6F
 REG[0]="45 21"
 REG[1]="64 63"
 REG[2]="65 63"
@@ -56,6 +56,9 @@ REG[3]="6c a8"
 REG[4]="6d 8a"
 REG[5]="30 a0"
 REG[6]="42 e7"
+REG[7]="17 aa"
+REG[8]="48 a3"
+REG[9]="61 00"
 
 # This register identifies the config version burned
 # into the FSP at mfg.
