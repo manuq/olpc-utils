@@ -2,7 +2,7 @@
  * olpc-dm: A completely uninteractive desktop manager which just executes
  * the given X session script as a predetermined user.
  *
- * Copyright (C) 2009 One Laptop per Child
+ * Copyright (C) 2009-2012 One Laptop per Child
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -34,7 +35,10 @@
 #include <string.h>
 #include <time.h>
 
-#include <ck-connector.h>
+#include <security/pam_appl.h>
+#include <security/pam_misc.h>
+
+static const struct pam_conv pam_conv = { misc_conv, NULL };
 
 //#define DEBUG
 #define X_DISPLAY ":0"
@@ -47,8 +51,7 @@
 #define XSERVERAUTH      AUTH_HOME "/.Xserverauth"
 #define ICEAUTHORITY     AUTH_HOME "/.ICEauthority"
 
-static CkConnector *ckc = NULL;
-static const char *ck_cookie = NULL;
+static pam_handle_t *pamh = NULL;
 static pid_t client_pid = -1;
 static pid_t server_pid = -1;
 static volatile int signal_caught = 0;
@@ -226,64 +229,51 @@ static int get_server_tty(void)
 	return minor(r);
 }
 
-/* open a ConsoleKit session */
-static void init_ck(void)
+/* open a PAM session */
+static void init_pam(void)
 {
-	DBusError error;
-	dbus_bool_t ret;
-	dbus_int32_t uid;
-	const char *display = X_DISPLAY;
-	char device[11];
-	char *device_ptr = device;
-	dbus_bool_t is_local = TRUE;
-	int r;
-	struct passwd *pwd = getpwnam(OLPC_USER);
-	if (!pwd)
-		die_perror("getpwnam");
-
-	ckc = ck_connector_new();
-	if (!ckc)
+	char tty[6];
+	int r = pam_start("olpc-login", OLPC_USER, &pam_conv, &pamh);
+	if (r != PAM_SUCCESS)
 		die();
 
-	uid = pwd->pw_uid;
-	r = snprintf(device, sizeof(device), "/dev/tty%d", get_server_tty());
-	if (r >= sizeof(device))
+	r = snprintf(tty, sizeof(tty), "tty%d", get_server_tty());
+	if (r >= sizeof(tty))
 		die();
 
-	dbus_error_init(&error);
-	ret = ck_connector_open_session_with_parameters (ckc, &error,
-		"unix-user", &uid,
-		"x11-display", &display,
-		"x11-display-device", &device_ptr,
-		"is-local", &is_local,
-		NULL);
-	if (!ret)
+	r = pam_set_item(pamh, PAM_TTY, tty);
+	if (r != PAM_SUCCESS)
 		die();
 
-	dbg("CK session opened");
-	ck_cookie = ck_connector_get_cookie(ckc);
-	if (!ck_cookie)
-		die_msg("couldn't get ConsoleKit cookie");
+	r = pam_set_item(pamh, PAM_XDISPLAY, X_DISPLAY);
+	if (r != PAM_SUCCESS)
+		die();
 
-	/* copy it, just to be sure that it's safe to access after a fork */
-	ck_cookie = strdup(ck_cookie);
-	if (!ck_cookie)
+	r = pam_set_item(pamh, PAM_RUSER, "root");
+	if (r != PAM_SUCCESS)
+		die();
+
+	/* check if account is valid */
+	r = pam_acct_mgmt(pamh, 0);
+	if (r != PAM_SUCCESS)
+		die();
+
+	/* establish resource limits, control groups, etc. */
+	r = pam_setcred(pamh, PAM_ESTABLISH_CRED);
+	if (r != PAM_SUCCESS)
+		die();
+
+	/* create session */
+	r = pam_open_session(pamh, 0);
+	if (r != PAM_SUCCESS)
 		die();
 }
 
-/* close ConsoleKit session */
-static void deinit_ck(void)
+/* close PAM session */
+static void deinit_pam(void)
 {
-	DBusError error;
-
-	if (!ck_cookie || !ckc)
-		return;
-
-	dbg("deinit ck");
-	free((void *) ck_cookie);
-	dbus_error_init(&error);
-	if (!ck_connector_close_session(ckc, &error))
-		fprintf(stderr, "olpc-dm: ck_connector_close_session() failed\n");
+	int r = pam_close_session(pamh, 0);
+	pam_end(pamh, r);
 }
 
 static void setenv_chk(const char *name, const char *value)
@@ -296,6 +286,7 @@ static void setenv_chk(const char *name, const char *value)
  * correct environment, privs dropped, etc. */
 static void setup_client_env(void)
 {
+	char **envcp;
 	struct passwd *pwd = getpwnam(OLPC_USER);
 	if (!pwd)
 		die_perror("getpwnam");
@@ -317,8 +308,17 @@ static void setup_client_env(void)
 	setenv_chk("XAUTHORITY", XAUTHORITY);
 	setenv_chk("XSERVERAUTH", XSERVERAUTH);
 	setenv_chk("ICEAUTHORITY", ICEAUTHORITY);
-	if (ck_cookie)
-		setenv_chk("XDG_SESSION_COOKIE", ck_cookie);
+
+	/* update environment from PAM */
+	envcp = pam_getenvlist(pamh);
+	if (envcp) {
+		while (*envcp) {
+			printf("put env %s\n", *envcp);
+			if (putenv(*envcp))
+				die();
+			envcp++;
+		}
+	}
 
 	/* Drop privs */
 	if (initgroups(pwd->pw_name, pwd->pw_gid))
@@ -544,10 +544,10 @@ int main(int argc, char *argv[])
 	generate_xauth();
 	setup_signals();
 	start_server();
-	init_ck();
+	init_pam();
 	start_client();
 	wait_for_exit();
-	deinit_ck();
+	deinit_pam();
 	shutdown();
 	_exit(0);
 }

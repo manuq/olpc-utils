@@ -7,8 +7,6 @@ WARNFLAGS = \
         -Wextra -Wstrict-aliasing=2 \
         -Wunsafe-loop-optimizations
 
-CK_CONNECTOR_CFLAGS = $(shell pkg-config --cflags --libs ck-connector)
-
 # files
 
 BINARIES = usr/sbin/olpc-dm
@@ -25,7 +23,7 @@ all: $(BINARIES)
 
 usr/sbin/olpc-dm: src/olpc-dm.c
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(CK_CONNECTOR_CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -lpam -lpam_misc -o $@ $^
 
 
 # install targets
@@ -34,9 +32,6 @@ $(DESTDIR)/usr/%: usr/%
 	install -D $< $@
 
 $(DESTDIR)/etc/rc.d/init.d/%: etc/rc.d/init.d/%
-	install -D -m 755 $< $@
-
-$(DESTDIR)/etc/ConsoleKit/run-session.d/%: etc/ConsoleKit/run-session.d/%
 	install -D -m 755 $< $@
 
 $(DESTDIR)/etc/%: etc/%
