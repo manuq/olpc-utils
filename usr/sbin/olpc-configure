@@ -8,7 +8,7 @@
 
 # Bump this version each time compatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=16
+OLPC_CONFIGURE_VERSION=17
 
 OLPC_HOME=/home/olpc
 XO_VERSION=0
@@ -329,7 +329,7 @@ lock-on-idle=false
 lock-timeout=0
 EOF
 		mv /home/olpc/.gnome2/keyrings/default.keyring{.tmp,}
-		chown -R olpc:olpc /home/olpc/.gnome2/keyrings
+		# .gnome2 permissions are fixed up below
 	fi
 
 	# version 13: get rid of old ~/Activities/.groups from gg-802-1 (#10582)
@@ -340,6 +340,10 @@ EOF
 			rm -f /home/olpc/Activities/.groups
 		fi
 	fi
+
+	# version 17: version 12 accidently created /home/olpc/.gnome2 with root ownership
+	# correct that here for upgrades
+	chown -R olpc:olpc /home/olpc/.gnome2
 }
 
 update_home_permissions_to_v6() {
