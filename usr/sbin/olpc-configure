@@ -42,13 +42,14 @@ configure_mouse()
 		/usr/bin/olpc-fsp-regs set
 	fi
 
-
 	# force Synaptics touchpad into Relative mode using the synaptics
 	# kernel driver, which provides tap-to-click control, and disables
 	# tap-to-click by default.
-	SYN=$(grep -l 'Synaptics' /sys/bus/serio/drivers/psmouse/serio*/name | head -n1 | xargs dirname)
-	if [ -n "$SYN" ]; then
-		echo -n "SynRelPS/2" > $SYN/protocol
+	INPUTNAME=/sys/bus/serio/drivers/psmouse/serio*/input/input*/name
+	PROTO=/sys/bus/serio/drivers/psmouse/serio*/protocol
+	if [ -r $INPUTNAME ]; then
+		name=$(<$INPUTNAME)
+		[[ $name == *Synaptics* ]] && echo -n "SynRelPS/2" > $PROTO
 	fi
 }
 
