@@ -1,0 +1,11 @@
+[Unit]
+Description=Finish OLPC boot process
+After=rc-local.service plymouth-start.service
+Before=prefdm.service
+
+[Service]
+ExecStart=/usr/sbin/olpc-boot-finish
+Type=oneshot
+
+[Install]
+WantedBy=graphical.target
