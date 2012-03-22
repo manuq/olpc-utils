@@ -238,7 +238,7 @@ rebuild_library_index() {
 		echo '* olpc-configure: Rebuilding the library index.'
 		rm -rf $OLPC_HOME/.library_pages
 		[ -n "$SYS_LANG" ] || read_config
-		/usr/bin/env - LANG=$SYS_LANG /usr/share/library-common/make_index.py
+		LANG=$SYS_LANG /usr/share/library-common/make_index.py
 		chown -R olpc:olpc $OLPC_HOME/.library_pages
 	fi
 }
