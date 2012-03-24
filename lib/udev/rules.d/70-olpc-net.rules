@@ -1,0 +1,17 @@
+# Attempt to pin the internal wifi device with name eth0
+# Some components expect the internal device to have name 'eth0', but this
+# can sometimes change when external networking devices are connected.
+#
+# Note that this file needs to present in both olpc-utils and the initramfs.
+
+SUBSYSTEM!="net", GOTO="olpc_net_end"
+ACTION!="add", GOTO="olpc_net_end"
+
+# Internal libertas hardware: fix to eth0
+KERNEL=="wlan*", DRIVERS=="libertas_sdio", NAME="eth0"
+KERNEL=="wlan*", DRIVERS=="usb8388", NAME="eth0"
+
+# other adapters named eth0: find a new name
+KERNEL=="eth0", PROGRAM="olpc_eth_namer", NAME="%c"
+
+LABEL="olpc_net_end"
