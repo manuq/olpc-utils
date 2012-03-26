@@ -94,12 +94,12 @@ mount_boot() {
 }
 
 mount_boot_1_0() {
-	local link
-	link=$(readlink /dev/root) || return 0
+	local rootdev
+	rootdev=$(findmnt -rvn -o SOURCE /) || return 0
 
 	# If using UBIFS root, assume JFFS2 boot
-	if [ "$link" = "ubi0_0" ]; then
-		mount -t jffs2 -o noatime mtd2 /bootpart
+	if [ "$rootdev" = "/dev/ubi0_0" ]; then
+		mount -t jffs2 -o noatime mtd1 /bootpart
 	fi
 }
 
