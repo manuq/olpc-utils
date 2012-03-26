@@ -26,11 +26,17 @@ done
 
 ec_cmds=/sys/power/ec
 if [[ ! -e $ec_cmds ]]; then
-    ec_cmds=/sys/kernel/debug/olpc-ec/generic
-    sudo mount -t debugfs none /sys/kernel/debug
-    if [[ ! -e $ec_cmds ]]; then
-        echo "Missing kernel support for embedded controller commands"
-    fi
+	if [[ ! -e /sys/kernel/debug ]]; then
+		sudo mount -t debugfs none /sys/kernel/debug
+	fi
+
+	ec_cmds=/sys/kernel/debug/olpc-ec/cmd
+	if [[ ! -e $ec_cmds ]]; then
+		ec_cmds=/sys/kernel/debug/olpc-ec/generic
+		if [[ ! -e $ec_cmds ]]; then
+			echo "Missing kernel support for embedded controller commands"
+		fi
+	fi
 fi
 
 if [ -e /usr/share/olpc-utils/olpc-utils-functions ]; then
