@@ -355,10 +355,25 @@ configure_xorg() {
 	fi
 }
 
+resize_system() {
+	[ -e "/security/no-resize" ] && return 0
+
+	# Check that we're on a correctly partitioned system
+	local bootpart=$(findmnt -rvn -o SOURCE /bootpart) || return 0
+	local syspart=$(findmnt -rvn -o SOURCE /) || return 0
+
+	local syspart_base=$(basename $syspart)
+	[ "${syspart_base:0:3}" = "mmc" ] || return 0
+
+	echo "Resizing disk"
+	resize2fs "$syspart" && touch /security/no-resize
+}
+
 # configurations which happen in the root fs 
 # these need to be repeated when we upgrade.
 configure_root() {
 	echo "olpc-configure: reconfiguring root..."
+	resize_system
 
 	# First X layout used also as kernel keytable
 	KERN_KEYTABLE=`echo "$XKB_LAYOUT" |  cut -d , -f 1`
