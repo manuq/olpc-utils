@@ -8,6 +8,11 @@ cursor-size=48
 # to Sans to match the rest of the desktop.
 text-scaling-factor=2.1
 font-name='Sans 7'
+document-font-name='Sans 7'
+monospace-font-name='Monospace 7'
+
+[org.gnome.desktop.wm.preferences]
+titlebar-font='Sans Bold 7'
 
 [org.gnome.desktop.lockdown]
 disable-lock-screen=true
@@ -18,4 +23,3 @@ session-name="gnome-fallback"
 
 [org.gnome.desktop.screensaver]
 lock-enabled=false
-
