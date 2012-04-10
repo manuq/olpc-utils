@@ -9,7 +9,7 @@ ACTION!="add", GOTO="olpc_net_end"
 
 # Internal libertas hardware: fix to eth0
 KERNEL=="wlan*", DRIVERS=="libertas_sdio", NAME="eth0"
-KERNEL=="wlan*", DRIVERS=="usb8388", NAME="eth0"
+KERNEL=="wlan*", DRIVERS=="usb8xxx", NAME="eth0"
 
 # other adapters named eth0: find a new name
 KERNEL=="eth0", PROGRAM="olpc_eth_namer", NAME="%c"
