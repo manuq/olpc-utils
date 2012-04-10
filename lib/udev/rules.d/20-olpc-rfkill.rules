@@ -1,4 +1,0 @@
-
-# allow a special group to have access to RF on/off control
-KERNEL=="rfkill", GROUP="dialout", MODE="0660"
-

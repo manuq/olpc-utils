@@ -1,1 +1,0 @@
-KERNEL=="galcore", SUBSYSTEM=="v_graphics_class", GROUP="olpc", MODE="0660"
