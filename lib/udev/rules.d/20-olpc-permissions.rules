@@ -3,5 +3,5 @@ KERNEL=="galcore", SUBSYSTEM=="v_graphics_class", GROUP="olpc", MODE="0660"
 # allow a special group to have access to RF on/off control
 KERNEL=="rfkill", GROUP="dialout", MODE="0660"
 
-# allow give access to all Lego products
-SYSFS{idVendor}=="0694", GROUP="dialout", MODE="0660"
+# allow access to all Lego products
+SUBSYSTEM=="usb", ATTR{idVendor}=="0694", GROUP="dialout", MODE="0660"
