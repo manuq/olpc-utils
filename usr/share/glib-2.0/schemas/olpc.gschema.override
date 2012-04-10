@@ -23,3 +23,14 @@ session-name="gnome-fallback"
 
 [org.gnome.desktop.screensaver]
 lock-enabled=false
+
+# Epiphany defaults to using GNOME fonts, but displays them at some other
+# scaling value, and doesn't apply these preferences to all webpage fonts.
+# We specify slightly-larger font sizes than normal so that they appear
+# reasonable, and also so that font sizes in these regions get applied
+# to all webpage fonts.
+[org.gnome.Epiphany.web]
+use-gnome-fonts=false
+monospace-font='Monospace 6'
+sans-serif-font='Sans 8'
+serif-font='Serif 8'
