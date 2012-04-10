@@ -34,3 +34,7 @@ use-gnome-fonts=false
 monospace-font='Monospace 6'
 sans-serif-font='Sans 8'
 serif-font='Serif 8'
+
+# Gnumeric's font is too big by default
+[org.gnome.gnumeric.core.defaultfont]
+size=7.0
