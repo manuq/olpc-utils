@@ -413,6 +413,9 @@ __EOF__
 	# version 10: use xorg.conf.d instead of xorg.conf
 	rm -f /etc/X11/xorg.conf
 
+	# make sure that device initialisation is complete
+	udevadm settle
+
 	# version 15: set hostname via /etc/hosts and /etc/sysconfig/network
 	if [ -e "/sys/class/net/eth0/address" ]; then
 		local addr=$(</sys/class/net/eth0/address)
