@@ -3,5 +3,8 @@ KERNEL=="galcore", SUBSYSTEM=="v_graphics_class", GROUP="olpc", MODE="0660"
 # allow a special group to have access to RF on/off control
 KERNEL=="rfkill", GROUP="dialout", MODE="0660"
 
-# allow access to all Lego products
+# allow access to all Lego products (usbfs devices without kernel driver)
 SUBSYSTEM=="usb", ATTR{idVendor}=="0694", GROUP="dialout", MODE="0660"
+
+# allow access to all Lego products (devices with kernel driver)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0694", GROUP="dialout", MODE="0660"
