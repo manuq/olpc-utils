@@ -38,3 +38,7 @@ serif-font='Serif 8'
 # Gnumeric's font is too big by default
 [org.gnome.gnumeric.core.defaultfont]
 size=7.0
+
+# Let powerd do media key handling (e.g. volume, power button) (#11815)
+[org.gnome.settings-daemon.plugins.media-keys]
+active=false
