@@ -344,11 +344,20 @@ clean_previews() {
 # appropriately
 configure_xorg() {
 	# TODO: put this all in a hal callout or something similar
+
+	# olpc-configure is run before modules are loaded, which means we
+	# won't have our sisusbvga device here. Blocking the system on module
+	# load would slow things down a great deal, so instead, we just load
+	# the sisusbvga module. Conveniently, when modprobe returns the device
+	# node is already present if the device is connected. (#11819)
+	modprobe sisusbvga
+
 	if [ -e /dev/sisusbvga0 ]; then
 		ln -s /usr/share/olpc-utils/xorg.conf.d/sisusb.conf \
 			/etc/X11/xorg.conf.d/
 		rm -f /etc/X11/xorg.conf.d/xo$XO_VERSION.conf
 	else
+		rmmod sisusbvga
 		rm -f /etc/X11/xorg.conf.d/sisusb.conf
 		[ -e /etc/X11/xorg.conf.d/xo$XO_VERSION.conf ] || \
 			ln -s /usr/share/olpc-utils/xorg.conf.d/xo$XO_VERSION.conf /etc/X11/xorg.conf.d/
