@@ -343,24 +343,41 @@ clean_previews() {
 # determine presence of USB-VGA adapter on boot, switch Xorg config
 # appropriately
 configure_xorg() {
-	# TODO: put this all in a hal callout or something similar
-
 	# olpc-configure is run before modules are loaded, which means we
-	# won't have our sisusbvga device here. Blocking the system on module
+	# won't have our device here. Blocking the system on module
 	# load would slow things down a great deal, so instead, we just load
-	# the sisusbvga module. Conveniently, when modprobe returns the device
-	# node is already present if the device is connected. (#11819)
+	# the modules for various USB VGA devices. sisusb is pretty fast
+	# but udlfb needs a couple seconds to turn up (#11819, )
 	modprobe sisusbvga
+	modprobe udlfb
+	sleep 3
 
-	if [ -e /dev/sisusbvga0 ]; then
-		ln -s /usr/share/olpc-utils/xorg.conf.d/sisusb.conf \
-			/etc/X11/xorg.conf.d/
+	# sisusbvga currently turns up at sisusbvga0; udlfb devices take
+	# the next fb device number, so we rely on a udev rule to find
+	# the right fb device.
+	USBVGAFOUND=false
+	local basedevname
+	local devname
+	for basedevname in sisusbvga udlfb; do
+		devname=$(find /dev -name "${basedevname}*" | head -n1 | xargs --no-run-if-empty basename)
+		if [ -n "$devname" ]; then
+			USBVGAFOUND=true
+			sed -e "s/DEVICE/${devname}/" \
+			   /usr/share/olpc-utils/xorg.conf.d/$basedevname.conf \
+			   > /etc/X11/xorg.conf.d/$basedevname.conf
+			# inhibit suspend with a long-lived PID
+			# suspend will cut power to the USB2VGA connector
+			touch /var/run/powerd-inhibit-suspend/1
+			break
+		else
+			rm -f /etc/X11/xorg.conf.d/$basedevname.conf
+			rmmod $basedevname
+		fi
+	done
+	if [ $USBVGAFOUND = 'true' ]; then
 		rm -f /etc/X11/xorg.conf.d/xo$XO_VERSION.conf
-	else
-		rmmod sisusbvga
-		rm -f /etc/X11/xorg.conf.d/sisusb.conf
-		[ -e /etc/X11/xorg.conf.d/xo$XO_VERSION.conf ] || \
-			ln -s /usr/share/olpc-utils/xorg.conf.d/xo$XO_VERSION.conf /etc/X11/xorg.conf.d/
+	else 
+		ln -s /usr/share/olpc-utils/xorg.conf.d/xo$XO_VERSION.conf /etc/X11/xorg.conf.d/
 	fi
 }
 
