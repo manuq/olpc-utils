@@ -391,8 +391,8 @@ resize_system() {
 	local syspart_base=$(basename $syspart)
 	[ "${syspart_base:0:3}" = "mmc" ] || return 0
 
-	echo "Resizing disk"
-	resize2fs "$syspart" && touch /security/no-resize
+	echo "Growing root filesystem (if it can be grown)"
+	resize2fs "$syspart"
 }
 
 # configurations which happen in the root fs 
