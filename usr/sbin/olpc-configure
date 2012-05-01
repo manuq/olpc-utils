@@ -346,18 +346,26 @@ configure_xorg() {
 	# olpc-configure is run before modules are loaded, which means we
 	# won't have our device here. Blocking the system on module
 	# load would slow things down a great deal, so instead, we just load
-	# the modules for various USB VGA devices. sisusb is pretty fast
-	# but udlfb needs a couple seconds to turn up (#11819, )
+	# the modules for various USB VGA devices.
+	# sisusb is pretty fast, udlfb needs special handling.
 	modprobe sisusbvga
 	modprobe udlfb
-	sleep 3
+
+	# udlfb pops up a symlink under /sys immediately
+	# and then takes ~3s (EDI negotiation?) before
+	# registering its devnode. Only wait if we
+	# see a symlink to a device.
+	# Take longest when no display is attached.
+	local udlfbdev=$(find /sys/bus/usb/drivers/udlfb/ -type l -lname '*/devices/*')
+	if [ -n "$udlfbdev" ]; then
+		sleep 4
+	fi
 
 	# sisusbvga currently turns up at sisusbvga0; udlfb devices take
 	# the next fb device number, so we rely on a udev rule to find
 	# the right fb device.
 	USBVGAFOUND=false
 	local basedevname
-	local devname
 	for basedevname in sisusbvga udlfb; do
 		devname=$(find /dev -name "${basedevname}*" | head -n1 | xargs --no-run-if-empty basename)
 		if [ -n "$devname" ]; then
@@ -365,9 +373,11 @@ configure_xorg() {
 			sed -e "s/DEVICE/${devname}/" \
 			   /usr/share/olpc-utils/xorg.conf.d/$basedevname.conf \
 			   > /etc/X11/xorg.conf.d/$basedevname.conf
-			# inhibit suspend with a long-lived PID
-			# suspend will cut power to the USB2VGA connector
-			touch /var/run/powerd-inhibit-suspend/1
+			# Inhibit suspend with a long-lived PID
+			# suspend will cut power to the USB2VGA connector.
+			# We race with powerd startup so mkdir
+			mkdir -p /run/powerd-inhibit-suspend
+			touch /run/powerd-inhibit-suspend/1
 			break
 		else
 			rm -f /etc/X11/xorg.conf.d/$basedevname.conf
