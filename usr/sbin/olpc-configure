@@ -90,7 +90,12 @@ mount_boot() {
 		;;
 	esac
 	[[ -n "$bootdev" && -d "/bootpart" && -e "$bootdev" ]] || return
-	mount -o noatime "$bootdev" /bootpart
+
+	# The initramfs mounts the ext2 boot partition as ext4, and leaves parts
+	# of it mounted (e.g. at /security). mount here would choose ext2, but
+	# we explicitly specify ext4 to match initramfs behaviour and avoid a
+	# mount failure.
+	mount -t ext4 -o noatime "$bootdev" /bootpart
 }
 
 mount_boot_1_0() {
