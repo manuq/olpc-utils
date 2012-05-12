@@ -3,7 +3,7 @@
 [Unit]
 Description=OLPC Configuration
 DefaultDependencies=no
-After=sysinit.target local-fs.target
+After=sysinit.target local-fs.target alsa-restore.service
 Before=basic.target
 
 [Service]
