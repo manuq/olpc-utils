@@ -42,3 +42,8 @@ size=7.0
 # Let powerd do media key handling (e.g. volume, power button) (#11815)
 [org.gnome.settings-daemon.plugins.media-keys]
 active=false
+
+# We don't put system updates directly in the hands of our users
+# https://bugzilla.redhat.com/show_bug.cgi?id=699348
+[org.gnome.settings-daemon.plugins.updates]
+active=false
