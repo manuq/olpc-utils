@@ -3,7 +3,7 @@
 
 # Bump this version each time compatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=18
+OLPC_CONFIGURE_VERSION=19
 
 OLPC_HOME=/home/olpc
 XO_VERSION=0
@@ -309,6 +309,10 @@ EOF
 	# version 17: version 12 accidently created /home/olpc/.gnome2 with root ownership
 	# correct that here for upgrades
 	chown -R olpc:olpc /home/olpc/.gnome2
+
+	# version 19: we need to migrate from UID=500 to UID=1000 for the
+	# F17 upgrade (#11828)
+	[ "$(stat -c %u /home/olpc)" = "500" ] && chown -R olpc:olpc /home/olpc
 }
 
 update_home_permissions_to_v6() {
