@@ -375,7 +375,7 @@ configure_xorg() {
 	# the right fb device.
 	USBVGAFOUND=false
 	local basedevname
-	for basedevname in sisusbvga udlfb; do
+	for basedevname in sisusb udlfb; do
 		devname=$(find /dev -name "${basedevname}*" | head -n1 | xargs --no-run-if-empty basename)
 		if [ -n "$devname" ]; then
 			USBVGAFOUND=true
