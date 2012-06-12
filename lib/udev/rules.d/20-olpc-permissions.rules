@@ -1,5 +1,9 @@
 KERNEL=="galcore", SUBSYSTEM=="v_graphics_class", GROUP="olpc", MODE="0660"
 
+# vmeta on XO-1.75
+KERNEL=="uio0", SUBSYSTEM=="uio", GROUP="olpc", MODE="0660"
+KERNEL=="pmem_adsp", SUBSYSTEM=="misc", GROUP="olpc", MODE="0660"
+
 # allow a special group to have access to RF on/off control
 KERNEL=="rfkill", GROUP="dialout", MODE="0660"
 
@@ -11,3 +15,4 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0694", GROUP="dialout", MODE="0660"
 
 # allow access to Butia
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="000[bc]", GROUP="dialout", MODE="0660"
+
