@@ -47,3 +47,8 @@ active=false
 # https://bugzilla.redhat.com/show_bug.cgi?id=699348
 [org.gnome.settings-daemon.plugins.updates]
 active=false
+
+# GNOME annoyingly overrides the X configuration for middle mouse buttons,
+# and defaults to false. https://bugzilla.gnome.org/show_bug.cgi?id=633863
+[org.gnome.settings-daemon.peripherals.mouse]
+middle-button-enabled=true
