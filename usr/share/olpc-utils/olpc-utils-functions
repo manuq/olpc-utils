@@ -11,7 +11,7 @@ get_xo_version()
 			OLPC\ [BC][0-9])
 				XO_VERSION="1"
 				;;
-			OLPC\ D[0-9])
+			OLPC\ D[0-9A-Z])
 				XO_VERSION="1.5"
 				;;
 			OLPC\ 1[ABC][0-9])
