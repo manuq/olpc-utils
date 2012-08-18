@@ -14,11 +14,18 @@ get_xo_version()
 			OLPC\ D[0-9A-Z])
 				XO_VERSION="1.5"
 				;;
-			OLPC\ 1[ABC][0-9])
+			OLPC\ 1[ABC][0-9A-Z])
 				XO_VERSION="1.75"
 				;;
-			OLPC\ 2[ABC][0-9])
+			OLPC\ 2[ABC][0-9A-Z])
 				XO_VERSION="3"
+				;;
+			OLPC\ 3[ABC][0-9A-Z])
+				# early A1 proto boards
+				XO_VERSION="1.75"
+				;;
+			OLPC\ 4[ABC][0-9A-Z])
+				XO_VERSION="4"
 				;;
 		esac
 	elif [ -e "/sys/class/dmi/id/product_name" ]
