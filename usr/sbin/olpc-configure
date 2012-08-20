@@ -453,9 +453,6 @@ __EOF__
 	# Keyboard is being loaded early in rc.sysint, reset it now
 	loadkeys "$KERN_KEYTABLE"
 
-	# set olpc-dm as desktop manager
-	echo "DISPLAYMANAGER=/usr/sbin/olpc-dm" > /etc/sysconfig/desktop
-
 	# Update library index
 	rebuild_library_index
 

@@ -7,7 +7,7 @@ Description=Finish OLPC boot process
 After=rc-local.service plymouth-start.service livesys-late.service systemd-user-sessions.service
 
 # We need to finish before starting X
-Before=prefdm.service
+Before=display-manager.service
 
 [Service]
 ExecStart=/usr/sbin/olpc-boot-finish
