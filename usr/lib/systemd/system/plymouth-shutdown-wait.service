@@ -9,7 +9,7 @@
 [Unit]
 Description=Delay shutdown while showing plymouth shutdown splash
 After=plymouth-poweroff.service plymouth-reboot.service plymouth-halt.service
-Before=poweroff.service reboot.service halt.service
+Before=systemd-poweroff.service systemd-reboot.service systemd-halt.service
 DefaultDependencies=no
 
 [Service]
