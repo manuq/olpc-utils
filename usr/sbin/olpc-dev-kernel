@@ -1,0 +1,34 @@
+#!/bin/bash
+# Our OS images now ship a zipped kernel and initramfs (with or without
+# signature) pair. If developers wish to test a new initramfs or kernel
+# simply by putting the file in place, they will need to unzip the other
+# of the two files to pair with it.
+#
+# This script aims to simplify that step. Run it before or after putting
+# your development kernel/initramfs in place.
+
+tmpdir=$(mktemp -d)
+trap "rm -rf $tmpdir" EXIT
+
+BOOT=/boot
+[ -e "/bootpart/boot" ] && BOOT=/bootpart/boot
+
+extract_file()
+{
+	name=$1
+	fromzip=$2
+	path=$BOOT/$1
+	if [ -e "$path" ]; then
+		echo "$path already exists; not overwriting"
+	else
+		unzip $BOOT/${fromzip}.zip -d "$tmpdir"
+		mv "$tmpdir"/data.img $BOOT/$name
+		echo "Extracted: $name"
+	fi
+}
+
+extract_file vmlinuz runos
+extract_file initrd.img runrd
+
+echo "All done. Your development kernel/initramfs can be found in $BOOT and"
+echo "will be used automatically upon reboot."
