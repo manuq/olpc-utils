@@ -6,6 +6,7 @@ ENV{ID_INPUT_KEY}=="", GOTO="olpc_keyboard_end"
 SUBSYSTEMS=="bluetooth", GOTO="olpc_keyboard_end"
 SUBSYSTEMS=="usb", GOTO="olpc_keyboard_end"
 
+IMPORT{file}="/etc/sysconfig/keyboard"
 IMPORT{program}="device-tree-val DEVTREE_COMPAT compatible"
 ENV{DEVTREE_COMPAT}=="olpc,xo-1*", RUN+="keymap $name olpc-xo"
 ENV{DEVTREE_COMPAT}=="olpc,xo-cl*", RUN+="keymap $name olpc-xo"

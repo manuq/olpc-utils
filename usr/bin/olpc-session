@@ -93,7 +93,6 @@ done
 
 # provide some defaults
 LANG=${LANG:-en_US.UTF-8}
-XKB_LAYOUT=${XKB_LAYOUT:-us}
 
 # We need to stop loading of certain GTK Input Modules (d.l.o #6945)
 # Normally we would load the "gtk-im-context-simple" module, but 
@@ -130,24 +129,6 @@ if [ "$XO_VERSION" == "1" ]; then
 	xset m 7/4 1
 	xset r rate 500 30
 fi
-
-[ -n "$XKB_OPTION" ] && XKB_OPTION=`echo "$XKB_OPTION" |
-	sed -e 's/\b/-option /g'`
-
-# set keyboard layout
-if [ "$XKB_MODEL" = "olpc2" ]   # no such model value
-then
-	# early mfg units of 1.5HS were programmed with KM and KV
-	# both set to "olpc2".  they should have been "olpcm"/"olpc"
-	XKB_MODEL="olpcm"
-	test "$XKB_VARIANT" = "olpc2" && XKB_VARIANT="olpc"
-fi
-
-setxkbmap \
-	${XKB_MODEL:+ -model $XKB_MODEL} \
-	${XKB_LAYOUT:+ -layout $XKB_LAYOUT} \
-	${XKB_VARIANT:+ -variant $XKB_VARIANT} \
-	$XKB_OPTION -display :0
 
 # disable repeat on several keys
 xset -r 9 -r 220  -r 67 -r 68 -r 69 -r 70 -r 71 -r 72 -r 73 -r 74 -r 79 -r \

@@ -3,7 +3,7 @@
 
 # Bump this version each time compatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=19
+OLPC_CONFIGURE_VERSION=20
 
 OLPC_HOME=/home/olpc
 XO_VERSION=0
@@ -148,8 +148,8 @@ read_nvram() {
 
 read_config() {
 	# Some defaults
-	XKB_MODEL="olpc"
-	XKB_LAYOUT="us"
+	XKBMODEL="olpc"
+	XKBLAYOUT="us"
 	SYS_LANG="en_US.UTF-8"
 
 	[ "${XO_VERSION}" == "0" ] && return
@@ -157,51 +157,57 @@ read_config() {
 	# test if we can get mfg data reading it
 	local KM=`get_xo_mfg_tag KM`
 	if [ -n "$KM" ]; then
-		XKB_MODEL="$KM"
-		XKB_LAYOUT="`get_xo_mfg_tag_stripspaces KL`"
-		XKB_VARIANT="`get_xo_mfg_tag KV`"
+		XKBMODEL="$KM"
+		XKBLAYOUT="`get_xo_mfg_tag_stripspaces KL`"
+		XKBVARIANT="`get_xo_mfg_tag KV`"
 		SYS_LANG="`get_xo_mfg_tag LO`"
-		if [ "$XKB_LAYOUT" = "en" ] ; then
+		if [ "$XKBLAYOUT" = "en" ] ; then
 			# Some units have invalid KL 'en' tags (e.g. SKU104, #10711)
-			XKB_LAYOUT="us"
+			XKBLAYOUT="us"
 		fi
 		if [ "$SYS_LANG" = "es_MX.UTF-8" \
-                     -a "$XKB_LAYOUT" = "us" \
-                     -a "$XKB_VARIANT" = "olpc" ] ; then
+                     -a "$XKBLAYOUT" = "us" \
+                     -a "$XKBVARIANT" = "olpc" ] ; then
 			# We have some XO-1 machines in Peru with US(Intl) membrane keyboards
 			# and they need some modifications to the standard layout
 			# See http://dev.laptop.org/ticket/9126
-			XKB_LAYOUT="es"
-			XKB_VARIANT="olpc2"
+			XKBLAYOUT="es"
+			XKBVARIANT="olpc2"
 		fi
 	elif [ "${XO_VERSION}" == "1" ] ; then
 		KB_HEADER=`read_nvram 0x44 2`
 		if [ "x$KB_HEADER" = "xKB" ] ; then
 			KB_CODE=`read_nvram 0x46 10`
 			if [ "x$KB_CODE" = "xus_INTL" ] ; then
-				XKB_LAYOUT="us"
+				XKBLAYOUT="us"
 			elif [ "x$KB_CODE" = "xes" ] ; then
-				XKB_LAYOUT="es"
+				XKBLAYOUT="es"
 				SYS_LANG="es_AR.UTF-8"
 			elif [ "x$KB_CODE" = "xpt_BR" ] ; then
-				XKB_LAYOUT="br"
+				XKBLAYOUT="br"
 				SYS_LANG="pt_BR.UTF-8"
 			elif [ "x$KB_CODE" = "xara" ] ; then
-				XKB_LAYOUT="us(olpc2),ara(olpc)"
+				XKBLAYOUT="us(olpc2),ara(olpc)"
 				SYS_LANG="ar_LY.UTF-8"
 			elif [ "x$KB_CODE" = "xth" ] ; then
-				XKB_LAYOUT="us(olpc2),th(olpc)"
+				XKBLAYOUT="us(olpc2),th(olpc)"
 				SYS_LANG="th_TH.UTF-8"
 			elif [ "x$KB_CODE" = "xng" ] ; then
-				XKB_LAYOUT="ng(olpc)"
+				XKBLAYOUT="ng(olpc)"
 			elif [ "x$KB_CODE" = "xpk" ] ; then
-				XKB_LAYOUT="us(olpc2),ur(olpc)"
+				XKBLAYOUT="us(olpc2),ur(olpc)"
 				SYS_LANG="ur_PK.UTF-8"
 			elif [ "x$KB_CODE" = "xet" ] ; then
-				XKB_LAYOUT="us(olpc2),et"
+				XKBLAYOUT="us(olpc2),et"
 				SYS_LANG="am_ET.UTF-8"
 			fi
 		fi
+	fi
+	if [ "$XKB_MODEL" = "olpc2" ]; then
+		# early mfg units of 1.5HS were programmed with KM and KV
+		# both set to "olpc2".  they should have been "olpcm"/"olpc"
+		XKBMODEL="olpcm"
+		test "$XKBVARIANT" = "olpc2" && XKBVARIANT="olpc"
 	fi
 	if ! locale -a | grep -qx "${SYS_LANG/UTF-8/utf8}"; then
 	    echo "olpc-configure: Locale $SYS_LANG is not supported;"
@@ -435,7 +441,7 @@ configure_root() {
 	resize_system
 
 	# First X layout used also as kernel keytable
-	KERN_KEYTABLE=`echo "$XKB_LAYOUT" |  cut -d , -f 1`
+	KERN_KEYTABLE=`echo "$XKBLAYOUT" |  cut -d , -f 1`
 
 	# Some keyboards come with a special OLPC variant for the console
 	if [ -f /lib/kbd/keymaps/i386/olpc/$KERN_KEYTABLE-olpc.map.gz ]; then
@@ -444,11 +450,12 @@ configure_root() {
 
 	# We keep keyboard settings here to avoid users from messing around
 	# with them in their home and maybe shut themselves out
+	# v20: XKB variables were renamed to remove underscores for udev
 	cat >/etc/sysconfig/keyboard <<__EOF__
 KEYTABLE="$KERN_KEYTABLE"
-XKB_MODEL="$XKB_MODEL"
-XKB_LAYOUT="$XKB_LAYOUT"
-XKB_VARIANT="$XKB_VARIANT"
+XKBMODEL="$XKBMODEL"
+XKBLAYOUT="$XKBLAYOUT"
+XKBVARIANT="$XKBVARIANT"
 __EOF__
 	# Keyboard is being loaded early in rc.sysint, reset it now
 	loadkeys "$KERN_KEYTABLE"
@@ -534,7 +541,7 @@ fi
 
 # check whether / configuration is necessary.
 if [ "$olpc_root_version" != "$OLPC_CONFIGURE_VERSION" ]; then
-	[ -n "$XKB_MODEL" ] || read_config
+	[ -n "$XKBMODEL" ] || read_config
 	configure_root
 	echo "$OLPC_CONFIGURE_VERSION" >/.olpc-configured
 fi
