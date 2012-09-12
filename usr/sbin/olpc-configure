@@ -261,11 +261,12 @@ install_customization_packages () {
 configure_home() {
 	echo "olpc-configure: reconfiguring home..."
 
-	rm -f $OLPC_HOME/.i18n
-	cat >$OLPC_HOME/.i18n <<__EOF__
-LANG="$SYS_LANG"
-__EOF__
-	chown olpc:olpc $OLPC_HOME/.i18n
+	# Don't clobber .i18n if it exists, because Sugar writes its settings
+	# here.
+	if ! [ -e $OLPC_HOME/.i18n ]; then
+		echo "LANG=\"$SYS_LANG\"" > $OLPC_HOME/.i18n
+		chown olpc:olpc $OLPC_HOME/.i18n
+	fi
 
 	# can't live in $OLPC_HOME because activities can't read this dir.
 	SERNUM="`get_xo_mfg_tag SN`"
