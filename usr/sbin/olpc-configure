@@ -203,7 +203,18 @@ read_config() {
 			fi
 		fi
 	fi
-	if [ "$XKB_MODEL" = "olpc2" ]; then
+
+	# Allow mfg data to be overridden by hardcoded build defaults
+	[ -e /etc/olpc-configure/default-language ] && \
+		SYS_LANG=$(</etc/olpc-configure/default-language)
+	[ -e /etc/olpc-configure/default-kbd-model ] && \
+		XKBMODEL=$(</etc/olpc-configure/default-kbd-model)
+	[ -e /etc/olpc-configure/default-kbd-variant ] && \
+		XKBVARIANT=$(</etc/olpc-configure/default-kbd-variant)
+	[ -e /etc/olpc-configure/default-kbd-layout ] && \
+		XKBLAYOUT=$(</etc/olpc-configure/default-kbd-layout)
+
+	if [ "$XKBMODEL" = "olpc2" ]; then
 		# early mfg units of 1.5HS were programmed with KM and KV
 		# both set to "olpc2".  they should have been "olpcm"/"olpc"
 		XKBMODEL="olpcm"
