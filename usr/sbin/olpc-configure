@@ -71,54 +71,6 @@ configure_hw_4() {
 	configure_hw_1_75
 }
 
-# Dynamically determine the boot device and mount it
-mount_boot() {
-	local bootpath=$(get_ofw_file /chosen/bootpath)
-	local bootdev
-	local tmp
-
-	case $XO_VERSION-$bootpath in
-	1.5-/pci/sd@c/disk@?:*) # XO-1.5 SD
-		tmp=${bootpath#/pci/sd@c/disk@}
-		tmp=${tmp%%:*}
-		((tmp--))
-		bootdev="/dev/disk/mmc/mmc${tmp}p1"
-		;;
-	1.75-/sd@d4280000/disk@?:*) # XO-1.75
-		tmp=${bootpath#/sd@d4280000/disk@}
-		tmp=${tmp%%:*}
-		((tmp--))
-		bootdev="/dev/disk/mmc/mmc${tmp}p1"
-		;;
-	3-/sd@d4280000/disk@?:*) # XO-3
-		bootdev="/dev/disk/mmc/mmc1p1"
-		;;
-	4-/sd/sdhci@d4280000/disk:*) # XO-4 ext SD
-		bootdev="/dev/disk/mmc/mmc0p1"
-		;;
-	4-/sd/sdhci@d4281000/disk:*) # XO-4 eMMC
-		bootdev="/dev/disk/mmc/mmc1p1"
-		;;
-	esac
-	[[ -n "$bootdev" && -d "/bootpart" && -e "$bootdev" ]] || return
-
-	# The initramfs mounts the ext2 boot partition as ext4, and leaves parts
-	# of it mounted (e.g. at /security). mount here would choose ext2, but
-	# we explicitly specify ext4 to match initramfs behaviour and avoid a
-	# mount failure.
-	mount -t ext4 -o noatime "$bootdev" /bootpart
-}
-
-mount_boot_1_0() {
-	local rootdev
-	rootdev=$(findmnt -rvn -o SOURCE /) || return 0
-
-	# If using UBIFS root, assume JFFS2 boot
-	if [ "$rootdev" = "/dev/ubi0_0" ]; then
-		mount -t jffs2 -o noatime mtd1 /bootpart
-	fi
-}
-
 configure_hw() {
 	[ "${XO_VERSION}" == "0" ] && return
 
@@ -126,19 +78,14 @@ configure_hw() {
 
 	if [ "${XO_VERSION}" == "1.5" ] ; then
 		configure_hw_1_5
-		mount_boot
         elif  [ "${XO_VERSION}" == "1.75" ] ; then
 		configure_hw_1_75
-		mount_boot
         elif  [ "${XO_VERSION}" == "3" ] ; then
 		configure_hw_3
-		mount_boot
 	elif [ "${XO_VERSION}" == "4" ] ; then
 		configure_hw_4
-		mount_boot
 	else
 		configure_hw_1_0
-		mount_boot_1_0
 	fi
 }
 
