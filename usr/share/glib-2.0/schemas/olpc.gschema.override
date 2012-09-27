@@ -52,3 +52,7 @@ active=false
 # and defaults to false. https://bugzilla.gnome.org/show_bug.cgi?id=633863
 [org.gnome.settings-daemon.peripherals.mouse]
 middle-button-enabled=true
+
+# User feedback suggests that we want the Nautilus-driven desktop (#12120)
+[org.gnome.desktop.background]
+show-desktop-icons=true
