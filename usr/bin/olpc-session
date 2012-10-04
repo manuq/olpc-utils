@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+shopt -s nullglob
 source /usr/share/olpc-utils/olpc-utils-functions
 
 cchmod()
@@ -94,29 +95,21 @@ done
 # provide some defaults
 LANG=${LANG:-en_US.UTF-8}
 
-# We need to stop loading of certain GTK Input Modules (d.l.o #6945)
-# Normally we would load the "gtk-im-context-simple" module, but 
-# some keyboards require to use Compose tables, in which case we need 
-# to use the "xim" module
-# In reality, the Compose tables get loaded if the locale is set 
-# appropriately, so we use the LANG variable below
+# Enable the on-screen keyboard when found (uses nullglob)
+maliit_module=/usr/lib/gtk-*/*/immodules/libim-maliit.so
+[ -n "$maliit_module" ] && \
+	export GTK_IM_MODULE=Maliit
+
+# Use the XIM module for keyboards where we want to use Compose tables
 if [ $LANG = "am_ET.UTF-8" -o $LANG = "ne_NP.UTF-8" ]; then
-	GTK_IM_MODULE="xim"
-	export GTK_IM_MODULE
+	export GTK_IM_MODULE="xim"
 elif [ $LANG = "zh_CN.UTF-8" ]; then
-	GTK_IM_MODULE="scim"
-	XMODIFIERS="@im=SCIM"
-	XIM_PROGRAM="scim -d"
-	USE_XOPENIM=t
-	export GTK_IM_MODULE
-	export XMODIFIERS
-	export XIM_PROGRAM
-	export USE_XOPENIM
+	export GTK_IM_MODULE="scim"
+	export XMODIFIERS="@im=SCIM"
+	export XIM_PROGRAM="scim -d"
+	export USE_XOPENIM=t
     #FIXME: Why do I have to do this manually ? --sayamindu 
     scim --no-socket -f x11 -d &
-else
-	GTK_IM_MODULE="gtk-im-context-simple"
-	export GTK_IM_MODULE
 fi
 
 # load keyboard settings
