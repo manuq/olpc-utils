@@ -1,5 +1,8 @@
 KERNEL=="galcore", SUBSYSTEM=="v_graphics_class", GROUP="olpc", MODE="0660"
 
+# allow seat access to ebook switch so that maliit can read its status
+SUBSYSTEM=="input", KERNEL=="event*", ATTRS{name}=="OLPC ebook switch", TAG+="uaccess"
+
 # vmeta on XO-1.75
 KERNEL=="uio0", SUBSYSTEM=="uio", GROUP="olpc", MODE="0660"
 KERNEL=="pmem_adsp", SUBSYSTEM=="misc", GROUP="olpc", MODE="0660"
