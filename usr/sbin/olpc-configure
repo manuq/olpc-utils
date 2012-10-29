@@ -3,7 +3,7 @@
 
 # Bump this version each time compatibility gets broken in ways that require
 # regenerating the configuration files
-OLPC_CONFIGURE_VERSION=20
+OLPC_CONFIGURE_VERSION=21
 
 OLPC_HOME=/home/olpc
 XO_VERSION=0
@@ -399,6 +399,15 @@ configure_root() {
 	echo "olpc-configure: reconfiguring root..."
 	resize_system
 
+	# We (ab)use this now-deprecated file to store keyboard settings,
+	# and we read them out again in olpc-session and in udev rules.
+	# v20: XKB variables were renamed to remove underscores for udev
+	cat >/etc/sysconfig/keyboard <<__EOF__
+XKBMODEL="$XKBMODEL"
+XKBLAYOUT="$XKBLAYOUT"
+XKBVARIANT="$XKBVARIANT"
+__EOF__
+
 	# First X layout used also as kernel keytable
 	KERN_KEYTABLE=`echo "$XKBLAYOUT" |  cut -d , -f 1`
 
@@ -407,16 +416,12 @@ configure_root() {
 		KERN_KEYTABLE=$KERN_KEYTABLE-olpc
 	fi
 
-	# We keep keyboard settings here to avoid users from messing around
-	# with them in their home and maybe shut themselves out
-	# v20: XKB variables were renamed to remove underscores for udev
-	cat >/etc/sysconfig/keyboard <<__EOF__
-KEYTABLE="$KERN_KEYTABLE"
-XKBMODEL="$XKBMODEL"
-XKBLAYOUT="$XKBLAYOUT"
-XKBVARIANT="$XKBVARIANT"
+	cat >/etc/vconsole.conf <<__EOF__
+KEYMAP="$KERN_KEYTABLE"
+FONT=sun12x22
 __EOF__
-	# Keyboard is being loaded early in rc.sysint, reset it now
+
+	# Apply keyboard map now
 	loadkeys "$KERN_KEYTABLE"
 
 	# Update library index
@@ -435,9 +440,9 @@ __EOF__
 	# version 10: use xorg.conf.d instead of xorg.conf
 	rm -f /etc/X11/xorg.conf
 
-	# version 18: set hostname via /etc/hosts and /etc/sysconfig/network
+	# version 18: set hostname via /etc/hosts and /etc/hostname
 	# using MAC address in manufacturing data, with random number fallback
-	if ! [ -e /etc/sysconfig/network ]; then
+	if ! [ -e /etc/hostname ]; then
 		local hname
 
 		# Read MAC address from mfg data
@@ -450,13 +455,8 @@ __EOF__
 			hname=$(printf "xo-%02x-%02x-%02x\n" \
 				$(( $RANDOM % 255 )) $(( $RANDOM % 255 )) $(( $RANDOM % 255 )))
 		fi
-		cat <<EOF >/etc/sysconfig/network
-NETWORKING=yes
-NETWORKING_IPV6=no
-HOSTNAME=$hname.localdomain
-NM_IGNORE_HOSTNAME_LOCALHOST=yes
-EOF
-		hostname ${hname}.localdomain
+		echo "${hname}.localdomain" > /etc/hostname
+		hostname "${hname}.localdomain"
 		sed -c -i -e "s/^127\.0\.0\.1.*/127.0.0.1 ${hname}.localdomain ${hname} localhost/g" /etc/hosts
 	fi
 }
