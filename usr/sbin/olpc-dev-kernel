@@ -21,7 +21,7 @@ extract_file()
 	if [ -e "$path" ]; then
 		echo "$path already exists; not overwriting"
 	else
-		unzip $BOOT/${fromzip}.zip -d "$tmpdir"
+		unzip $BOOT/${fromzip}*.zip -d "$tmpdir"
 		mv "$tmpdir"/data.img $BOOT/$name
 		echo "Extracted: $name"
 	fi
