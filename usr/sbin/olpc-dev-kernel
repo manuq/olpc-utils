@@ -23,6 +23,7 @@ extract_file()
 	else
 		unzip $BOOT/${fromzip}[0-9].zip -d "$tmpdir"
 		mv "$tmpdir"/data.img $BOOT/$name
+		rm -rf "$tmpdir"/*
 		echo "Extracted: $name"
 	fi
 }
