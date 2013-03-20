@@ -412,10 +412,7 @@ __EOF__
 		install_customization_packages
 	fi
 
-	# version 10: use xorg.conf.d instead of xorg.conf
-	rm -f /etc/X11/xorg.conf
-
-	# version 18: set hostname via /etc/hosts and /etc/hostname
+	# Set hostname via /etc/hosts and /etc/hostname
 	# using MAC address in manufacturing data, with random number fallback
 	if ! [ -e /etc/hostname ]; then
 		local hname
@@ -436,14 +433,11 @@ __EOF__
 	fi
 }
 
-#
 # Main entry point
-#
-# This is organized to minimize boot time by bailing out early
-# in the common case of an already configured system
 XO_VERSION=$(get_xo_version)
-olpc_home_version="`cat $OLPC_HOME/.olpc-configured 2>/dev/null`"
-olpc_root_version="`cat /.olpc-configured 2>/dev/null`"
+if [ -e "$OLPC_HOME/.olpc-configured" ]; then
+	olpc_home_version="$(<$OLPC_HOME/.olpc-configured)"
+fi
 
 # unconditionally configure the hardware
 configure_hw
@@ -453,7 +447,7 @@ configure_xorg
 
 # if we lack a root version but we already have a home version,
 # it means that we have just updated with olpc-update.
-if [ -z "$olpc_root_version" -a -n "$olpc_home_version" ]; then
+if [ ! -e "/.olpc-configured" -a -n "$olpc_home_version" ]; then
 	# trigger the activity upgrade prompt (#7495, #9747)
 	touch "$OLPC_HOME/.sugar-update"
 fi
@@ -466,7 +460,7 @@ if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
 fi
 
 # check whether / configuration is necessary.
-if [ "$olpc_root_version" != "$OLPC_CONFIGURE_VERSION" ]; then
+if ! [ -e "/.olpc-configured" ]; then
 	configure_root
-	echo "$OLPC_CONFIGURE_VERSION" >/.olpc-configured
+	> /.olpc-configured
 fi
