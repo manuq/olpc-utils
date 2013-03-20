@@ -208,6 +208,7 @@ install_customization_packages () {
 configure_home() {
 	echo "olpc-configure: reconfiguring home..."
 	read_config
+	chmod 700 $OLPC_HOME
 
 	# Don't clobber .i18n if it exists, because Sugar writes its settings
 	# here.
@@ -291,22 +292,6 @@ EOF
 	# version 19: we need to migrate from UID=500 to UID=1000 for the
 	# F17 upgrade (#11828)
 	[ "$(stat -c %u /home/olpc)" = "500" ] && chown -R olpc:olpc /home/olpc
-}
-
-set_home_permissions() {
-	# Home must be world aXessible so that activities installed
-	# in ~/Activities can reach their bundles
-	# We make the home also listable because we expect that confidential
-	# data will be explicitly isolated in nested subdirectories.
-	chmod 755 $OLPC_HOME
-
-	# SSH would bitch if permissions on .ssh happens to be too lax
-	if [ -d "$OLPC_HOME/.ssh" ]; then
-		find $OLPC_HOME/.ssh -print0 | xargs -0 chmod u+rwX,go-rwx
-	fi
-
-	# .sugar contains plenty of confidential data
-	chmod 700 $OLPC_HOME/.sugar 2>/dev/null
 }
 
 # determine presence of USB-VGA adapter on boot, switch Xorg config
@@ -454,7 +439,6 @@ fi
 
 # check whether /home configuration is necessary.
 if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
-	set_home_permissions
 	configure_home
 	echo "$OLPC_CONFIGURE_VERSION" >$OLPC_HOME/.olpc-configured
 fi
