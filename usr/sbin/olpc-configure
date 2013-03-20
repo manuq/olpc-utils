@@ -61,27 +61,18 @@ configure_hw_1_75() {
 
 }
 
-configure_hw_3() {
-	# FIXME - nothing to do yet
-	echo XO-3
-}
-
 configure_hw_4() {
 	# for now, identical
 	configure_hw_1_75
 }
 
 configure_hw() {
-	[ "${XO_VERSION}" == "0" ] && return
-
 	echo "olpc-configure: configuring hardware..."
 
 	if [ "${XO_VERSION}" == "1.5" ] ; then
 		configure_hw_1_5
         elif  [ "${XO_VERSION}" == "1.75" ] ; then
 		configure_hw_1_75
-        elif  [ "${XO_VERSION}" == "3" ] ; then
-		configure_hw_3
 	elif [ "${XO_VERSION}" == "4" ] ; then
 		configure_hw_4
 	else
@@ -420,6 +411,7 @@ __EOF__
 
 # Main entry point
 XO_VERSION=$(get_xo_version)
+[ -z "$XO_VERSION" -o "$XO_VERSION" = "0" ] && exit 0
 if [ -e "$OLPC_HOME/.olpc-configured" ]; then
 	olpc_home_version="$(<$OLPC_HOME/.olpc-configured)"
 fi
