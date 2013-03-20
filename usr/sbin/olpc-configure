@@ -294,18 +294,6 @@ EOF
 	[ "$(stat -c %u /home/olpc)" = "500" ] && chown -R olpc:olpc /home/olpc
 }
 
-update_home_permissions_to_v6() {
-	echo "olpc-configure: fixing permissions on home (dlo#4928, dlo#5626)..."
-
-	# Our first attempt at fixing dlo#4928 assumed that home was totally
-	# private and public data would be explicitly made available.
-	# Since it's inpractical, we relax this requirement and undo the
-	# changes made by earlier versions of this script.
-	# However, we must be careful not to mess with the rainbow isolation
-	# scheme which is intentionally 770.
-	find $OLPC_HOME -type d -perm 770 -name isolation -prune -o -print0 | xargs -0 chmod a+rX,u+w,go-w
-}
-
 set_home_permissions() {
 	# Home must be world aXessible so that activities installed
 	# in ~/Activities can reach their bundles
@@ -427,11 +415,6 @@ __EOF__
 	# Update library index
 	rebuild_library_index
 
-	if [ -x /usr/sbin/rainbow-replay-spool ]; then
-		echo "olpc-configure: replaying rainbow spool..."
-		/usr/sbin/rainbow-replay-spool
-	fi
-
 	# developer customizations.
 	if /usr/bin/olpc-test-devkey -q ; then
 		install_customization_packages
@@ -485,10 +468,6 @@ fi
 
 # check whether /home configuration is necessary.
 if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
-	if [ "0$olpc_home_version" -le "6" ]; then
-		# run it *before* set_home_permissions
-		update_home_permissions_to_v6
-	fi
 	if [ "0$olpc_home_version" -le "7" ]; then
 		clean_previews
 	fi
