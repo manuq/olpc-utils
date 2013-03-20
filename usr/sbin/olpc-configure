@@ -94,6 +94,9 @@ read_nvram() {
 }
 
 read_config() {
+	# already been run?
+	[ -n "$XKBMODEL" ] && return 0
+
 	# Some defaults
 	XKBMODEL="olpc"
 	XKBLAYOUT="us"
@@ -180,7 +183,6 @@ rebuild_library_index() {
 	if [ -x /usr/share/library-common/make_index.py ]; then
 		echo '* olpc-configure: Rebuilding the library index.'
 		rm -rf $OLPC_HOME/.library_pages
-		[ -n "$SYS_LANG" ] || read_config
 		LANG=$SYS_LANG /usr/share/library-common/make_index.py
 		chown -R olpc:olpc $OLPC_HOME/.library_pages
 	fi
@@ -207,6 +209,7 @@ install_customization_packages () {
 # these don't need to be repeated when we upgrade.
 configure_home() {
 	echo "olpc-configure: reconfiguring home..."
+	read_config
 
 	# Don't clobber .i18n if it exists, because Sugar writes its settings
 	# here.
@@ -385,6 +388,7 @@ resize_system() {
 # these need to be repeated when we upgrade.
 configure_root() {
 	echo "olpc-configure: reconfiguring root..."
+	read_config
 	resize_system
 
 	# We (ab)use this now-deprecated file to store keyboard settings,
@@ -472,14 +476,12 @@ if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
 		clean_previews
 	fi
 	set_home_permissions
-	read_config
 	configure_home
 	echo "$OLPC_CONFIGURE_VERSION" >$OLPC_HOME/.olpc-configured
 fi
 
 # check whether / configuration is necessary.
 if [ "$olpc_root_version" != "$OLPC_CONFIGURE_VERSION" ]; then
-	[ -n "$XKBMODEL" ] || read_config
 	configure_root
 	echo "$OLPC_CONFIGURE_VERSION" >/.olpc-configured
 fi
