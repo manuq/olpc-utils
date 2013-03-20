@@ -178,8 +178,6 @@ read_config() {
 }
 
 rebuild_library_index() {
-	[ "$LIBRARY_INDEX_BUILT" = "1" ] && return 0
-	LIBRARY_INDEX_BUILT=1
 	if [ -x /usr/share/library-common/make_index.py ]; then
 		echo '* olpc-configure: Rebuilding the library index.'
 		rm -rf $OLPC_HOME/.library_pages
@@ -252,8 +250,6 @@ __EOF__
 	fi
 	chmod a+r,a-w /home/.devkey.html.tmp
 	mv /home/.devkey.html.tmp /home/.devkey.html
-
-	rebuild_library_index
 
 	# ensure /home/root exists (#6700)
 	mkdir -p /home/root
@@ -390,6 +386,7 @@ configure_root() {
 	echo "olpc-configure: reconfiguring root..."
 	read_config
 	resize_system
+	rebuild_library_index
 
 	# We (ab)use this now-deprecated file to store keyboard settings,
 	# and we read them out again in olpc-session and in udev rules.
@@ -415,9 +412,6 @@ __EOF__
 
 	# Apply keyboard map now
 	loadkeys "$KERN_KEYTABLE"
-
-	# Update library index
-	rebuild_library_index
 
 	# developer customizations.
 	if /usr/bin/olpc-test-devkey -q ; then
