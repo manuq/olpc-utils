@@ -309,12 +309,6 @@ set_home_permissions() {
 	chmod 700 $OLPC_HOME/.sugar 2>/dev/null
 }
 
-clean_previews() {
-	echo "olpc-configure: cleaning the previews directory..."
-
-	/usr/bin/olpc-clean-previews
-}
-
 # determine presence of USB-VGA adapter on boot, switch Xorg config
 # appropriately
 configure_xorg() {
@@ -466,9 +460,6 @@ fi
 
 # check whether /home configuration is necessary.
 if [ "$olpc_home_version" != "$OLPC_CONFIGURE_VERSION" ]; then
-	if [ "0$olpc_home_version" -le "7" ]; then
-		clean_previews
-	fi
 	set_home_permissions
 	configure_home
 	echo "$OLPC_CONFIGURE_VERSION" >$OLPC_HOME/.olpc-configured
