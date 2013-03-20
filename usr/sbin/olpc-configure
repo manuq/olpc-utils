@@ -504,16 +504,3 @@ if [ "$olpc_root_version" != "$OLPC_CONFIGURE_VERSION" ]; then
 	configure_root
 	echo "$OLPC_CONFIGURE_VERSION" >/.olpc-configured
 fi
-
-# check whether we need to reconfigure in response to usb-driven customizations
-if [ -f "$OLPC_HOME/.usb-customizations" ]; then
-	olpc_usb_version="`cat $OLPC_HOME/.usb-customizations 2>/dev/null`"
-	if [ -n "$olpc_usb_version" ] && [ "$olpc_usb_version" -ge "1" ]; then
-		rebuild_library_index
-	fi
-
-	# we've done whatever we can; remove the customization flag
-	# XXX: This choice means that whichever image is booted after usb-based
-	# customizations gets to decide what customizations it wants to do. <MS>
-	rm -rf "$OLPC_HOME/.usb-customizations"
-fi
