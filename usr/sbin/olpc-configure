@@ -326,14 +326,15 @@ configure_xorg() {
 		fi
 	done
 
+	local xo_x_config=/etc/X11/xorg.conf.d/xo$XO_VERSION.conf
 	if [ $USBVGAFOUND = 'true' ]; then
-		rm -f /etc/X11/xorg.conf.d/xo$XO_VERSION.conf
+		rm -f $xo_x_config
 		# Inhibit suspend with a long-lived PID
 		# suspend will cut power to the USB2VGA connector.
 		# We race with powerd startup so mkdir
 		mkdir -p /run/powerd-inhibit-suspend
 		touch /run/powerd-inhibit-suspend/1
-	else 
+	elif [ ! -e "$xo_x_config" ]; then
 		ln -s /usr/share/olpc-utils/xorg.conf.d/xo$XO_VERSION.conf /etc/X11/xorg.conf.d/
 	fi
 }
