@@ -11,25 +11,44 @@ tmpdir=$(mktemp -d)
 trap "rm -rf $tmpdir" EXIT
 
 BOOT=/boot
+[ -e "/versions/boot/current/boot" ] && BOOT=/versions/boot/current/boot
 [ -e "/bootpart/boot" ] && BOOT=/bootpart/boot
 
 extract_file()
 {
 	name=$1
 	fromzip=$2
-	path=$BOOT/$1
+	path=$BOOT/$1.orig
 	if [ -e "$path" ]; then
 		echo "$path already exists; not overwriting"
+		return 1
 	else
 		unzip $BOOT/${fromzip}[0-9].zip -d "$tmpdir"
-		mv "$tmpdir"/data.img $BOOT/$name
+		mv "$tmpdir"/data.img $path
 		rm -rf "$tmpdir"/*
-		echo "Extracted: $name"
+		echo "Extracted: $path"
+	fi
+}
+
+update_symlink()
+{
+	name=$1
+	path=$BOOT/$name
+	if [ ! -e "$path" -o -h "$path" ]; then
+		ln -snf ${name}.orig $path
+		echo "Symbolic link $path updated"
+	else
+		echo "Didn't install symbolic link $1."
+		echo "Does a file exist with that name?"
 	fi
 }
 
 extract_file vmlinuz runos
 extract_file initrd.img runrd
 
-echo "All done. Your development kernel/initramfs can be found in $BOOT and"
-echo "will be used automatically upon reboot."
+update_symlink vmlinuz
+update_symlink initrd.img
+
+echo "All done. If the above went according to plan, your development "
+echo "kernel/initramfs can be found in $BOOT and will be used"
+echo "automatically upon reboot."
