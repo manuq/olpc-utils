@@ -1,5 +1,5 @@
 #!/bin/bash
-# olpc-configure       Perform one-time configuration
+shopt -s nullglob
 
 # Bump this version each time compatibility gets broken in ways that require
 # regenerating the configuration files
@@ -311,26 +311,28 @@ configure_xorg() {
 	# the right fb device.
 	USBVGAFOUND=false
 	local basedevname
-	for basedevname in sisusb udlfb; do
-		devname=$(find /dev -name "${basedevname}*" | head -n1 | xargs --no-run-if-empty basename)
+	for basedevname in sisusbvga udlfb; do
+		local devs=(/dev/${basedevname}*)
+		local devname=${devs[0]}
 		if [ -n "$devname" ]; then
 			USBVGAFOUND=true
-			sed -e "s/DEVICE/${devname}/" \
+			sed -e "s:DEVICE:${devname}:" \
 			   /usr/share/olpc-utils/xorg.conf.d/$basedevname.conf \
 			   > /etc/X11/xorg.conf.d/$basedevname.conf
-			# Inhibit suspend with a long-lived PID
-			# suspend will cut power to the USB2VGA connector.
-			# We race with powerd startup so mkdir
-			mkdir -p /run/powerd-inhibit-suspend
-			touch /run/powerd-inhibit-suspend/1
 			break
 		else
 			rm -f /etc/X11/xorg.conf.d/$basedevname.conf
 			rmmod $basedevname
 		fi
 	done
+
 	if [ $USBVGAFOUND = 'true' ]; then
 		rm -f /etc/X11/xorg.conf.d/xo$XO_VERSION.conf
+		# Inhibit suspend with a long-lived PID
+		# suspend will cut power to the USB2VGA connector.
+		# We race with powerd startup so mkdir
+		mkdir -p /run/powerd-inhibit-suspend
+		touch /run/powerd-inhibit-suspend/1
 	else 
 		ln -s /usr/share/olpc-utils/xorg.conf.d/xo$XO_VERSION.conf /etc/X11/xorg.conf.d/
 	fi
