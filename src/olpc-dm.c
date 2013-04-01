@@ -313,13 +313,15 @@ static void setup_client_env(void)
 	/* update environment from PAM
 	 * Note that pamh is NULL when called from generate_xauth context */
 	if (pamh) {
-		char **envcp = pam_getenvlist(pamh);
-		if (envcp) {
+		char **pam_env = pam_getenvlist(pamh);
+		if (pam_env) {
+			char **envcp = pam_env;
 			while (*envcp) {
 				if (putenv(*envcp))
 					die();
 				envcp++;
 			}
+			free(pam_env);
 		}
 	}
 
