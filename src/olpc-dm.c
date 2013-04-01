@@ -288,7 +288,6 @@ static void setenv_chk(const char *name, const char *value)
  * correct environment, privs dropped, etc. */
 static void setup_client_env(void)
 {
-	char **envcp;
 	struct passwd *pwd = getpwnam(OLPC_USER);
 	if (!pwd)
 		die_perror("getpwnam");
@@ -311,14 +310,16 @@ static void setup_client_env(void)
 	setenv_chk("XSERVERAUTH", XSERVERAUTH);
 	setenv_chk("ICEAUTHORITY", ICEAUTHORITY);
 
-	/* update environment from PAM */
-	envcp = pam_getenvlist(pamh);
-	if (envcp) {
-		while (*envcp) {
-			printf("put env %s\n", *envcp);
-			if (putenv(*envcp))
-				die();
-			envcp++;
+	/* update environment from PAM
+	 * Note that pamh is NULL when called from generate_xauth context */
+	if (pamh) {
+		char **envcp = pam_getenvlist(pamh);
+		if (envcp) {
+			while (*envcp) {
+				if (putenv(*envcp))
+					die();
+				envcp++;
+			}
 		}
 	}
 
