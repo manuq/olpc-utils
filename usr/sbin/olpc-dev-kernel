@@ -19,14 +19,16 @@ extract_file()
 	name=$1
 	fromzip=$2
 	path=$BOOT/$1.orig
-	if [ -e "$path" ]; then
-		echo "$path already exists; not overwriting"
+	final_path=$BOOT/$1
+	if [ "$force" = "0" -a -e "$final_path" ]; then
+		echo "$final_path already exists; not extracting $name"
 		return 1
 	else
 		unzip $BOOT/${fromzip}[0-9].zip -d "$tmpdir"
 		mv "$tmpdir"/data.img $path
 		rm -rf "$tmpdir"/*
 		echo "Extracted: $path"
+		return 0
 	fi
 }
 
@@ -43,11 +45,12 @@ update_symlink()
 	fi
 }
 
-extract_file vmlinuz runos
-extract_file initrd.img runrd
+# -f argument overwrites any already-existing unzipped kernel/initramfs
+force=0
+[ "$1" = "-f" ] && force=1
 
-update_symlink vmlinuz
-update_symlink initrd.img
+extract_file vmlinuz runos && update_symlink vmlinuz
+extract_file initrd.img runrd && update_symlink initrd.img
 
 echo "All done. If the above went according to plan, your development "
 echo "kernel/initramfs can be found in $BOOT and will be used"
