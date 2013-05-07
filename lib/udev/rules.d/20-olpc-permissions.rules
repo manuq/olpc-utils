@@ -1,4 +1,5 @@
-KERNEL=="galcore", SUBSYSTEM=="v_graphics_class", GROUP="olpc", MODE="0660"
+# needed for user programs that use galcore directly e.g. Adobe Flash
+KERNEL=="galcore", GROUP="olpc", MODE="0660"
 
 # allow seat access to ebook switch so that maliit can read its status
 SUBSYSTEM=="input", KERNEL=="event*", ATTRS{name}=="OLPC ebook switch", TAG+="uaccess"
