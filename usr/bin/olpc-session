@@ -103,13 +103,6 @@ maliit_module=/usr/lib/gtk-*/*/immodules/libim-maliit.so
 # Use the XIM module for keyboards where we want to use Compose tables
 if [ $LANG = "am_ET.UTF-8" -o $LANG = "ne_NP.UTF-8" ]; then
 	export GTK_IM_MODULE="xim"
-elif [ $LANG = "zh_CN.UTF-8" ]; then
-	export GTK_IM_MODULE="scim"
-	export XMODIFIERS="@im=SCIM"
-	export XIM_PROGRAM="scim -d"
-	export USE_XOPENIM=t
-    #FIXME: Why do I have to do this manually ? --sayamindu 
-    scim --no-socket -f x11 -d &
 fi
 
 # load keyboard settings
