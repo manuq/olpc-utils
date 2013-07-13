@@ -175,75 +175,14 @@ static void start_server(void)
 	die();
 }
 
-/* get the tty number that the X server is using from the 7th field in
- * /proc/123/stat */
-static int get_server_tty(void)
-{
-#define STAT_BUFSIZE 128
-	char *buf = malloc(STAT_BUFSIZE);
-	char filename[17];
-	int r;
-	size_t rd;
-	FILE *fd;
-	char *base = buf;
-	char *next;
-	int i;
-
-	if (!buf)
-		die();
-
-	r = snprintf(filename, sizeof(filename), "/proc/%d/stat", server_pid);
-	if (r >= sizeof(filename))
-		die();
-
-	fd = fopen(filename, "r");
-	if (!fd)
-		die_perror("open stat");
-
-	rd = fread(buf, 1, STAT_BUFSIZE, fd);
-	fclose(fd);
-
-	if (rd < STAT_BUFSIZE)
-		buf[rd] = 0;
-
-	/* we want the 7th field */
-	i = 6;
-	while (i--) {
-		base = index(base, ' ');
-		if (!base)
-			die_msg("error finding X terminal");
-		base++;
-	}
-
-	/* make sure the field wasn't truncated */
-	next = index(base, ' ');
-	if (!next)
-		die_msg("error parsing terminal");
-
-	*next = 0;
-	r = atoi(base);
-	
-	if (major(r) != 4)
-		die_msg("X not running on a tty?");
-
-	free(buf);
-	dbg("X is running on tty%d", minor(r));
-	return minor(r);
-}
-
 /* open a PAM session */
 static void init_pam(void)
 {
-	char tty[6];
 	int r = pam_start("olpc-login", OLPC_USER, &pam_conv, &pamh);
 	if (r != PAM_SUCCESS)
 		die();
 
-	r = snprintf(tty, sizeof(tty), "tty%d", get_server_tty());
-	if (r >= sizeof(tty))
-		die();
-
-	r = pam_set_item(pamh, PAM_TTY, tty);
+	r = pam_set_item(pamh, PAM_TTY, "tty1");
 	if (r != PAM_SUCCESS)
 		die();
 
