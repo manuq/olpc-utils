@@ -8,10 +8,6 @@ OLPC_CONFIGURE_VERSION=21
 OLPC_HOME=/home/olpc
 XO_VERSION=0
 
-# control variable so that we only generate the library homepage a maximum of
-# 1 time per boot
-LIBRARY_INDEX_BUILT=0
-
 source /usr/share/olpc-utils/olpc-utils-functions
 
 configure_hw_1_0() {
@@ -165,15 +161,6 @@ read_config() {
 	    echo "olpc-configure: Locale $SYS_LANG is not supported;"
 	    SYS_LANG="en_US.UTF-8"  # better fallback than "C"
 	    echo "olpc-configure: Falling back to locale $SYS_LANG"
-	fi
-}
-
-rebuild_library_index() {
-	if [ -x /usr/share/library-common/make_index.py ]; then
-		echo '* olpc-configure: Rebuilding the library index.'
-		rm -rf $OLPC_HOME/.library_pages
-		LANG=$SYS_LANG /usr/share/library-common/make_index.py
-		chown -R olpc:olpc $OLPC_HOME/.library_pages
 	fi
 }
 
@@ -359,7 +346,6 @@ configure_root() {
 	echo "olpc-configure: reconfiguring root..."
 	read_config
 	resize_system
-	rebuild_library_index
 
 	# We (ab)use this now-deprecated file to store keyboard settings,
 	# and we read them out again in olpc-session and in udev rules.
