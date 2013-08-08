@@ -1,10 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 # Copyright (C) 2011 One Laptop per Child
 # Power logging script
 # Released under GPLv3
 
 VERSION="2.1.0"
-HOST=`hostname -s`
+HOST=$(</etc/hostname)
 B_INFO=/sys/class/power_supply/olpc-battery
 
 # The delay between readings.

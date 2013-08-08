@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Copyright One Laptop Per Child
 # Power loging script 
 # Released under GPLv3
@@ -10,7 +10,7 @@
 
 VERSION="0.9.4"
 FDATE=`date "+%y%m%d-%H%M%S"`
-HOST=`hostname -s`
+HOST=$(/etc/hostname)
 B_INFO=/sys/class/power_supply/olpc-battery
 
 # This is the delay in the wallclock_delay.  Its the minimum sample time for the

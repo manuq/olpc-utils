@@ -139,7 +139,7 @@ echo "DISCHARGE"
 echo
 
 FDATE=`date "+%y%m%d-%H%M%S"`
-HOST=`hostname -s`
+HOST=$(</etc/hostname)
 LOGFILE="dis-$DS_SERNUM-$FDATE.csv"
 pwrlog_write_header
 
