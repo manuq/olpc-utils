@@ -1,0 +1,4 @@
+#!/bin/bash
+
+OLPC_HOME=/home/olpc
+echo "END $(date +%d/%b/%Y:%H:%M:%S)" >> $OLPC_HOME/.olpc-launch-stats
