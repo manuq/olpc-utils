@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import re
 import subprocess
 import time
@@ -89,7 +90,7 @@ def log_wifi():
 
 
 # run tests with:
-# python -m doctest -v conectividad.py
+# ./olpc-connectivity test
 
 __test__ = dict(allem="""
 
@@ -134,7 +135,17 @@ __test__ = dict(allem="""
 
 """)
 
-if __name__ == '__main__':
+def test():
+    import doctest
+    doctest.testmod(verbose=True)
+
+def main():
     while True:
         log_wifi()
         time.sleep(PERIOD)
+
+if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == 'test':
+        test()
+    else:
+        main()
