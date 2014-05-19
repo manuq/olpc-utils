@@ -22,7 +22,7 @@ def parse_wifi_interface(command_out):
     for line in lines:
         if not ':' in line:
             continue
-        return line.split(':')[0]
+        return line.split(':')[0].strip()
     return None
 
 def parse_iwconfig(command_out):
@@ -103,6 +103,20 @@ __test__ = dict(allem="""
 >>> parse_wifi_interface(out1)
 'wlp2s0'
 
+>>> out1b = 'Inter-| sta-|   Quality        |   Discarded packets               | Missed | WE\\n' + \\
+...         ' face | tus | link level noise |  nwid  crypt   frag  retry   misc | beacon | 22\\n' + \\
+...         '  eth0: 0000   70.  -37.  -256        0      0      0      0      0        0\\n'
+
+>>> parse_wifi_interface(out1b)
+'eth0'
+
+>>> out1c = 'Inter-| sta-|   Quality        |   Discarded packets               | Missed | WE\\n' + \\
+...         ' face | tus | link level noise |  nwid  crypt   frag  retry   misc | beacon | 22\\n' + \\
+...         ' wlan0: 0000   70.  -40.  -256        0      0      0    160   1396        0\\n'
+
+>>> parse_wifi_interface(out1c)
+'wlan0'
+
 >>> out2 = 'wlp2s0    IEEE 802.11bgn  ESSID:"gatobus2"\\n' + \\
 ...        '          Mode:Managed  Frequency:2.412 GHz  Access Point: 4C:72:B9:3C:4B:D3\\n' + \\
 ...        '          Bit Rate=65 Mb/s   Tx-Power=16 dBm\\n' + \\
@@ -139,7 +153,7 @@ __test__ = dict(allem="""
 
 def test():
     import doctest
-    doctest.testmod(verbose=True)
+    doctest.testmod()#verbose=True)
 
 def main():
     while True:
