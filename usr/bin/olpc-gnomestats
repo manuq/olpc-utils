@@ -46,7 +46,6 @@ class X11Sniffer(object):
         if application is None:
             application = _Application(app)
             self._applications[app] = application
-            self.update("START", application)
 
     def _window_closed_cb(self, screen, window):
         if window.get_window_type() == wnck.WINDOW_DESKTOP:
@@ -56,15 +55,15 @@ class X11Sniffer(object):
             return
 
         wnck_app = None
-        application = None
-        pid = window.get_pid()
-        for app in self._applications.keys():
-            if pid == app.get_pid():
+        cur_application = None
+        xid = window.get_xid()
+        for app, application in self._applications.items():
+            if xid == application.window_xid:
                 wnck_app = app
-                application = self._applications[app]
+                cur_application = application
                 break
 
-        if application is not None:
+        if cur_application is not None:
             if not wnck_app.get_windows():
                 self.update("END", application)
                 del self._applications[wnck_app]
@@ -81,6 +80,10 @@ class X11Sniffer(object):
         app = window.get_application()
         application = self._applications.get(app)
         if application is not None:
+            if application.window_xid is None:
+                application.window_xid = window.get_xid()
+                self.update("START", application)
+
             if self._current_app == application:
                 return
 
@@ -94,9 +97,11 @@ class X11Sniffer(object):
 class _Application(object):
     def __init__(self, app):
         self.app = app
+        self.app_name = app.get_name()
+        self.window_xid = None
 
     def __repr__(self):
-        return "%s" % self.app.get_name()
+        return "{0} {1}".format(self.window_xid, self.app_name)
 
 
 sniffer = X11Sniffer()
