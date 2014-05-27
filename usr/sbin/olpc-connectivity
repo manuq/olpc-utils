@@ -9,8 +9,7 @@ import logging
 
 os.environ['LC_MESSAGES'] = 'C'
 
-logging_filename = os.path.join(os.path.expanduser("~"),
-                                ".olpc-connectivity")
+logging_filename = "/home/olpc/.olpc-connectivity"
 
 logging.basicConfig(filename=logging_filename, level=logging.INFO,
                     format='%(message)s')
