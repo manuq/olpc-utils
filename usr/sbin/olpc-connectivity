@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import subprocess
+import socket
 import time
 import logging
 
@@ -13,6 +14,8 @@ logging_filename = "/home/olpc/.olpc-connectivity"
 
 logging.basicConfig(filename=logging_filename, level=logging.INFO,
                     format='%(message)s')
+
+lock_socket = None
 
 PERIOD = 300  # five minutes
 
@@ -154,7 +157,16 @@ def test():
     import doctest
     doctest.testmod()#verbose=True)
 
+def get_lock():
+    global lock_socket
+    lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    try:
+        lock_socket.bind('\0' + 'olpc-connectivity')
+    except socket.error:
+        sys.exit()
+
 def main():
+    get_lock()
     while True:
         log_wifi()
         time.sleep(PERIOD)
