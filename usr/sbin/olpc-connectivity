@@ -79,13 +79,13 @@ def log_wifi():
     wifi_interface = get_wifi_interface()
     if wifi_interface is None:
         info = time_info + ['NO_WIFI_INTERFACE']
-        print("{0} {1}").format(*info)
+        logging.info("{0} {1}").format(*info)
         return
 
     iwconfig_info = get_iwconfig_info(wifi_interface)
     if iwconfig_info[0] == 'Not-Associated':
         info = time_info + ['NO_ACCESS_POINT']
-        print("{0} {1}").format(*info)
+        logging.info("{0} {1}").format(*info)
         return
 
     ifconfig_info = get_ifconfig_info(wifi_interface)
