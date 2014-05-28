@@ -1,5 +1,6 @@
 #!/bin/sh
 
 if [ "$2" = "up" ]; then
-    /usr/sbin/olpc-connectivity &
+    export PATH=$PATH:/usr/sbin
+    olpc-connectivity &
 fi
