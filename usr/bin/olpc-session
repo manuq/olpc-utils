@@ -139,6 +139,17 @@ install_switch_desktop_icon()
 	chmod 755 "${desktopdir}"/olpc-switch-to-sugar.desktop
 }
 
+#Ceibal
+install_epiphany_icon()
+{
+	local desktopdir=$(xdg-user-dir DESKTOP)
+	[ ! -e "/usr/share/applications/epiphany.desktop" ] || \
+		[ -e "${desktopdir}/epiphany.desktop" ] && return
+	cp -f /usr/share/applications/epiphany.desktop \
+		"${desktopdir}"
+	chmod 755 "${desktopdir}"/epiphany.desktop
+}
+
 
 # Desktop selection
 desktop=sugar
@@ -147,6 +158,7 @@ if [ -e "$HOME/.olpc-active-desktop" ]; then
 	if [ "${active}" == "gnome" ]; then
 		desktop=gnome-session
 		install_switch_desktop_icon
+		install_epiphany_icon
 	fi
 fi
 
