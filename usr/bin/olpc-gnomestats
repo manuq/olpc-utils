@@ -80,20 +80,22 @@ class X11Sniffer(object):
         if window.get_window_type() == wnck.WINDOW_DESKTOP:
             return
 
-        if window.get_window_type() != wnck.WINDOW_NORMAL:
+        if window.get_window_type() != wnck.WINDOW_NORMAL or \
+                _get_x11_property(window, '_SUGAR_WINDOW_TYPE') == 'launcher':
             return
 
         app = window.get_application()
         application = self._applications.get(app)
         if application is None:
-            application = _Application(app)
+            application = _Application(window, app)
             self._applications[app] = application
 
     def _window_closed_cb(self, screen, window):
         if window.get_window_type() == wnck.WINDOW_DESKTOP:
             return
 
-        if window.get_window_type() != wnck.WINDOW_NORMAL:
+        if window.get_window_type() != wnck.WINDOW_NORMAL or \
+                _get_x11_property(window, '_SUGAR_WINDOW_TYPE') == 'launcher':
             return
 
         wnck_app = None
@@ -143,13 +145,35 @@ class X11Sniffer(object):
 
 
 class _Application(object):
-    def __init__(self, app):
+    def __init__(self, window, app):
         self.app = app
-        self.app_name = app.get_name()
+        self.app_name = self._get_app_name(window, app)
         self.window_xid = None
+
+    def _get_app_name(self, window, app):
+        activity_id = _get_x11_property(window, '_SUGAR_ACTIVITY_ID')
+        if activity_id:
+            bundle_id = _get_x11_property(window, '_SUGAR_BUNDLE_ID')
+            return bundle_id
+        else:
+            return app.get_name()
 
     def __repr__(self):
         return "{0} {1}".format(self.window_xid, self.app_name)
+
+
+def _get_x11_property(window, prop):
+    gdk_window = gtk.gdk.window_foreign_new(window.get_xid())
+
+    # There is a chance to get X error
+    gtk.gdk.error_trap_push()
+    prop_info = gdk_window.property_get(prop, 'STRING')
+    gtk.gdk.error_trap_pop()
+
+    if prop_info is None:
+        return None
+    else:
+        return prop_info[2]
 
 
 sniffer = X11Sniffer()
