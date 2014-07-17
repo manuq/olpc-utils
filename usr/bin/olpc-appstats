@@ -6,11 +6,31 @@ import gio
 
 import logging
 import time
-import os.path
+import os
 
 
-logging_filename = os.path.join(os.path.expanduser("~"),
-                                ".olpc-gnome-stats")
+def _read_file(path):
+    if os.access(path, os.R_OK) == 0:
+        return None
+
+    fd = open(path, 'r')
+    value = fd.read()
+    fd.close()
+    if value:
+        value = value.strip('\n')
+        return value
+    else:
+        return None
+
+logging_filename = None
+session_type = _read_file('/home/olpc/.olpc-active-desktop')
+if session_type == 'gnome':
+    logging_filename = os.path.join(os.path.expanduser("~"),
+                                    ".olpc-gnome-stats")
+else:
+    logging_filename = os.path.join(os.path.expanduser("~"),
+                                    ".olpc-sugar-stats")
+del session_type
 
 logging.basicConfig(filename=logging_filename, level=logging.INFO,
                     format='%(message)s')
